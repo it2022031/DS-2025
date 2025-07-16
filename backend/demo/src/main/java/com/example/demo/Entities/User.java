@@ -1,10 +1,16 @@
 package com.example.demo.Entities;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
 
-    // Constructors
     public User() {}
 
     public User(Long id, String name) {
@@ -12,7 +18,10 @@ public class User {
         this.name = name;
     }
 
-    // Getters and setters
+    public User(String name) {
+        this.name = name;
+    }
+
     public Long getId() {
         return id;
     }

@@ -23,11 +23,22 @@ public class UserController {
         return userService.findAll();
     }
 
+//    @PostMapping("/users")
+//    public ResponseEntity<User> addUser(@RequestBody User dto) {
+//        User newUser = new User(userService.getNextId(), dto.getName());
+//        userService.addUser(newUser);
+//        return ResponseEntity.ok(newUser);
+//    }
+
     @PostMapping("/users")
     public ResponseEntity<User> addUser(@RequestBody User dto) {
-        User newUser = new User(userService.getNextId(), dto.getName());
-        userService.addUser(newUser);
-        return ResponseEntity.ok(newUser);
+        User newUser = new User();
+        newUser.setName(dto.getName());
+        User saved = userService.addUser(newUser);
+        return ResponseEntity.ok(saved);
     }
 
+
+
 }
+
