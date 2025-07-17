@@ -27,10 +27,10 @@
 
 
 <script setup>
-import TextCopy from './components/TextCopy.vue'
+import HomePage from './pages/HomePage.vue'
 </script>
 
 <template>
-  <TextCopy />
+  <HomePage />
 </template>
 
