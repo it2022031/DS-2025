@@ -23,13 +23,6 @@ public class UserController {
         return userService.findAll();
     }
 
-//    @PostMapping("/users")
-//    public ResponseEntity<User> addUser(@RequestBody User dto) {
-//        User newUser = new User(userService.getNextId(), dto.getName());
-//        userService.addUser(newUser);
-//        return ResponseEntity.ok(newUser);
-//    }
-
     @PostMapping("/users")
     public ResponseEntity<User> addUser(@RequestBody User dto) {
         User newUser = new User();
@@ -37,8 +30,6 @@ public class UserController {
         User saved = userService.addUser(newUser);
         return ResponseEntity.ok(saved);
     }
-
-
 
 }
 
