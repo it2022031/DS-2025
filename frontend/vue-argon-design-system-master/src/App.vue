@@ -18,3 +18,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.header-global {
+  background-color: #343a40 !important;
+}
+</style>
