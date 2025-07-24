@@ -22,6 +22,11 @@ export default new Router({
         // footer: AppFooter
       }
     },
+    {
+      path: '/NewAdd',
+      name: 'NewAdd',
+      component: () => import('@/views/NewAdd.vue') // ή @/pages/NewAdd.vue αν είναι εκεί
+    },
   //   {
   //     path: "/landing",
   //     name: "landing",

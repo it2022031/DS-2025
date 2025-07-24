@@ -122,16 +122,13 @@
                   {{ errorMessage }}
                 </div>
 
-
-                <!-- Submit button -->
-                <div class="text-center">
-                  <base-button type="primary" class="my-4">
-                    <template v-if="!errorMessage && submitted">
-                      ✔️
-                    </template>
-                    Create account
-                  </base-button>
-                </div>
+                <!-- Submit button - εδώ κάνουμε το σημαντικό change: type="submit" -->
+                <button type="submit" class="btn btn-primary my-4">
+                  <template v-if="!errorMessage && submitted">
+                    ✔️
+                  </template>
+                  Create account
+                </button>
               </form>
 
               <!-- Success message -->
@@ -140,7 +137,6 @@
                   ✔️ Account created successfully!
                 </base-button>
               </div>
-
 
             </template>
           </card>
@@ -151,6 +147,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -232,19 +230,32 @@ export default {
       return !hasErrors;
     },
     submitForm() {
+      console.log('submitForm called');
       this.submitted = true;
+
       if (this.validateAllFields()) {
-        this.success = true;
         this.errorMessage = '';
-        console.log('Form submitted!', {
+        const userData = {
           name: this.name,
           surname: this.surname,
           email: this.email,
           username: this.username,
           password: this.password,
-          idNumber: this.idNumber,
-          taxNumber: this.taxNumber
-        });
+          passportNumber: this.idNumber,
+          afm: this.taxNumber
+        };
+        console.log('Validation passed, sending data:', userData);
+
+        axios.post('http://192.168.1.4:8081/api/users', userData)
+            .then(response => {
+              this.success = true;
+              console.log('User created:', response.data);
+            })
+            .catch(error => {
+              console.error('Registration error:', error.response && error.response.data ? error.response.data : error.message);
+              this.success = false;
+              this.errorMessage = 'Registration failed. Please try again.';
+            });
       } else {
         this.success = false;
       }
@@ -252,22 +263,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-input {
-  border-radius: 8px !important;
-}
-
-.base-button {
-  border-radius: 25px !important;
-  padding: 10px 20px;
-}
-
-.checkmark {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  font-weight: bold;
-  font-size: 18px;
-}
-</style>

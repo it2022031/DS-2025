@@ -1,6 +1,7 @@
 package com.example.demo.Controllers;
 
 import com.example.demo.Entities.User;
+import com.example.demo.Entities.UserRole;
 import com.example.demo.Services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*") // Allow all origins for testing; adjust in production
+
 public class UserController {
 
     private final UserService userService;
@@ -26,9 +28,21 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<User> addUser(@RequestBody User dto) {
         User newUser = new User();
+
         newUser.setName(dto.getName());
+        newUser.setSurname(dto.getSurname());
+        newUser.setEmail(dto.getEmail());
+        newUser.setUsername(dto.getUsername());
+        newUser.setPassword(dto.getPassword()); // ΠΡΟΣΟΧΗ: Κάνε κρυπτογράφηση αν χρειάζεται
+        newUser.setAfm(dto.getAfm());
+        newUser.setPassportNumber(dto.getPassportNumber());
+
+        // Default role
+        newUser.addRole(UserRole.OWNER);
+
         User saved = userService.addUser(newUser);
         return ResponseEntity.ok(saved);
+
     }
 
 }
