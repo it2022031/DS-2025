@@ -7,6 +7,9 @@ import Landing from "./views/Landing.vue";
 import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
+import UserList from "./views/ListUsers.vue"; // ή ./components/UserList.vue ανάλογα πού το έβαλες
+import ListProperties from './views/ListProperties.vue';
+import AddProperty from "@/views/AddProperty.vue";
 
 Vue.use(Router);
 
@@ -22,7 +25,30 @@ export default new Router({
         // footer: AppFooter
       }
     },
-  //   {
+    {
+      path: "/list-properties",
+      name: "list-properties",
+      components: {
+        header: AppHeader,
+        default: ListProperties,
+        footer: AppFooter
+      }
+    },
+    {
+      path: "/users",
+      name: "users",
+      components: {
+        header: AppHeader,
+        default: UserList,
+        footer: AppFooter
+      }
+    },
+    {
+      path: '/properties/add',
+      name: 'AddProperty',
+      component: AddProperty
+    },
+    //   {
   //     path: "/landing",
   //     name: "landing",
   //     components: {

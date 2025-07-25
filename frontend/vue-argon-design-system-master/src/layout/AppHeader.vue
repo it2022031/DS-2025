@@ -30,9 +30,21 @@
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/NewAdd" class="nav-link">
+              <router-link to="properties/add" class="nav-link">
                 <i class="ni ni-collection d-lg-none"></i>
                 <span class="nav-link-inner--text">Νέα Aγγελία</span>
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/list-properties" class="nav-link">
+                <i class="ni ni-collection d-lg-none"></i>
+                <span class="nav-link-inner--text">list-properties</span>
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/Users" class="nav-link">
+                <i class="ni ni-collection d-lg-none"></i>
+                <span class="nav-link-inner--text">list-users</span>
               </router-link>
             </li>
           </ul>
