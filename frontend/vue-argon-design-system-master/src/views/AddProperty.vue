@@ -4,6 +4,7 @@
       <span></span><span></span><span></span><span></span>
       <span></span><span></span><span></span><span></span>
     </div>
+
     <div class="container pt-lg-md">
       <div class="row justify-content-center">
         <div class="col-lg-5">
@@ -11,34 +12,74 @@
                 header-classes="bg-white pb-5"
                 body-classes="px-lg-5 py-lg-5"
                 class="border-0">
-
             <div class="text-center text-muted mb-4">
               <small>Add a new property</small>
             </div>
-            <form @submit.prevent="handleAddProperty" role="form">
+
+            <form @submit.prevent="submitForm" role="form">
               <base-input
                   alternative
                   class="mb-3"
                   placeholder="Property Name"
                   v-model="name"
-                  addon-left-icon="ni ni-building">
-              </base-input>
+                  addon-left-icon="ni ni-building" />
 
               <base-input
                   alternative
                   class="mb-3"
-                  placeholder="Property Description"
+                  placeholder="Description"
                   v-model="description"
-                  addon-left-icon="ni ni-align-left-2">
-              </base-input>
+                  addon-left-icon="ni ni-align-left-2" />
+
+              <base-input
+                  alternative
+                  class="mb-3"
+                  placeholder="Country"
+                  v-model="country"
+                  addon-left-icon="ni ni-world-2" />
+
+              <base-input
+                  alternative
+                  class="mb-3"
+                  placeholder="City"
+                  v-model="city"
+                  addon-left-icon="ni ni-square-pin" />
+
+              <base-input
+                  alternative
+                  class="mb-3"
+                  placeholder="Street"
+                  v-model="street"
+                  addon-left-icon="ni ni-map-big" />
+
+              <base-input
+                  alternative
+                  class="mb-3"
+                  placeholder="Postal Code"
+                  v-model="postalCode"
+                  addon-left-icon="ni ni-key-25" />
+
+              <base-input
+                  alternative
+                  class="mb-3"
+                  placeholder="Square Meters"
+                  type="number"
+                  v-model.number="squareMeters"
+                  addon-left-icon="ni ni-ruler-pencil" />
 
               <div class="text-center">
-                <base-button
-                    type="primary"
-                    class="my-4"
-                    @click="handleAddProperty">Add Property</base-button>
+                <button type="submit" class="btn btn-primary my-4">
+                  <template v-if="success">✔️</template>
+                  Add Property
+                </button>
               </div>
             </form>
+
+            <div v-if="success" class="text-center my-3">
+              <base-button type="success" disabled>
+                ✔️ Property added successfully!
+              </base-button>
+            </div>
 
           </card>
         </div>
@@ -55,29 +96,60 @@ export default {
   data() {
     return {
       name: '',
-      description: ''
+      description: '',
+      country: '',
+      city: '',
+      street: '',
+      postalCode: '',
+      squareMeters: null,
+      success: false
     };
   },
   methods: {
-    async handleAddProperty() {
-      if (!this.name.trim() || !this.description.trim()) {
-        alert("Please enter both name and description.");
+    async submitForm() {
+      if (
+          !this.name.trim() ||
+          !this.description.trim() ||
+          !this.country.trim() ||
+          !this.city.trim() ||
+          !this.street.trim() ||
+          !this.postalCode.trim() ||
+          !this.squareMeters
+      ) {
+        alert("Please fill in all fields.");
         return;
       }
 
       try {
-        const response = await axios.post('http://localhost:8080/api/properties', {
+        const response = await axios.post("http://localhost:8080/api/properties/add", {
           name: this.name,
-          description: this.description
+          description: this.description,
+          country: this.country,
+          city: this.city,
+          street: this.street,
+          postalCode: this.postalCode,
+          squareMeters: this.squareMeters,
+          status: this.status // αν έχεις αυτό το πεδίο
         });
+
+        this.success = true;
         alert(`Property "${response.data.name}" added successfully!`);
+
+        // Clear form
         this.name = '';
         this.description = '';
+        this.country = '';
+        this.city = '';
+        this.street = '';
+        this.postalCode = '';
+        this.squareMeters = null;
+
       } catch (error) {
-        console.error('Error adding property:', error);
+        console.error("Error adding property:", error);
         alert("An error occurred while adding the property.");
       }
     }
+
   }
 };
 </script>
