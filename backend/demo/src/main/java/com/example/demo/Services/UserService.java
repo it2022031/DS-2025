@@ -26,4 +26,8 @@ public class UserService {
     public Long getNextId() {
         return userRepository.count() + 1;
     }
+
+    public User addUserAnalytical(User user) {
+        return userRepository.save(user);
+    }
 }

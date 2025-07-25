@@ -31,5 +31,20 @@ public class UserController {
         return ResponseEntity.ok(saved);
     }
 
+
+    @PostMapping("/users/analytical")
+    public ResponseEntity<User> addUserAnalytical(@RequestBody User dto) {
+        User newUser = new User(
+                dto.getUsername(),
+                dto.getPassword(),
+                dto.getFirstName(),
+                dto.getLastName(),
+                dto.getEmail(),
+                dto.getPassportNumber(),
+                dto.getAfm()
+        );
+        User saved = userService.addUserAnalytical(newUser);
+        return ResponseEntity.ok(saved);
+    }
 }
 
