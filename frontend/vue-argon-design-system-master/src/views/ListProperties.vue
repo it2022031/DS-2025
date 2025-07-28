@@ -1,62 +1,67 @@
 <template>
-  <div class="list-properties">
-    <h2>🏠 Properties List</h2>
-    <ul>
-      <li v-for="property in properties" :key="property.id" class="property-card">
-        <img :src="property.image" :alt="property.name" class="property-image" />
-        <div class="property-info">
-          <h3>{{ property.name }}</h3>
-          <p>{{ property.description }}</p>
-        </div>
-      </li>
-    </ul>
-  </div>
+  <section class="list-properties section bg-secondary py-5">
+    <div class="container">
+      <h2 class="text-center text-white mb-4">🏠 Properties List</h2>
+
+      <div v-if="loading" class="text-center text-white">Loading properties...</div>
+      <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
+      <div v-else-if="properties.length === 0" class="text-center text-white">No properties found.</div>
+      <ul v-else class="property-list">
+        <li v-for="property in properties" :key="property.id" class="property-card">
+          <img :src="property.image" :alt="property.name" class="property-image" />
+          <div class="property-info">
+            <h3>{{ property.name }}</h3>
+            <p>{{ property.description }}</p>
+            <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
+            <p><strong>Status:</strong> {{ property.status }}</p>
+            <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
+            <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: "ListProperties",
   data() {
     return {
-      properties: [
-        {
-          id: 1,
-          name: "Property One",
-          description: "Description for property one",
-          image: "https://static9.depositphotos.com/1086013/1149/i/450/depositphotos_11497591-stock-photo-superb-backyard.jpg"
-        },
-        {
-          id: 2,
-          name: "Property Two",
-          description: "Description for property two",
-          image: "https://hitech-house.com/application/files/thumbnails/portofolio/9217/0275/7057/23943JD_Photo001_1699021994.webp"
-        }
-      ]
+      properties: [],
+      loading: false,
+      error: false
     };
+  },
+  async mounted() {
+    this.loading = true;
+    this.error = false;
+
+    try {
+      const response = await axios.get('http://localhost:8080/api/properties/all');
+      this.properties = response.data;
+    } catch (err) {
+      console.error('Error fetching properties:', err);
+      this.error = true;
+    } finally {
+      this.loading = false;
+    }
   }
 };
 </script>
 
 <style scoped>
-.list-properties {
-  padding: 30px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f7fa;
-  max-width: 900px;
-  margin: auto;
+.section {
+  min-height: 100vh;
 }
 
-.list-properties h2 {
-  margin-bottom: 30px;
-  font-size: 32px;
-  text-align: center;
-  color: #2c3e50;
-}
-
-.list-properties ul {
+.property-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
+  max-width: 900px;
 }
 
 .property-card {
@@ -65,6 +70,8 @@ export default {
   overflow: hidden;
   margin-bottom: 25px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: 20px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -74,14 +81,16 @@ export default {
 }
 
 .property-image {
-  width: 100%;
-  height: auto;
+  width: 250px;
+  height: 160px;
   object-fit: cover;
-  display: block;
+  border-radius: 12px 0 0 12px;
+  flex-shrink: 0;
 }
 
 .property-info {
   padding: 20px;
+  flex-grow: 1;
 }
 
 .property-info h3 {
@@ -91,8 +100,29 @@ export default {
 }
 
 .property-info p {
-  margin: 0;
+  margin: 5px 0;
   color: #555;
   font-size: 16px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-white {
+  color: white;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.bg-secondary {
+  background-color: #343a40;
+}
+
+.py-5 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
 </style>
