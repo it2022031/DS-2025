@@ -47,6 +47,12 @@
                 <span class="nav-link-inner--text">list-users</span>
               </router-link>
             </li>
+            <li class="nav-item">
+              <router-link to="/Rentals" class="nav-link">
+                <i class="ni ni-collection d-lg-none"></i>
+                <span class="nav-link-inner--text">list-rentals</span>
+              </router-link>
+            </li>
           </ul>
           <ul class="navbar-nav align-items-lg-center ml-lg-auto">
             <li class="nav-item">

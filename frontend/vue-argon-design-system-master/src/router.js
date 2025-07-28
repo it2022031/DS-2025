@@ -11,6 +11,7 @@ import UserList from "./views/ListUsers.vue"; // ή ./components/UserList.vue α
 import ListProperties from './views/ListProperties.vue';
 import AddProperty from "@/views/AddProperty.vue";
 import Rent from './views/Rent.vue';
+import ListRentals from "@/views/ListRentals.vue";
 
 Vue.use(Router);
 
@@ -25,6 +26,11 @@ export default new Router({
         // default: Components,
         // footer: AppFooter
       }
+    },
+    {
+      path: '/rentals',
+      name: 'ListRentals',
+      component: ListRentals,
     },
     {
       path: "/list-properties",

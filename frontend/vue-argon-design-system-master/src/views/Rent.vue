@@ -17,7 +17,9 @@
             <label class="form-label">Select User</label>
             <select v-model="form.userId" class="form-select form-select-lg" required>
               <option disabled value="">-- Choose User --</option>
-              <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }}</option>
+              <option v-for="u in users" :key="u.id" :value="u.id">
+                {{ formatUserName(u) }}
+              </option>
             </select>
           </div>
           <div class="col-md-6">
@@ -68,47 +70,63 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "Rent",
   data() {
     return {
-      today: new Date().toISOString().split("T")[0], // YYYY-MM-DD
+      today: new Date().toISOString().split("T")[0],
       form: {
         propertyId: "",
         userId: "",
         startDate: "",
         endDate: ""
       },
-      rents: [
-        {
-          id: 1,
-          userId: 1,
-          propertyId: 2,
-          startDate: "2024-09-01",
-          endDate: "2024-09-10"
-        }
-      ],
-      properties: [
-        { id: 1, name: "Seaside Villa" },
-        { id: 2, name: "Mountain Retreat" }
-      ],
-      users: [
-        { id: 1, name: "John Doe" },
-        { id: 2, name: "Jane Smith" }
-      ]
+      rents: [],
+      properties: [],
+      users: []
     };
   },
   methods: {
-    createRent() {
-      const newRent = {
-        id: this.rents.length + 1,
-        userId: this.form.userId,
-        propertyId: this.form.propertyId,
-        startDate: this.form.startDate,
-        endDate: this.form.endDate
-      };
-      this.rents.push(newRent);
-      this.resetForm();
+    async fetchProperties() {
+      try {
+        const res = await axios.get("http://localhost:8080/api/properties/all");
+        this.properties = res.data;
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      }
+    },
+    async fetchUsers() {
+      try {
+        const res = await axios.get("http://localhost:8080/api/users/all");
+        this.users = res.data;
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    },
+    async fetchRents() {
+      try {
+        const res = await axios.get("http://localhost:8080/api/rentals/all");
+        this.rents = res.data;
+      } catch (error) {
+        console.error("Error fetching rents:", error);
+      }
+    },
+    async createRent() {
+      try {
+        const newRent = {
+          propertyId: this.form.propertyId,
+          userId: this.form.userId,
+          startDate: this.form.startDate,
+          endDate: this.form.endDate
+        };
+        const res = await axios.post("http://localhost:8080/api/rentals", newRent);
+        this.rents.push(res.data);
+        this.resetForm();
+      } catch (error) {
+        console.error("Error creating rent:", error);
+      }
     },
     resetForm() {
       this.form = {
@@ -118,14 +136,26 @@ export default {
         endDate: ""
       };
     },
+    formatUserName(user) {
+      if (user.firstName && user.lastName)
+        return user.firstName + " " + user.lastName;
+      if (user.username) return user.username;
+      if (user.name) return user.name;
+      return "Unknown User";
+    },
     getUserName(userId) {
       const user = this.users.find(u => u.id === userId);
-      return user ? user.name : "Unknown User";
+      return user ? this.formatUserName(user) : "Unknown User";
     },
     getPropertyName(propertyId) {
       const prop = this.properties.find(p => p.id === propertyId);
       return prop ? prop.name : "Unknown Property";
     }
+  },
+  mounted() {
+    this.fetchProperties();
+    this.fetchUsers();
+    this.fetchRents();
   }
 };
 </script>
