@@ -10,6 +10,7 @@ import Profile from "./views/Profile.vue";
 import UserList from "./views/ListUsers.vue"; // ή ./components/UserList.vue ανάλογα πού το έβαλες
 import ListProperties from './views/ListProperties.vue';
 import AddProperty from "@/views/AddProperty.vue";
+import Rent from './views/Rent.vue';
 
 Vue.use(Router);
 
@@ -48,6 +49,17 @@ export default new Router({
       name: 'AddProperty',
       component: AddProperty
     },
+
+    {
+      path: "/rent",
+      name: "rent",
+      components: {
+        header: AppHeader,
+        default: Rent,
+        footer: AppFooter
+      }
+    },
+
     //   {
   //     path: "/landing",
   //     name: "landing",
@@ -75,6 +87,9 @@ export default new Router({
         footer: AppFooter
       }
     },
+
+
+
   //   {
   //     path: "/profile",
   //     name: "profile",
