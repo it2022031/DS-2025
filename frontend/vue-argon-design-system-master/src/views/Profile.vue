@@ -1,178 +1,210 @@
-<!--<template>-->
-<!--    <div class="profile-page">-->
-<!--        <section class="section-profile-cover section-shaped my-0">-->
-<!--            <div class="shape shape-style-1 shape-primary shape-skew alpha-4">-->
-<!--                <span></span>-->
-<!--                <span></span>-->
-<!--                <span></span>-->
-<!--                <span></span>-->
-<!--                <span></span>-->
-<!--                <span></span>-->
-<!--                <span></span>-->
-<!--            </div>-->
-<!--        </section>-->
-<!--        <section class="section section-skew">-->
-<!--            <div class="container">-->
-<!--                <card shadow class="card-profile mt&#45;&#45;300" no-body>-->
-<!--                    <div class="px-4">-->
-<!--                        <div class="row justify-content-center">-->
-<!--                            <div class="col-lg-3 order-lg-2">-->
-<!--                                <div class="card-profile-image">-->
-<!--                                    <a href="#">-->
-<!--                                        <img v-lazy="'img/theme/team-4-800x800.jpg'" class="rounded-circle">-->
-<!--                                    </a>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <div class="col-lg-4 order-lg-3 text-lg-right align-self-lg-center">-->
-<!--                                <div class="card-profile-actions py-4 mt-lg-0">-->
-<!--                                    <base-button type="info" size="sm" class="mr-4">Connect</base-button>-->
-<!--                                    <base-button type="default" size="sm" class="float-right">Message</base-button>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <div class="col-lg-4 order-lg-1">-->
-<!--                                <div class="card-profile-stats d-flex justify-content-center">-->
-<!--                                    <div>-->
-<!--                                        <span class="heading">22</span>-->
-<!--                                        <span class="description">Friends</span>-->
-<!--                                    </div>-->
-<!--                                    <div>-->
-<!--                                        <span class="heading">10</span>-->
-<!--                                        <span class="description">Photos</span>-->
-<!--                                    </div>-->
-<!--                                    <div>-->
-<!--                                        <span class="heading">89</span>-->
-<!--                                        <span class="description">Comments</span>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                        <div class="text-center mt-5">-->
-<!--                            <h3>John Kachramanos-->
-<!--                                <span class="font-weight-light">, 21</span>-->
-<!--                            </h3>-->
-<!--                            <div class="h6 font-weight-300"><i class="ni location_pin mr-2"></i>Athens, Greece</div>-->
-<!--                            <div class="h6 mt-4"><i class="ni business_briefcase-24 mr-2"></i>Solution Manager - Creative Tim Officer</div>-->
-<!--                            <div><i class="ni education_hat mr-2"></i>University of Computer Science</div>-->
-<!--                        </div>-->
-<!--                        <div class="mt-5 py-5 border-top text-center">-->
-<!--                            <div class="row justify-content-center">-->
-<!--                                <div class="col-lg-9">-->
-<!--                                    <p>An artist of considerable range, Ryan — the name taken by Melbourne-raised, Brooklyn-based Nick Murphy — writes, performs and records all of his own music, giving it a warm, intimate feel with a solid groove structure. An artist of considerable range.</p>-->
-<!--                                    <a href="#">Show more</a>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </card>-->
-<!--            </div>-->
-<!--        </section>-->
-<!--    </div>-->
-<!--</template>-->
-<!--<script>-->
-<!--export default {};-->
-<!--</script>-->
-<!--<style>-->
-<!--</style>-->
-
-
-
 <template>
-  <div class="profile-page">
-    <section class="section-profile-cover section-shaped my-0">
-      <div class="shape shape-style-1 shape-primary shape-skew alpha-4">
-        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-      </div>
-    </section>
+  <div class="profile-page text-center mt-5">
+    <!-- Εμφάνιση avatar και ονόματος -->
+    <div class="avatar-container mb-3">
+      <img
+          :src="user.avatar || defaultAvatar"
+          alt="Avatar"
+          class="avatar clickable"
+          @click="triggerFileInput"
+      />
+      <input type="file" ref="fileInput" @change="onAvatarChange" hidden />
+    </div>
 
-    <section class="section section-skew">
-      <div class="container">
-        <card shadow class="card-profile mt--300" no-body>
-          <div class="px-4">
-            <div class="row justify-content-center">
-              <div class="col-lg-3 order-lg-2">
-                <div class="card-profile-image">
-                  <a href="#">
-                    <img v-lazy="'img/theme/team-4-800x800.jpg'" class="rounded-circle" />
-                  </a>
-                </div>
-              </div>
-              <div class="col-lg-4 order-lg-3 text-lg-right align-self-lg-center">
-                <div class="card-profile-actions py-4 mt-lg-0">
-                  <base-button type="info" size="sm" class="mr-4">Connect</base-button>
-                  <base-button type="default" size="sm" class="float-right">Message</base-button>
-                </div>
-              </div>
-              <div class="col-lg-4 order-lg-1">
-                <div class="card-profile-stats d-flex justify-content-center">
-                  <div>
-                    <span class="heading">22</span>
-                    <span class="description">Friends</span>
-                  </div>
-                  <div>
-                    <span class="heading">10</span>
-                    <span class="description">Photos</span>
-                  </div>
-                  <div>
-                    <span class="heading">89</span>
-                    <span class="description">Comments</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <h3 @click.stop="toggleDropdown" class="profile-name clickable">
+      {{ user.name || 'Unknown User' }}
+      <i class="ni ni-bold-down ml-2"></i>
+    </h3>
 
-            <div class="text-center mt-5">
-              <h3>{{ userName }}
-                <span class="font-weight-light">, 21</span>
-              </h3>
-              <div class="h6 font-weight-300"><i class="ni location_pin mr-2"></i>Athens, Greece</div>
-              <div class="h6 mt-4"><i class="ni business_briefcase-24 mr-2"></i>Solution Manager - Creative Tim Officer</div>
-              <div><i class="ni education_hat mr-2"></i>University of Computer Science</div>
-            </div>
+    <!-- Dropdown με στοιχεία προφίλ και φόρμα ενημέρωσης -->
+    <div v-show="showDropdown" class="custom-dropdown mt-2 text-left">
+      <form @submit.prevent="saveProfile">
+        <div class="form-group">
+          <label>Όνομα</label>
+          <input type="text" v-model="user.name" class="form-control" />
+        </div>
 
-            <div class="mt-5 py-5 border-top text-center">
-              <div class="row justify-content-center">
-                <div class="col-lg-9">
-                  <p>An artist of considerable range, Ryan — the name taken by Melbourne-raised, Brooklyn-based Nick Murphy — writes, performs and records all of his own music, giving it a warm, intimate feel with a solid groove structure.</p>
-                  <a href="#">Show more</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </card>
-      </div>
-    </section>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" v-model="user.email" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Τηλέφωνο</label>
+          <input type="text" v-model="user.phone" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Επάγγελμα</label>
+          <input type="text" v-model="user.profession" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Τοποθεσία</label>
+          <input type="text" v-model="user.location" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-3">
+          Αποθήκευση
+        </button>
+        <hr />
+        <button @click.prevent="logout" class="btn btn-link btn-block text-danger">
+          Αποσύνδεση
+        </button>
+      </form>
+    </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
-  name: 'ProfilePage',
+  name: "ProfilePage",
   data() {
     return {
-      userName: 'Loading...'
+      user: {
+        name: "",
+        email: "",
+        phone: "",
+        profession: "",
+        location: "",
+        avatar: ""
+      },
+      showDropdown: false,
+      defaultAvatar:
+          "https://cdn-icons-png.flaticon.com/512/147/147144.png" // αν δεν υπάρχει avatar
     };
   },
+  methods: {
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
+    },
+    closeOnOutsideClick(event) {
+      if (
+          !this.$el.contains(event.target) &&
+          this.showDropdown
+      ) {
+        this.showDropdown = false;
+      }
+    },
+    logout() {
+      localStorage.removeItem("token");
+      this.$router.push("/login");
+    },
+    fetchUser() {
+      // Παίρνουμε το token από localStorage και κάνουμε request για τα στοιχεία του χρήστη
+      const token = localStorage.getItem("token");
+      if (!token) {
+        this.$router.push("/login");
+        return;
+      }
+      axios
+          .get("http://localhost:8080/api/users/me", {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          .then(res => {
+            this.user = res.data;
+          })
+          .catch(err => {
+            console.error("Error fetching user data:", err);
+          });
+    },
+    saveProfile() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Δεν είστε συνδεδεμένοι.");
+        this.$router.push("/login");
+        return;
+      }
+      // Αποθήκευση αλλαγών προφίλ
+      axios
+          .put("http://localhost:8080/api/users/me", this.user, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          .then(() => {
+            alert("Το προφίλ ενημερώθηκε!");
+            this.showDropdown = false;
+          })
+          .catch(err => {
+            console.error("Error updating profile:", err);
+            alert("Σφάλμα κατά την ενημέρωση.");
+          });
+    },
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    onAvatarChange(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Απλό preview της εικόνας
+      const reader = new FileReader();
+      reader.onload = e => {
+        this.user.avatar = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      // Εδώ θα έστελνες την εικόνα στο server, πχ με FormData και axios.post
+      // πχ: this.uploadAvatar(file)
+    }
+  },
   mounted() {
-    axios.get('http://localhost:8080/api/users')
-        .then(response => {
-          if (response.data.length > 0) {
-            this.userName = response.data[0].name;
-          } else {
-            this.userName = 'Unknown User';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching user:', error);
-          this.userName = 'Error Loading User';
-        });
+    this.fetchUser();
+    document.addEventListener("click", this.closeOnOutsideClick);
+  },
+  beforeDestroy() {
+    document.removeEventListener("click", this.closeOnOutsideClick);
   }
 };
 </script>
 
 <style scoped>
-/* Προαιρετικό styling */
+.profile-name {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.5rem;
+  user-select: none;
+}
+
+.custom-dropdown {
+  display: inline-block;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  max-width: 350px;
+  animation: fadeIn 0.2s ease-in-out;
+  text-align: left;
+}
+
+.avatar-container {
+  display: flex;
+  justify-content: center;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 3px solid #007bff;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 </style>
-
-

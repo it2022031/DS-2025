@@ -1,142 +1,168 @@
 <template>
-    <header class="header-global">
-        <base-nav class="navbar-main" transparent type="" effect="light" expand>
-            <router-link slot="brand" class="navbar-brand mr-lg-5" to="/">
-                <img src="img/brand/white.png" alt="logo">
-            </router-link>
+  <header class="header-global">
+    <base-nav ref="nav" class="navbar-main" transparent effect="light" expand>
+      <!-- Λογότυπο -->
+      <router-link slot="brand" class="navbar-brand mr-lg-5" to="/">
+        <img src="img/brand/white.png" alt="logo" />
+      </router-link>
 
-            <div class="row" slot="content-header" slot-scope="{closeMenu}">
-                <div class="col-6 collapse-brand">
-                    <a href="https://demos.creative-tim.com/vue-argon-design-system/documentation/">
-                        <img src="img/brand/blue.png">
-                    </a>
-                </div>
-                <div class="col-6 collapse-close">
-                    <close-button @click="closeMenu"></close-button>
-                </div>
-            </div>
+      <!-- Mobile menu header -->
+      <div class="row" slot="content-header" slot-scope="{ closeMenu }">
+        <div class="col-6 collapse-brand">
+          <a href="#">
+            <img src="img/brand/blue.png" />
+          </a>
+        </div>
+        <div class="col-6 collapse-close">
+          <close-button @click="closeMenu"></close-button>
+        </div>
+      </div>
 
-          <ul class="navbar-nav align-items-lg-center">
-            <li class="nav-item">
-              <router-link to="/" class="nav-link">
-                <i class="ni ni-ui-04 d-lg-none"></i>
-                <span class="nav-link-inner--text">Home</span>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/Rent" class="nav-link">
-                <i class="ni ni-collection d-lg-none"></i>
-                <span class="nav-link-inner--text">Ενοικίαση</span>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="properties/add" class="nav-link">
-                <i class="ni ni-collection d-lg-none"></i>
-                <span class="nav-link-inner--text">Νέα Aγγελία</span>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/list-properties" class="nav-link">
-                <i class="ni ni-collection d-lg-none"></i>
-                <span class="nav-link-inner--text">list-properties</span>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/Users" class="nav-link">
-                <i class="ni ni-collection d-lg-none"></i>
-                <span class="nav-link-inner--text">list-users</span>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/Rentals" class="nav-link">
-                <i class="ni ni-collection d-lg-none"></i>
-                <span class="nav-link-inner--text">list-rentals</span>
-              </router-link>
-            </li>
-          </ul>
-          <ul class="navbar-nav align-items-lg-center ml-lg-auto">
-            <li class="nav-item">
-              <router-link to="/login" class="btn btn-outline-light btn-sm mr-2">
-                Login
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/register" class="btn btn-light btn-sm">
-                Register
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/about" class="nav-link">
-                <i class="ni ni-single-copy-04 d-lg-none"></i>
-                <span class="nav-link-inner--text">About</span>
-              </router-link>
-            </li>
+      <!-- Αριστερό μενού -->
+      <ul class="navbar-nav align-items-lg-center">
+        <li class="nav-item">
+          <router-link to="/" class="nav-link">Home</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/Rent" class="nav-link">Ενοικίαση</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/properties/add" class="nav-link">Νέα Αγγελία</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/list-properties" class="nav-link">list-properties</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/Users" class="nav-link">list-users</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/Rentals" class="nav-link">list-rentals</router-link>
+        </li>
+      </ul>
 
+      <!-- Δεξιό μενού -->
+      <ul class="navbar-nav align-items-lg-center ml-lg-auto">
+        <li class="nav-item">
+          <router-link to="/login" class="btn btn-outline-light btn-sm mr-2">Login</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/register" class="btn btn-light btn-sm">Register</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/about" class="nav-link">About</router-link>
+        </li>
+      </ul>
 
+      <!-- Εικονίδιο χρήστη + dropdown -->
+      <div class="d-flex align-items-center pl-3 position-relative" style="cursor: pointer;" @click.stop="toggleDropdown">
+        <div class="rounded-circle bg-white d-flex justify-content-center align-items-center"
+             style="width: 40px; height: 40px;">
+          <i class="ni ni-single-02 text-dark" style="font-size: 22px;"></i>
+        </div>
 
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link nav-link-icon" href="https://www.facebook.com/creativetim" target="_blank" rel="noopener"-->
-<!--                       data-toggle="tooltip" title="Like us on Facebook">-->
-<!--                        <i class="fa fa-facebook-square"></i>-->
-<!--                        <span class="nav-link-inner&#45;&#45;text d-lg-none">Facebook</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link nav-link-icon" href="https://www.instagram.com/creativetimofficial"-->
-<!--                       target="_blank" rel="noopener" data-toggle="tooltip" title="Follow us on Instagram">-->
-<!--                        <i class="fa fa-instagram"></i>-->
-<!--                        <span class="nav-link-inner&#45;&#45;text d-lg-none">Instagram</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link nav-link-icon" href="https://twitter.com/creativetim" target="_blank" rel="noopener"-->
-<!--                       data-toggle="tooltip" title="Follow us on Twitter">-->
-<!--                        <i class="fa fa-twitter-square"></i>-->
-<!--                        <span class="nav-link-inner&#45;&#45;text d-lg-none">Twitter</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="nav-item">-->
-<!--                    <a class="nav-link nav-link-icon" href="https://github.com/creativetimofficial/vue-argon-design-system"-->
-<!--                       target="_blank" rel="noopener" data-toggle="tooltip" title="Star us on Github">-->
-<!--                        <i class="fa fa-github"></i>-->
-<!--                        <span class="nav-link-inner&#45;&#45;text d-lg-none">Github</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="nav-item d-none d-lg-block ml-lg-4">-->
-<!--                    <a href="https://www.creative-tim.com/product/vue-argon-design-system" target="_blank" rel="noopener"-->
-<!--                       class="btn btn-neutral btn-icon">-->
-<!--                <span class="btn-inner&#45;&#45;icon">-->
-<!--                  <i class="fa fa-cloud-download mr-2"></i>-->
-<!--                </span>-->
-<!--                        <span class="nav-link-inner&#45;&#45;text">Download</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-            </ul>
-        </base-nav>
-
-    </header>
+        <!-- Dropdown μενού -->
+        <div v-show="showDropdown" class="dropdown-menu dropdown-menu-right show custom-dropdown">
+          <router-link to="/profile" class="dropdown-item">Προφίλ</router-link>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" @click.prevent="logout">Αποσύνδεση</a>
+        </div>
+      </div>
+    </base-nav>
+  </header>
 </template>
+
 <script>
 import BaseNav from "@/components/BaseNav";
 import BaseDropdown from "@/components/BaseDropdown";
 import CloseButton from "@/components/CloseButton";
 
 export default {
+  name: "AppHeader",
   components: {
     BaseNav,
     CloseButton,
     BaseDropdown
+  },
+  data() {
+    return {
+      showDropdown: false
+    };
+  },
+  methods: {
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
+    },
+    closeOnOutsideClick(event) {
+      const dropdown = this.$el.querySelector(".custom-dropdown");
+      if (dropdown && !dropdown.contains(event.target)) {
+        this.showDropdown = false;
+      }
+    },
+    logout() {
+      localStorage.removeItem("token");
+      this.$router.push("/login");
+    }
+  },
+  mounted() {
+    document.addEventListener("click", this.closeOnOutsideClick);
+  },
+  beforeDestroy() {
+    document.removeEventListener("click", this.closeOnOutsideClick);
+  },
+  watch: {
+    $route() {
+      this.showDropdown = false;
+      if (this.$refs.nav) {
+        this.$refs.nav.closeMenu();
+      }
+    }
   }
 };
 </script>
 
-<style>
-  .header-global {
-    background-color: #343a40;
-    color: white;
-    min-height: 100px;
+<style scoped>
+.header-global {
+  background-color: #343a40;
+  color: white;
+  min-height: 100px;
+}
+
+.navbar-main {
+  padding-right: 1rem;
+}
+
+.custom-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 150px;
+  z-index: 1000;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.custom-dropdown .dropdown-item {
+  padding: 8px 12px;
+  color: #333;
+  text-decoration: none;
+}
+
+.custom-dropdown .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 </style>
-
-
-

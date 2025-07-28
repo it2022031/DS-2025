@@ -81,6 +81,10 @@
               </base-button>
             </div>
 
+            <!-- Πίσω κουμπί -->
+            <div class="text-center mt-3">
+              <button class="btn btn-light" @click="$router.back()">← Back</button>
+            </div>
           </card>
         </div>
       </div>
@@ -128,14 +132,12 @@ export default {
           city: this.city,
           street: this.street,
           postalCode: this.postalCode,
-          squareMeters: this.squareMeters,
-          status: this.status // αν έχεις αυτό το πεδίο
+          squareMeters: this.squareMeters
         });
 
         this.success = true;
         alert(`Property "${response.data.name}" added successfully!`);
 
-        // Clear form
         this.name = '';
         this.description = '';
         this.country = '';
@@ -149,7 +151,6 @@ export default {
         alert("An error occurred while adding the property.");
       }
     }
-
   }
 };
 </script>
@@ -158,8 +159,20 @@ export default {
 input {
   border-radius: 8px !important;
 }
+
 .base-button {
   border-radius: 25px !important;
   padding: 10px 20px;
+}
+
+.btn-light {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  color: #212529;
+  transition: background-color 0.2s ease;
+}
+
+.btn-light:hover {
+  background-color: #e2e6ea;
 }
 </style>

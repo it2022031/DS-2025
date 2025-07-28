@@ -6,6 +6,7 @@
       <div v-if="loading" class="text-center text-white">Loading rentals...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load rentals.</div>
       <div v-else-if="rentals.length === 0" class="text-center text-white">No rentals found.</div>
+
       <ul v-else class="rental-list">
         <li v-for="rental in rentals" :key="rental.id" class="rental-card">
           <div class="rental-info">
@@ -14,12 +15,18 @@
             <p><strong>Start Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>
             <p><strong>Payment:</strong> €{{ rental.payment.toFixed(2) }}</p>
-            <p><strong>Status:</strong> <span :class="{'approved': rental.status, 'pending': !rental.status}">
-              {{ rental.status ? 'Approved' : 'Pending' }}
-            </span></p>
+            <p><strong>Status:</strong>
+              <span :class="{'approved': rental.status, 'pending': !rental.status}">
+                {{ rental.status ? 'Approved' : 'Pending' }}
+              </span>
+            </p>
           </div>
         </li>
       </ul>
+
+      <div class="text-center mt-4">
+        <button class="btn btn-light" @click="$router.back()">← Back</button>
+      </div>
     </div>
   </section>
 </template>
@@ -99,12 +106,12 @@ export default {
 }
 
 .approved {
-  color: #28a745; /* πράσινο */
+  color: #28a745;
   font-weight: bold;
 }
 
 .pending {
-  color: #ffc107; /* πορτοκαλί */
+  color: #ffc107;
   font-weight: bold;
 }
 
@@ -127,5 +134,23 @@ export default {
 .py-5 {
   padding-top: 3rem;
   padding-bottom: 3rem;
+}
+
+.btn {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 0.3rem;
+  font-size: 1rem;
+}
+
+.btn-light {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  color: #212529;
+  transition: background-color 0.2s ease;
+}
+
+.btn-light:hover {
+  background-color: #e2e6ea;
 }
 </style>

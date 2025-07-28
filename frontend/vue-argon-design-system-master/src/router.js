@@ -12,21 +12,34 @@ import ListProperties from './views/ListProperties.vue';
 import AddProperty from "@/views/AddProperty.vue";
 import Rent from './views/Rent.vue';
 import ListRentals from "@/views/ListRentals.vue";
+import Home from './views/Home.vue';
+import About from './views/About.vue';
 
 Vue.use(Router);
 
 export default new Router({
   linkExactActiveClass: "active",
   routes: [
+    // {
+    //   path: "/",
+    //   name: "components",
+    //   components: {
+    //     header: AppHeader,
+    //     default: Components,
+    //     footer: AppFooter
+    //   }
+    // },
+
     {
-      path: "/",
-      name: "components",
-      components: {
-        header: AppHeader,
-        // default: Components,
-        // footer: AppFooter
-      }
+        path: "/",
+        name: "home",
+        components: {
+          header: AppHeader,
+          default: Home,
+          footer: AppFooter
+        }
     },
+
     {
       path: '/rentals',
       name: 'ListRentals',
@@ -96,17 +109,35 @@ export default new Router({
 
 
 
-  //   {
-  //     path: "/profile",
-  //     name: "profile",
-  //     components: {
-  //       header: AppHeader,
-  //       default: Profile,
-  //       footer: AppFooter
-  //     }
-  //   }
-  // ],
-  // scrollBehavior: to => {
+    {
+      path: "/profile",
+      name: "profile",
+      components: {
+        header: AppHeader,
+        default: Profile,
+        footer: AppFooter
+      },
+
+      meta: {
+        showInMenu: true,
+        label: "Προφίλ",
+        align: "right"
+      }
+    },
+
+
+    {
+      path: "/about",
+      name: "about",
+      components: {
+        header: AppHeader,
+        default: About,
+        footer: AppFooter
+      }
+    },
+
+
+    // scrollBehavior: to => {
   //   if (to.hash) {
   //     return { selector: to.hash };
   //   } else {
