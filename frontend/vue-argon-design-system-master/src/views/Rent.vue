@@ -50,7 +50,8 @@
 
       <!-- Λίστα Ενοικιάσεων -->
       <h4 class="mb-3">📋 Existing Rents</h4>
-      <div v-if="rents.length === 0" class="text-muted">No rents found.</div>
+      <div v-if="loadingRents">Loading rents...</div>
+      <div v-else-if="rents.length === 0" class="text-muted">No rents found.</div>
       <ul class="list-group">
         <li
             v-for="rent in rents"
@@ -73,7 +74,7 @@
 import axios from "axios";
 
 export default {
-  name: "Rent",
+  name: "RentManagement",
   data() {
     return {
       today: new Date().toISOString().split("T")[0],
@@ -85,7 +86,8 @@ export default {
       },
       rents: [],
       properties: [],
-      users: []
+      users: [],
+      loadingRents: false
     };
   },
   methods: {
@@ -94,38 +96,43 @@ export default {
         const res = await axios.get("http://localhost:8080/api/properties/all");
         this.properties = res.data;
       } catch (error) {
-        console.error("Error fetching properties:", error);
+        console.error("❌ Error fetching properties:", error);
       }
     },
     async fetchUsers() {
       try {
-        const res = await axios.get("http://localhost:8080/api/users/all");
+        const res = await axios.get("http://localhost:8080/api/users");
         this.users = res.data;
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("❌ Error fetching users:", error);
       }
     },
     async fetchRents() {
+      this.loadingRents = true;
       try {
         const res = await axios.get("http://localhost:8080/api/rentals/all");
         this.rents = res.data;
       } catch (error) {
-        console.error("Error fetching rents:", error);
+        console.error("❌ Error fetching rents:", error);
+      } finally {
+        this.loadingRents = false;
       }
     },
     async createRent() {
       try {
         const newRent = {
-          propertyId: this.form.propertyId,
-          userId: this.form.userId,
+          property: { id: this.form.propertyId },
+          user: { id: this.form.userId },
           startDate: this.form.startDate,
           endDate: this.form.endDate
         };
-        const res = await axios.post("http://localhost:8080/api/rentals", newRent);
+
+        const res = await axios.post("http://localhost:8080/api/rentals/add", newRent);
         this.rents.push(res.data);
         this.resetForm();
       } catch (error) {
-        console.error("Error creating rent:", error);
+        console.error("❌ Error creating rent:", error);
+        alert("Failed to create rent. Please try again.");
       }
     },
     resetForm() {
@@ -138,7 +145,7 @@ export default {
     },
     formatUserName(user) {
       if (user.firstName && user.lastName)
-        return user.firstName + " " + user.lastName;
+        return `${user.firstName} ${user.lastName}`;
       if (user.username) return user.username;
       if (user.name) return user.name;
       return "Unknown User";

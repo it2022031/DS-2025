@@ -19,11 +19,11 @@ public class Rental {
 
     private Boolean status; // true = approved, false = pending/rejected
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "property_id")
     private Property property;
 

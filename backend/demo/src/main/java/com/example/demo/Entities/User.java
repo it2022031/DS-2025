@@ -1,6 +1,11 @@
 package com.example.demo.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -17,6 +22,15 @@ public class User {
     private String passportNumber;
     private String afm;  // Greek Tax Identification Number
     private String name;
+
+    // 1‑Ν: User → Property
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "user-properties")
+    private List<Property> properties = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Rental> rentals = new ArrayList<>();
 
     public User() {}
 
@@ -122,5 +136,21 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public List<Rental> getRentals() {
+        return rentals;
+    }
+
+    public void setRentals(List<Rental> rentals) {
+        this.rentals = rentals;
+    }
+
+    public List<Property> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(List<Property> properties) {
+        this.properties = properties;
     }
 }

@@ -12,15 +12,17 @@
           <div class="rental-info">
             <h3>Rental ID: {{ rental.id }}</h3>
             <p><strong>Property ID:</strong> {{ rental.propertyId }}</p>
+            <p><strong>User ID:</strong> {{ rental.userId }}</p>
             <p><strong>Start Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>
-            <p><strong>Payment:</strong> €{{ rental.payment.toFixed(2) }}</p>
+            <p><strong>Payment:</strong> {{ formatPayment(rental.payment) }}</p>
             <p><strong>Status:</strong>
               <span :class="{'approved': rental.status, 'pending': !rental.status}">
-                {{ rental.status ? 'Approved' : 'Pending' }}
-              </span>
+      {{ rental.status ? 'Approved' : 'Pending' }}
+    </span>
             </p>
           </div>
+
         </li>
       </ul>
 
@@ -48,6 +50,10 @@ export default {
       if (!dateStr) return 'N/A';
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
+    },
+    formatPayment(payment) {
+      if (payment == null) return 'N/A';
+      return `€${payment.toFixed(2)}`;
     }
   },
   async mounted() {

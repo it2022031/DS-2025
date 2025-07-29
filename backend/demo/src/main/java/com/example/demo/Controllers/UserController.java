@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -46,5 +47,10 @@ public class UserController {
         User saved = userService.addUserAnalytical(newUser);
         return ResponseEntity.ok(saved);
     }
+    @GetMapping("/users/relations")
+    public ResponseEntity<List<Map<String,Object>>> getUserRelations() {
+        return ResponseEntity.ok(userService.getUserRelations());
+    }
+
 }
 
