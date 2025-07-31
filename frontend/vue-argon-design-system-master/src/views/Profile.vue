@@ -51,6 +51,17 @@
         <button @click.prevent="logout" class="btn btn-link btn-block text-danger">
           Αποσύνδεση
         </button>
+
+        <!-- ✅ Αίτημα για ρόλο OWNER -->
+        <div v-if="user.role === 'user' && !requestSent" class="mt-3 text-center">
+          <button @click="requestOwnerRole" class="btn btn-outline-primary">
+            🔄 Ζήτησε να γίνεις Ιδιοκτήτης
+          </button>
+        </div>
+
+        <div v-if="requestSent" class="text-success mt-2 text-center">
+          ✅ Το αίτημά σου στάλθηκε στον διαχειριστή.
+        </div>
       </form>
     </div>
   </div>
@@ -64,16 +75,19 @@ export default {
   data() {
     return {
       user: {
+        id: null,
         name: "",
         email: "",
         phone: "",
         profession: "",
         location: "",
-        avatar: ""
+        avatar: "",
+        role: ""
       },
       showDropdown: false,
+      requestSent: false,
       defaultAvatar:
-          "https://cdn-icons-png.flaticon.com/512/147/147144.png" // αν δεν υπάρχει avatar
+          "https://cdn-icons-png.flaticon.com/512/147/147144.png"
     };
   },
   methods: {
@@ -81,24 +95,24 @@ export default {
       this.showDropdown = !this.showDropdown;
     },
     closeOnOutsideClick(event) {
-      if (
-          !this.$el.contains(event.target) &&
-          this.showDropdown
-      ) {
+      if (!this.$el.contains(event.target) && this.showDropdown) {
         this.showDropdown = false;
       }
     },
     logout() {
       localStorage.removeItem("token");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("username");
       this.$router.push("/login");
     },
     fetchUser() {
-      // Παίρνουμε το token από localStorage και κάνουμε request για τα στοιχεία του χρήστη
       const token = localStorage.getItem("token");
       if (!token) {
         this.$router.push("/login");
         return;
       }
+
       axios
           .get("http://localhost:8080/api/users/me", {
             headers: { Authorization: `Bearer ${token}` }
@@ -108,6 +122,7 @@ export default {
           })
           .catch(err => {
             console.error("Error fetching user data:", err);
+            this.$router.push("/login");
           });
     },
     saveProfile() {
@@ -117,7 +132,7 @@ export default {
         this.$router.push("/login");
         return;
       }
-      // Αποθήκευση αλλαγών προφίλ
+
       axios
           .put("http://localhost:8080/api/users/me", this.user, {
             headers: { Authorization: `Bearer ${token}` }
@@ -138,15 +153,36 @@ export default {
       const file = event.target.files[0];
       if (!file) return;
 
-      // Απλό preview της εικόνας
       const reader = new FileReader();
       reader.onload = e => {
         this.user.avatar = e.target.result;
       };
       reader.readAsDataURL(file);
 
-      // Εδώ θα έστελνες την εικόνα στο server, πχ με FormData και axios.post
-      // πχ: this.uploadAvatar(file)
+      // TODO: Αν θες να στείλεις το αρχείο στον server, βάλε axios.post με FormData εδώ
+    },
+    async requestOwnerRole() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        alert("Δεν είστε συνδεδεμένοι.");
+        this.$router.push("/login");
+        return;
+      }
+
+      try {
+        await axios.post("http://localhost:8080/api/role-requests", {
+          userId: this.user.id,
+          requestedRole: "owner"
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        this.requestSent = true;
+      } catch (error) {
+        console.error("❌ Error requesting role change:", error);
+        alert("Σφάλμα κατά την αποστολή αιτήματος.");
+      }
     }
   },
   mounted() {
@@ -173,7 +209,7 @@ export default {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 15px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-width: 350px;
   animation: fadeIn 0.2s ease-in-out;
   text-align: left;

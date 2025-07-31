@@ -14,6 +14,8 @@ import Rent from './views/Rent.vue';
 import ListRentals from "@/views/ListRentals.vue";
 import Home from './views/Home.vue';
 import About from './views/About.vue';
+import RoleRequests from './views/RoleRequests.vue';
+
 
 Vue.use(Router);
 
@@ -107,6 +109,19 @@ export default new Router({
       }
     },
 
+    {
+      path: "/admin/role-requests",
+      name: "role-requests",
+      components: {
+        header: AppHeader,
+        default: RoleRequests,
+        footer: AppFooter
+      },
+      meta: {
+        requiresAuth: true,
+        roles: ["admin"]
+      }
+    },
 
 
     {

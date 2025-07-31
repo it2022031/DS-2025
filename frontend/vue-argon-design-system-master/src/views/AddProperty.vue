@@ -109,8 +109,26 @@ export default {
       success: false
     };
   },
+  mounted() {
+    const role = localStorage.getItem("userRole");
+    if (role !== "owner" && role !== "admin") {
+      alert("Πρέπει να είστε ιδιοκτήτης για να προσθέσετε αγγελία.");
+      this.$router.push("/");
+    }
+  },
   methods: {
     async submitForm() {
+      const userRole = localStorage.getItem("userRole");
+      const token = localStorage.getItem("token");
+
+      if (!userRole || !token) {
+        alert("Πρέπει να είστε συνδεδεμένοι για να προσθέσετε ακίνητο.");
+        setTimeout(() => {
+          this.$router.push("/login");
+        }, 1500);
+        return;
+      }
+
       if (
           !this.name.trim() ||
           !this.description.trim() ||
@@ -133,6 +151,10 @@ export default {
           street: this.street,
           postalCode: this.postalCode,
           squareMeters: this.squareMeters
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
 
         this.success = true;
@@ -150,10 +172,11 @@ export default {
         console.error("Error adding property:", error);
         alert("An error occurred while adding the property.");
       }
-    }
+    },
   }
 };
 </script>
+
 
 <style scoped>
 input {

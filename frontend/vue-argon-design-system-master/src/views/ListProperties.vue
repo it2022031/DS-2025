@@ -11,6 +11,7 @@
           <img :src="property.image" :alt="property.name" class="property-image" />
           <div class="property-info">
             <h3>{{ property.name }}</h3>
+            <p><strong>Owner:</strong> {{ property.ownerName }}</p>
             <p>{{ property.description }}</p>
             <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
             <p><strong>Status:</strong> {{ property.status }}</p>
