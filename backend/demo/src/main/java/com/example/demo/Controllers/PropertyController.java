@@ -22,19 +22,26 @@ public class PropertyController {
         return propertyService.findAll();
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Property> addProperty(@RequestBody Property dto) {
-        Property newProperty = new Property();
-        newProperty.setName(dto.getName());
-        newProperty.setDescription(dto.getDescription());
-        newProperty.setCountry(dto.getCountry());
-        newProperty.setCity(dto.getCity());
-        newProperty.setStreet(dto.getStreet());
-        newProperty.setPostalCode(dto.getPostalCode());
-        newProperty.setSquareMeters(dto.getSquareMeters());
-        newProperty.setStatus(dto.getStatus());
+//    @PostMapping("/add")
+//    public ResponseEntity<Property> addProperty(@RequestBody Property dto) {
+//        Property newProperty = new Property();
+//        newProperty.setName(dto.getName());
+//        newProperty.setDescription(dto.getDescription());
+//        newProperty.setCountry(dto.getCountry());
+//        newProperty.setCity(dto.getCity());
+//        newProperty.setStreet(dto.getStreet());
+//        newProperty.setPostalCode(dto.getPostalCode());
+//        newProperty.setSquareMeters(dto.getSquareMeters());
+//        newProperty.setStatus(dto.getStatus());
+//
+//        Property saved = propertyService.addProperty(newProperty);
+//        return ResponseEntity.ok(saved);
+//    }
 
-        Property saved = propertyService.addProperty(newProperty);
+    @PostMapping("/add")
+    public ResponseEntity<?> addProperty(@RequestBody Property property,
+                                         @RequestParam Long ownerId) {
+        Property saved = propertyService.createWithOwner(ownerId, property);
         return ResponseEntity.ok(saved);
     }
 }

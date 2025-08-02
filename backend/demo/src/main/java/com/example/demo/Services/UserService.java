@@ -3,24 +3,28 @@ package com.example.demo.Services;
 import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
+import com.example.demo.Repositories.PropertyRepository;
+import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PropertyRepository propertyRepository;
+    private final RentalRepository rentalRepository;
 
-
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,
+                       PropertyRepository propertyRepository,
+                       RentalRepository rentalRepository) {
         this.userRepository = userRepository;
+        this.propertyRepository = propertyRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     public List<User> findAll() {
@@ -96,18 +100,37 @@ public class UserService {
         return result;
     }
 
-    // Ξεχωριστά: rentals του χρήστη με βάση το userId
-    public List<Rental> getRentalsForUserId(Long userId) {
-        // αν θέλεις να εξακριβώσεις ότι υπάρχει user
-        userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
-        return userRepository.findRentalsByUserId(userId);
-    }
+//    // Ξεχωριστά: rentals του χρήστη με βάση το userId
+//    public List<Rental> getRentalsForUserId(Long userId) {
+//        // αν θέλεις να εξακριβώσεις ότι υπάρχει user
+//        userRepository.findById(userId)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+//        return userRepository.findRentalsByUserId(userId);
+//    }
 
     // Ξεχωριστά: properties του χρήστη με βάση το userId
+//    public List<Property> getPropertiesForUserId(Long userId) {
+//        userRepository.findById(userId)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+//        return userRepository.findPropertiesByOwnerId(userId);
+//    }
     public List<Property> getPropertiesForUserId(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
-        return userRepository.findPropertiesByOwnerId(userId);
+        return propertyRepository.findByOwnerId(userId);
     }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    // Υπάρχει ήδη, και πρέπει να ελέγχει ότι ο user υπάρχει:
+    public List<Rental> getRentalsForUserId(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+        return rentalRepository.findRentalsByUserId(userId); // ή όποια μέθοδο έχεις για να φέρνεις τα rentals
+    }
+//    public Optional<User> findById(Long id) {
+//        return userRepository.findById(id);
+//    }
 }

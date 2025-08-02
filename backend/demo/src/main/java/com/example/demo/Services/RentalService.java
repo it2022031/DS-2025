@@ -1,10 +1,17 @@
 package com.example.demo.Services;
 
+import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
+import com.example.demo.Entities.User;
+import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
+import com.example.demo.Repositories.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +21,15 @@ import java.util.Map;
 public class RentalService {
 
     private final RentalRepository rentalRepository;
+    private final UserRepository userRepository;
+    private final PropertyRepository propertyRepository;
 
-    public RentalService(RentalRepository rentalRepository) {
+    public RentalService(RentalRepository rentalRepository,
+                         UserRepository userRepository,
+                         PropertyRepository propertyRepository) {
         this.rentalRepository = rentalRepository;
+        this.userRepository = userRepository;
+        this.propertyRepository = propertyRepository;
     }
 
     public List<Rental> findAll() {
@@ -51,6 +64,40 @@ public class RentalService {
         return rentals;
 
     }
+    @Transactional
+    public Rental createRental(Long propertyId, Long userId,
+                               LocalDate startDate, LocalDate endDate,
+                               Double paymentAmount) {
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start and end dates are required");
+        }
+        if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
+            throw new IllegalArgumentException("End date must be after start date");
+        }
+        if (paymentAmount == null || paymentAmount < 0) {
+            throw new IllegalArgumentException("Payment amount must be non-negative");
+        }
 
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new IllegalArgumentException("Property not found with id " + propertyId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+
+        // Έλεγχος για overlap
+        List<Rental> overlapping = rentalRepository.findActiveOverlapping(propertyId, startDate, endDate);
+        if (!overlapping.isEmpty()) {
+            throw new IllegalStateException("Property is already rented in the given period");
+        }
+
+        Rental rental = new Rental();
+        rental.setProperty(property);
+        rental.setUser(user);
+        rental.setStartDate(startDate);
+        rental.setEndDate(endDate);
+        rental.setPaymentAmount(paymentAmount);
+        rental.setStatus(true); // ενεργό
+
+        return rentalRepository.save(rental);
+    }
     // Προαιρετικά μπορείς να βάλεις κι άλλες μεθόδους, πχ update, delete κτλ
 }
