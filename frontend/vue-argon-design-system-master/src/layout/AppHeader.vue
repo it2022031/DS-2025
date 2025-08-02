@@ -42,10 +42,10 @@
 
       <!-- Δεξιό μενού -->
       <ul class="navbar-nav align-items-lg-center ml-lg-auto">
-        <li class="nav-item">
+        <li v-if="!isLoggedIn" class="nav-item">
           <router-link to="/login" class="btn btn-outline-light btn-sm mr-2">Login</router-link>
         </li>
-        <li class="nav-item">
+        <li v-if="!isLoggedIn" class="nav-item">
           <router-link to="/register" class="btn btn-light btn-sm">Register</router-link>
         </li>
         <li class="nav-item">
@@ -54,7 +54,7 @@
       </ul>
 
       <!-- Εικονίδιο χρήστη + dropdown -->
-      <div class="d-flex align-items-center pl-3 position-relative" style="cursor: pointer;" @click.stop="toggleDropdown">
+      <div v-if="isLoggedIn" class="d-flex align-items-center pl-3 position-relative" style="cursor: pointer;" @click.stop="toggleDropdown">
         <div class="rounded-circle bg-white d-flex justify-content-center align-items-center"
              style="width: 40px; height: 40px;">
           <i class="ni ni-single-02 text-dark" style="font-size: 22px;"></i>
@@ -75,6 +75,7 @@
 import BaseNav from "@/components/BaseNav";
 import BaseDropdown from "@/components/BaseDropdown";
 import CloseButton from "@/components/CloseButton";
+import { eventBus } from '@/eventBus';
 
 export default {
   name: "AppHeader",
@@ -87,9 +88,16 @@ export default {
     return {
       showDropdown: false,
       userRole: localStorage.getItem('userRole') || null,
+      isLoggedIn: !!localStorage.getItem('token'),
     };
   },
-
+  created() {
+    // Ακούμε το event και ενημερώνουμε το isLoggedIn
+    eventBus.$on('login-status-changed', (status) => {
+      this.isLoggedIn = status;
+      this.userRole = localStorage.getItem('userRole');
+    });
+  },
   methods: {
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;
@@ -102,6 +110,9 @@ export default {
     },
     logout() {
       localStorage.removeItem("token");
+      localStorage.removeItem("userRole");
+      eventBus.$emit('login-status-changed', false);
+      this.isLoggedIn = false;
       this.$router.push("/login");
     }
   },
@@ -110,6 +121,7 @@ export default {
   },
   beforeDestroy() {
     document.removeEventListener("click", this.closeOnOutsideClick);
+    eventBus.$off('login-status-changed');
   },
   watch: {
     $route() {

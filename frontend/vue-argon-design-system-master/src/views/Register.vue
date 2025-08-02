@@ -157,6 +157,18 @@ export default {
       loading: false
     };
   },
+  created() {
+    const token = localStorage.getItem('token');
+    const expiry = localStorage.getItem('token_expiry');
+
+    if (token && expiry && new Date().getTime() < Number(expiry)) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      localStorage.clear();
+      // Αν θέλεις εδώ μπορείς να κάνεις redirect στο login π.χ.
+      // this.$router.push('/login');
+    }
+  },
   methods: {
     onInput(field) {
       this.touched[field] = true;
@@ -202,7 +214,7 @@ export default {
             this.errors[field] = 'Tax Number must contain only digits.';
           }
           break;
-          // idNumber is optional? If required, add similar
+          // idNumber optional, οπότε δεν κάνουμε έλεγχο
       }
     },
     validateAllFields() {
@@ -246,9 +258,11 @@ export default {
           throw new Error("Login succeeded but token missing.");
         }
 
-        // 3. Store token & set header
+        // 3. Store token, expiry & set header
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         localStorage.setItem('token', token);
+        const expiry = new Date().getTime() + 3600 * 1000; // 1 ώρα από τώρα
+        localStorage.setItem('token_expiry', expiry.toString());
 
         // 4. Fetch profile
         const profile = await axios.get(`${API_BASE}/api/users/me`);
@@ -264,7 +278,6 @@ export default {
         this.success = false;
         console.error(err);
         if (err.response && err.response.data) {
-          // backend στέλνει string ή λεπτομέρειες
           if (typeof err.response.data === 'string') {
             this.errorMessage = err.response.data;
           } else if (err.response.data.error) {
@@ -284,6 +297,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 input {

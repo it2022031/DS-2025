@@ -42,6 +42,11 @@
         </div>
       </div>
       <form @submit.prevent="saveProfile">
+        <!-- Οπτική επιβεβαίωση αποθήκευσης -->
+        <div v-if="saveSuccess" class="text-success text-center mb-3">
+          ✅ Το προφίλ ενημερώθηκε με επιτυχία!
+        </div>
+
         <div class="form-group">
           <label>Όνομα</label>
           <input type="text" v-model="user.name" class="form-control" />
@@ -67,9 +72,35 @@
           <input type="text" v-model="user.location" class="form-control" />
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block mt-3">
-          Αποθήκευση
+        <div class="form-group">
+          <label>Επίθετο</label>
+          <input type="text" v-model="user.surname" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" v-model="user.username" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Αριθμός Διαβατηρίου</label>
+          <input type="text" v-model="user.idNumber" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>ΑΦΜ</label>
+          <input type="text" v-model="user.taxNumber" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-3" :disabled="saving">
+          <span v-if="saving">Αποθήκευση...</span>
+          <span v-else>Αποθήκευση</span>
         </button>
+
+        <button class="btn btn-secondary btn-block mt-2" @click.prevent="resetProfile" :disabled="saving">
+          Ακύρωση αλλαγών
+        </button>
+
         <hr />
         <button @click.prevent="logout" class="btn btn-link btn-block text-danger">
           Αποσύνδεση
@@ -90,6 +121,7 @@
   </div>
 </template>
 
+
 <script>
 import axios from "axios";
 
@@ -100,13 +132,20 @@ export default {
       user: {
         id: null,
         name: "",
+        surname: "",
+        username: "",
         email: "",
         phone: "",
         profession: "",
         location: "",
+        idNumber: "",  // Passport Number
+        taxNumber: "", // ΑΦΜ
         avatar: "",
-        role: ""
       },
+      originalUser: {},       // ✅ κρατάει backup για "Ακύρωση"
+      saveSuccess: false,     // ✅ δείχνει μήνυμα επιτυχίας
+      saving: false,           // ✅ δείχνει loading κατάσταση
+
       showDropdown: false,
       requestSent: false,
       defaultAvatar:
@@ -128,6 +167,7 @@ export default {
     },
     logout() {
       localStorage.removeItem("token");
+      localStorage.removeItem("token_expiry");
       localStorage.removeItem("userRole");
       localStorage.removeItem("userId");
       localStorage.removeItem("username");
@@ -141,11 +181,25 @@ export default {
       }
 
       axios
-          .get("http://localhost:8080/api/users/me", {
+          .get("http://localhost:8080/api/auth/me", {
             headers: { Authorization: `Bearer ${token}` }
           })
           .then(res => {
-            this.user = res.data;
+            const data = res.data;
+            this.user.id = data.id;
+            this.user.username = data.username;
+            this.user.email = data.email;
+            this.user.name = data.firstName || '';    // firstName από backend -> name στο frontend
+            this.user.surname = data.lastName || '';  // lastName από backend -> surname στο frontend
+            this.user.role = data.role || '';
+
+            this.user.phone = data.phone || '';
+            this.user.profession = data.profession || '';
+            this.user.location = data.location || '';
+            this.user.idNumber = data.passportNumber || '';
+            this.user.taxNumber = data.afm || '';
+
+            this.originalUser = { ...this.user }; // ✅ κρατάει backup για "Ακύρωση αλλαγών"
           })
           .catch(err => {
             console.error("Error fetching user data:", err);
@@ -200,20 +254,30 @@ export default {
         return;
       }
 
+      this.saving = true; // 🔄 δείχνει loading
 
       axios
           .put("http://localhost:8080/api/users/me", this.user, {
             headers: { Authorization: `Bearer ${token}` }
           })
           .then(() => {
-            alert("Το προφίλ ενημερώθηκε!");
+            this.saveSuccess = true; // ✅ μήνυμα επιτυχίας
+            this.originalUser = { ...this.user }; // 🔁 ανανέωση backup
+            setTimeout(() => this.saveSuccess = false, 3000); // ⏱️ κρύψε μετά από 3 δευτ
             this.showDropdown = false;
           })
           .catch(err => {
             console.error("Error updating profile:", err);
             alert("Σφάλμα κατά την ενημέρωση.");
+          })
+          .finally(() => {
+            this.saving = false; // ✅ stop loading
           });
     },
+    resetProfile() {
+      this.user = { ...this.originalUser };
+    },
+
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
@@ -227,7 +291,22 @@ export default {
       };
       reader.readAsDataURL(file);
 
-      // TODO: Αν θες να στείλεις το αρχείο στον server, βάλε axios.post με FormData εδώ
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      axios.post('http://localhost:8080/api/users/me/avatar', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then(() => {
+        alert('Avatar ενημερώθηκε!');
+      }).catch(() => {
+        alert('Σφάλμα κατά την ενημέρωση του avatar.');
+      });
     },
     async requestOwnerRole() {
       const token = localStorage.getItem("token");
@@ -254,15 +333,25 @@ export default {
     }
   },
   mounted() {
+    const token = localStorage.getItem("token");
+    const expiry = localStorage.getItem("token_expiry"); // πρέπει να αποθηκεύεις πότε λήγει το token
+
+    if (!token || !expiry || new Date().getTime() > Number(expiry)) {
+      localStorage.clear();
+      this.$router.push("/login");
+      return;
+    }
+
     this.fetchUser();
     this.fetchUserProperties();
-    document.addEventListener("click", this.closeOnOutsideClick);
+    document.addEventListener("mousedown", this.closeOnOutsideClick);
   },
-  beforeDestroy() {
-    document.removeEventListener("click", this.closeOnOutsideClick);
+  beforeUnmount() {
+    document.removeEventListener("mousedown", this.closeOnOutsideClick);
   }
 };
 </script>
+
 
 <style scoped>
 .profile-name {

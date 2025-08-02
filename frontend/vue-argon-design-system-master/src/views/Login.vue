@@ -37,9 +37,9 @@
                 </label>
               </div>
 
-              <div class="text-center">
+              <div class="text-center" v-if="!isLoggedIn">
                 <base-button type="primary" class="my-4" native-type="submit" :disabled="loading">
-                  {{ loading ? 'Signing in...' : 'Sign In' }}
+                  {{ loading ? 'Signing in...' : 'Login' }}
                 </base-button>
               </div>
 
@@ -51,12 +51,31 @@
           </card>
 
           <div class="row mt-3">
-            <div class="col-6">
-              <a href="#" class="text-light"><small>Forgot password?</small></a>
+            <!--            <div class="col-6">-->
+            <!--              <a href="#" class="text-light"><small>Forgot password?</small></a>-->
+            <!--            </div>-->
+            <!--            <div class="col-6 text-right">-->
+            <!--              <a href="#" class="text-light"><small>Create new account</small></a>-->
+            <!--            </div>-->
+            <div class="row mt-3">
+              <!-- Αν δεν είσαι logged in, δείξε login/register -->
+              <template v-if="!isLoggedIn">
+                <div class="col-6">
+                  <a href="#" class="text-light"><small>Forgot password?</small></a>
+                </div>
+                <div class="col-6 text-right">
+                  <a href="#" class="text-light"><small>Create new account</small></a>
+                </div>
+              </template>
+
+              <!-- Αν είσαι logged in, δείξε logout κουμπί -->
+              <template v-else>
+                <div class="col-12 text-center">
+                  <button class="btn btn-danger" @click="logout">Logout</button>
+                </div>
+              </template>
             </div>
-            <div class="col-6 text-right">
-              <a href="#" class="text-light"><small>Create new account</small></a>
-            </div>
+
           </div>
         </div>
       </div>
@@ -64,8 +83,10 @@
   </section>
 </template>
 
+
 <script>
 import axios from 'axios';
+import { eventBus } from '@/eventBus';
 
 export default {
   name: 'SignInForm',
@@ -76,12 +97,25 @@ export default {
       rememberMe: false,
       loading: false,
       error: null,
+      isLoggedIn: false,  // Προσθήκη
     };
   },
   created() {
     const token = localStorage.getItem('token');
-    if (token) {
+    const expiry = localStorage.getItem('token_expiry');
+
+    if (token && expiry && new Date().getTime() < Number(expiry)) {
+      // Αν το token είναι έγκυρο, βάζουμε το header
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      this.isLoggedIn = true;
+      // Μπορείς εδώ να κάνεις redirect στο dashboard αν θέλεις
+      // this.$router.push('/');
+    } else {
+      // Αν το token λείπει ή έχει λήξει, καθαρίζουμε το localStorage
+      localStorage.clear();
+      this.isLoggedIn = false;
+      // Αν θέλεις, κάνε redirect στο login (προαιρετικό εδώ)
+      // this.$router.push('/login');
     }
   },
   methods: {
@@ -100,6 +134,7 @@ export default {
         });
 
         const token = loginResp.data.token;
+
         if (!token) {
           throw new Error("Token missing from response");
         }
@@ -108,8 +143,12 @@ export default {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         localStorage.setItem("token", token);
 
+        // Αποθηκεύουμε εδώ το expiry **μόνο όταν κάνουμε login**
+        const expiry = new Date().getTime() + 3600 * 1000; // 1 ώρα από τώρα
+        localStorage.setItem("token_expiry", expiry.toString());
+
         // fetch profile
-        const profileResp = await axios.get('http://localhost:8080/api/users/me');
+        const profileResp = await axios.get('http://localhost:8080/api/auth/me');
         const user = profileResp.data;
 
         // persist user info
@@ -117,7 +156,9 @@ export default {
         localStorage.setItem("userRole", user.role);
         localStorage.setItem("userId", user.id);
 
+        this.isLoggedIn = true; // <-- Εδώ η προσθήκη
         alert(`Welcome, ${localStorage.getItem("username")}!`);
+        eventBus.$emit('login-status-changed', true);
         this.$router.push("/");
 
       } catch (err) {
@@ -138,6 +179,14 @@ export default {
       } finally {
         this.loading = false;
       }
+
+    },
+    logout() {
+      localStorage.clear();
+      axios.defaults.headers.common['Authorization'] = null;
+      this.isLoggedIn = false;
+      eventBus.$emit('login-status-changed', false);  // <--- προσθήκη εδώ
+      this.$router.push('/login');
     }
   }
 };
