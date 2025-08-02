@@ -3,61 +3,22 @@
     <div class="container">
       <h2 class="mb-5 text-center">📝 Rent Management</h2>
 
+      <!-- Φόρμα δημιουργίας ενοικίασης -->
       <form @submit.prevent="createRent" class="mb-5">
         <div class="row g-4">
-          <div class="col-md-6">
+          <div class="col-12">
             <label class="form-label">Select Property</label>
             <v-select
-                :options="properties"
-                label="name"
-                :reduce="property => property.id"
                 v-model="form.propertyId"
+                :options="filteredProperties"
+                :filterable="true"
+                label="name"
+                :reduce="p => p.id"
                 placeholder="-- Choose Property --"
-                clearable
+                class="form-select"
+                required
             />
           </div>
-
-          <div class="col-md-6 position-relative">
-            <label class="form-label">Άτομα</label>
-            <input
-                type="text"
-                readonly
-                class="form-control"
-                :value="totalPeopleDisplay"
-                @click="togglePeopleDropdown"
-            />
-            <div v-if="showPeopleDropdown" class="people-dropdown p-3 border bg-white rounded shadow">
-              <div class="mb-3">
-                <label>Ενήλικες</label>
-                <div class="input-group">
-                  <button type="button" class="btn btn-outline-secondary" @click="decrement('adults')">-</button>
-                  <input
-                      type="number"
-                      min="0"
-                      class="form-control text-center"
-                      v-model.number="form.adults"
-                      @input="validateNumber('adults')"
-                  />
-                  <button type="button" class="btn btn-outline-secondary" @click="increment('adults')">+</button>
-                </div>
-              </div>
-              <div>
-                <label>Παιδιά</label>
-                <div class="input-group">
-                  <button type="button" class="btn btn-outline-secondary" @click="decrement('children')">-</button>
-                  <input
-                      type="number"
-                      min="0"
-                      class="form-control text-center"
-                      v-model.number="form.children"
-                      @input="validateNumber('children')"
-                  />
-                  <button type="button" class="btn btn-outline-secondary" @click="increment('children')">+</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div class="col-md-6">
             <label class="form-label">Start Date</label>
             <input
@@ -66,7 +27,6 @@
                 class="form-control"
                 :min="today"
                 required
-                @change="onStartDateChange"
             />
           </div>
           <div class="col-md-6">
@@ -75,9 +35,30 @@
                 type="date"
                 v-model="form.endDate"
                 class="form-control"
-                :min="minEndDate"
+                :min="form.startDate || today"
                 required
-                @change="onEndDateChange"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Min Price</label>
+            <input
+                type="number"
+                v-model.number="form.priceMin"
+                class="form-control"
+                min="0"
+                placeholder="Ελάχιστη Τιμή"
+                required
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Max Price</label>
+            <input
+                type="number"
+                v-model.number="form.priceMax"
+                class="form-control"
+                :min="form.priceMin"
+                placeholder="Μέγιστη Τιμή"
+                required
             />
           </div>
         </div>
@@ -86,27 +67,97 @@
         </div>
       </form>
 
-      <!-- Λίστα Ενοικιάσεων -->
-      <h4 class="mb-3">📋 Existing Rents</h4>
-      <div v-if="loadingRents">Loading rents...</div>
-      <div v-else-if="rents.length === 0" class="text-muted">No rents found.</div>
-      <ul class="list-group">
-        <li
-            v-for="rent in rents"
-            :key="rent.id"
-            class="list-group-item d-flex justify-content-between align-items-center"
-        >
-          <div>
-            <strong>{{ getUserName(rent.userId) }}</strong> rented
-            <strong>{{ getPropertyName(rent.propertyId) }}</strong><br />
-            <small>{{ formatDate(rent.startDate) }} ➜ {{ formatDate(rent.endDate) }}</small>
+      <!-- Λίστα Ενοικιάσεων μόνο για admin -->
+      <div v-if="isAdmin">
+        <h4 class="mb-3">📋 Existing Rents</h4>
+        <div v-if="loadingRents">Loading rents...</div>
+        <div v-else-if="rents.length === 0" class="text-muted">No rents found.</div>
+        <ul class="list-group">
+          <li
+              v-for="rent in rents"
+              :key="rent.id"
+              class="list-group-item d-flex justify-content-between align-items-start flex-column"
+          >
+            <div class="w-100 d-flex justify-content-between">
+              <div>
+                <strong>#{{ rent.id }}</strong>
+                <div><strong>Property:</strong> {{ getPropertyName(rent.propertyId) }}</div>
+                <div><strong>User:</strong> {{ getUserName(rent.userId) }}</div>
+                <div><strong>Dates:</strong> {{ rent.startDate }} ➜ {{ rent.endDate }}</div>
+                <div><strong>Price Range:</strong> {{ rent.priceMin }}€ - {{ rent.priceMax }}€</div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Λίστα Ενοικιάσεων του τρέχοντος χρήστη -->
+      <div v-else>
+        <h4 class="mb-3">📋 Your Rents</h4>
+        <div v-if="loadingRents">Loading rents...</div>
+        <div v-else-if="userRents.length === 0" class="text-muted">You have no rents.</div>
+        <ul class="list-group">
+          <li
+              v-for="rent in userRents"
+              :key="rent.id"
+              class="list-group-item d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <strong>#{{ rent.id }}</strong> {{ getPropertyName(rent.propertyId) }}<br />
+              <small>{{ rent.startDate }} ➜ {{ rent.endDate }}</small><br />
+              <small>{{ rent.priceMin }}€ - {{ rent.priceMax }}€</small>
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-2" @click="startEdit(rent)">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" @click="cancelRent(rent.id)">Cancel</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Modal Επεξεργασίας -->
+      <div v-if="editingRent" class="modal-backdrop">
+        <div class="modal-dialog">
+          <div class="modal-content p-4">
+            <h5>Edit Rent #{{ editingRent.id }}</h5>
+            <form @submit.prevent="updateRent">
+              <div class="mb-3">
+                <label>Start Date</label>
+                <input type="date" v-model="editForm.startDate" class="form-control" :min="today" required />
+              </div>
+              <div class="mb-3">
+                <label>End Date</label>
+                <input type="date" v-model="editForm.endDate" class="form-control" :min="editForm.startDate" required />
+              </div>
+              <div class="mb-3">
+                <label>Min Price</label>
+                <input
+                    type="number"
+                    v-model.number="editForm.priceMin"
+                    class="form-control"
+                    min="0"
+                    required
+                />
+              </div>
+              <div class="mb-3">
+                <label>Max Price</label>
+                <input
+                    type="number"
+                    v-model.number="editForm.priceMax"
+                    class="form-control"
+                    :min="editForm.priceMin"
+                    required
+                />
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary me-2" @click="editingRent = null">Close</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+              </div>
+            </form>
           </div>
-          <div class="d-flex align-items-center">
-            <span class="badge bg-primary me-3">{{ rent.id }}</span>
-            <span v-if="checkConflict(rent)" class="badge bg-danger">Conflict!</span>
-          </div>
-        </li>
-      </ul>
+        </div>
+      </div>
+
     </div>
   </section>
 </template>
@@ -121,243 +172,74 @@ export default {
   components: { vSelect },
   data() {
     return {
-      today: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0],
-      form: {
-        propertyId: "",
-        startDate: "",
-        endDate: "",
-        adults: 1,
-        children: 0,
-      },
-      showPeopleDropdown: false,
-      rents: [],
-      properties: [],
-      users: [],
-      loadingRents: false,
+      today: new Date().toISOString().split("T")[0],
+      form: { propertyId: "", startDate: "", endDate: "", priceMin: 0, priceMax: 0 },
+      editForm: { startDate: "", endDate: "", priceMin: 0, priceMax: 0 },
+      rents: [], properties: [], users: [], loadingRents: false,
+      editingRent: null
     };
   },
   computed: {
-    totalPeopleDisplay() {
-      const total = this.form.adults + this.form.children;
-      let text = `${total} άτομα`;
-      if (this.form.adults > 0) text += ` (${this.form.adults} ενήλικες`;
-      if (this.form.children > 0) text += `, ${this.form.children} παιδιά`;
-      if (this.form.adults > 0) text += ")";
-      return text;
-    },
-    // Ελάχιστη επιτρεπτή ημερομηνία για το End Date
-    minEndDate() {
-      return this.form.startDate || this.today;
-    },
+    userRole() { return localStorage.getItem('userRole'); },
+    isAdmin() { return this.userRole === 'admin'; },
+    userId() { return +localStorage.getItem('userId'); },
+    userRents() { return this.rents.filter(r => r.userId === this.userId); },
+    filteredProperties() { return this.properties; }
   },
   methods: {
-    togglePeopleDropdown() {
-      this.showPeopleDropdown = !this.showPeopleDropdown;
-    },
-    increment(type) {
-      this.form[type]++;
-    },
-    decrement(type) {
-      if (this.form[type] > 0) this.form[type]--;
-    },
-    validateNumber(type) {
-      if (this.form[type] < 0) this.form[type] = 0;
-    },
-    async fetchProperties() {
-      try {
-        const res = await axios.get("http://localhost:8080/api/properties/all");
-        this.properties = res.data;
-      } catch (error) {
-        console.error("❌ Error fetching properties:", error);
-      }
-    },
-    async fetchUsers() {
-      try {
-        const res = await axios.get("http://localhost:8080/api/users");
-        this.users = res.data;
-      } catch (error) {
-        console.error("❌ Error fetching users:", error);
-      }
-    },
+    async fetchProperties() { try { const res = await axios.get("http://localhost:8080/api/properties/all"); this.properties = res.data; } catch (e) { console.error(e); } },
+    async fetchUsers() { try { const res = await axios.get("http://localhost:8080/api/users"); this.users = res.data; } catch (e) { console.error(e); } },
     async fetchRents() {
       this.loadingRents = true;
-      try {
-        const res = await axios.get("http://localhost:8080/api/rentals/all");
-        this.rents = res.data;
-      } catch (error) {
-        console.error("❌ Error fetching rents:", error);
-      } finally {
-        this.loadingRents = false;
-      }
+      try { const res = await axios.get("http://localhost:8080/api/rentals/all"); this.rents = res.data; } catch (e) { console.error(e); } finally { this.loadingRents = false; }
     },
-    checkConflict(existingRent) {
-      if (
-          this.form.propertyId === "" ||
-          this.form.startDate === "" ||
-          this.form.endDate === ""
-      ) return false;
-
-      return (
-          existingRent.propertyId === this.form.propertyId &&
-          (
-              (this.form.startDate >= existingRent.startDate && this.form.startDate <= existingRent.endDate) ||
-              (this.form.endDate >= existingRent.startDate && this.form.endDate <= existingRent.endDate) ||
-              (this.form.startDate <= existingRent.startDate && this.form.endDate >= existingRent.endDate)
-          )
-      );
+    normalize(d) { return d.split('T')[0]; },
+    hasConflict(start, end, propId, excludeId=null) {
+      return this.rents.some(r => r.propertyId===propId && r.id!==excludeId && (
+          (start>=this.normalize(r.startDate) && start<=this.normalize(r.endDate)) ||
+          (end>=this.normalize(r.startDate) && end<=this.normalize(r.endDate)) ||
+          (start<=this.normalize(r.startDate) && end>=this.normalize(r.endDate))
+      ));
     },
     async createRent() {
-      const userRole = localStorage.getItem("userRole");
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-
-      if (!userRole || !token) {
-        alert("Πρέπει να είστε συνδεδεμένοι για να κάνετε ενοικίαση.");
-        setTimeout(() => {
-          this.$router.push("/login");
-        }, 1500);
-        return;
-      }
-
-      if (!["user", "owner", "admin"].includes(userRole)) {
-        alert("Δεν έχετε δικαίωμα να κάνετε ενοικίαση.");
-        return;
-      }
-
-      if (!this.form.startDate || !this.form.endDate) {
-        alert("Παρακαλώ συμπληρώστε και τις δύο ημερομηνίες.");
-        return;
-      }
-
-      if (this.form.endDate < this.form.startDate) {
-        alert("Η ημερομηνία λήξης δεν μπορεί να είναι πριν από την ημερομηνία έναρξης.");
-        return;
-      }
-
-      const conflict = this.rents.some(rent => {
-        return rent.propertyId === this.form.propertyId &&
-            (
-                (this.form.startDate >= rent.startDate && this.form.startDate <= rent.endDate) ||
-                (this.form.endDate >= rent.startDate && this.form.endDate <= rent.endDate) ||
-                (this.form.startDate <= rent.startDate && this.form.endDate >= rent.endDate)
-            );
-      });
-
-      if (conflict) {
-        alert("Το ακίνητο δεν είναι διαθέσιμο για τις επιλεγμένες ημερομηνίες.");
-        return;
-      }
-
+      if (this.hasConflict(this.form.startDate,this.form.endDate,this.form.propertyId)) { return alert('Conflict with existing rent!'); }
       try {
-        const newRent = {
-          property: { id: this.form.propertyId },
-          user: { id: userId },
-          startDate: this.form.startDate,
-          endDate: this.form.endDate,
-          adults: this.form.adults,
-          children: this.form.children,
-        };
-
-        const res = await axios.post("http://localhost:8080/api/rentals/add", newRent, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
+        const newRent = { property:{id:this.form.propertyId}, user:{id:this.userId}, ...this.form };
+        const res = await axios.post("http://localhost:8080/api/rentals/add", newRent);
         this.rents.push(res.data);
         this.resetForm();
-        alert("Η ενοικίαση καταχωρήθηκε επιτυχώς!");
-      } catch (error) {
-        console.error("❌ Error creating rent:", error);
-        alert("Αποτυχία κατά την καταχώρηση ενοικίασης. Προσπαθήστε ξανά.");
-      }
+      } catch (e) { console.error(e); alert('Failed to create rent.'); }
     },
-
-    resetForm() {
-      this.form = {
-        propertyId: "",
-        startDate: "",
-        endDate: "",
-        adults: 1,
-        children: 0,
-      };
-      this.showPeopleDropdown = false;
+    startEdit(rent) {
+      this.editingRent = rent;
+      this.editForm.startDate = this.normalize(rent.startDate);
+      this.editForm.endDate = this.normalize(rent.endDate);
+      this.editForm.priceMin = rent.priceMin;
+      this.editForm.priceMax = rent.priceMax;
     },
-
-    formatUserName(user) {
-      if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
-      if (user.username) return user.username;
-      if (user.name) return user.name;
-      return "Unknown User";
+    async updateRent() {
+      if (this.hasConflict(this.editForm.startDate,this.editForm.endDate,this.editingRent.propertyId,this.editingRent.id)) { return alert('Conflict on update!'); }
+      try {
+        const payload = { id:this.editingRent.id, startDate:this.editForm.startDate, endDate:this.editForm.endDate, priceMin:this.editForm.priceMin, priceMax:this.editForm.priceMax };
+        await axios.put(`http://localhost:8080/api/rentals/${payload.id}`, payload);
+        Object.assign(this.editingRent, payload);
+        this.editingRent = null;
+      } catch(e) { console.error(e); alert('Failed to update rent.'); }
     },
-    getUserName(userId) {
-      const user = this.users.find(u => u.id === userId);
-      return user ? this.formatUserName(user) : "Unknown User";
-    },
-    getPropertyName(propertyId) {
-      const prop = this.properties.find(p => p.id === propertyId);
-      return prop ? prop.name : "Unknown Property";
-    },
-
-    onStartDateChange() {
-      if (this.form.endDate && this.form.endDate < this.form.startDate) {
-        this.form.endDate = "";
-      }
-    },
-    onEndDateChange() {
-      if (this.form.endDate && this.form.startDate && this.form.endDate < this.form.startDate) {
-        this.form.endDate = "";
-      }
-    },
+    async cancelRent(id) { try { await axios.delete(`http://localhost:8080/api/rentals/${id}`); this.rents = this.rents.filter(r=>r.id!==id); } catch(e){console.error(e); alert('Cancel failed');} },
+    getUserName(id){ const u=this.users.find(x=>x.id===id); return u?this.formatUserName(u):'Unknown'; },
+    getPropertyName(id){ const p=this.properties.find(x=>x.id===id); return p?p.name:'Unknown'; },
+    formatUserName(u){ if(u.firstName&&u.lastName)return`${u.firstName} ${u.lastName}`; if(u.username)return u.username; if(u.name)return u.name; return 'Unknown';},
+    resetForm(){ this.form={propertyId:'',startDate:'',endDate:'',priceMin:0,priceMax:0}; }
   },
-  mounted() {
-    this.fetchProperties();
-    this.fetchUsers();
-    this.fetchRents();
-
-    document.addEventListener("click", e => {
-      const peopleDropdown = this.$el.querySelector(".people-dropdown");
-      const input = this.$el.querySelector("input.form-control[readonly]");
-      if (
-          this.showPeopleDropdown &&
-          peopleDropdown &&
-          !peopleDropdown.contains(e.target) &&
-          e.target !== input
-      ) {
-        this.showPeopleDropdown = false;
-      }
-    });
-  },
+  mounted() { this.fetchProperties();this.fetchUsers();this.fetchRents(); }
 };
 </script>
 
 <style scoped>
-.section {
-  min-height: 100vh;
-}
-
-.list-group-item {
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-form select,
-form input {
-  border-radius: 8px;
-}
-
-/* Στυλ για το custom dropdown ατόμων */
-.people-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  width: 100%;
-  max-width: 300px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-}
-
-.input-group button {
-  min-width: 2.5rem;
-}
+.section{min-height:100vh;}
+.list-group-item{border-radius:8px;margin-bottom:10px;}
+form .form-select, form input, .v-select{border-radius:8px;width:100%;}
+.modal-backdrop{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;}
+.modal-dialog{background:#fff;border-radius:8px;}
 </style>

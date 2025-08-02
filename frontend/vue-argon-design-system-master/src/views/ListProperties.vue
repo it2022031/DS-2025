@@ -17,6 +17,15 @@
             <p><strong>Status:</strong> {{ property.status }}</p>
             <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
             <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
+            <div class="mt-3">
+              <router-link
+                  v-if="canEdit(property)"
+                  :to="`/properties/${property.id}/edit`"
+                  class="btn btn-sm btn-outline-light"
+              >
+                Edit
+              </router-link>
+            </div>
           </div>
         </li>
       </ul>
@@ -26,7 +35,6 @@
 
 <script>
 import axios from 'axios';
-
 export default {
   name: "ListProperties",
   data() {
@@ -36,19 +44,37 @@ export default {
       error: false
     };
   },
-  async mounted() {
-    this.loading = true;
-    this.error = false;
-
-    try {
-      const response = await axios.get('http://localhost:8080/api/properties/all');
-      this.properties = response.data;
-    } catch (err) {
-      console.error('Error fetching properties:', err);
-      this.error = true;
-    } finally {
-      this.loading = false;
+  computed: {
+    userRole() {
+      return localStorage.getItem('userRole');
+    },
+    userId() {
+      return Number(localStorage.getItem('userId'));
     }
+  },
+  methods: {
+    async fetchProperties() {
+      this.loading = true;
+      this.error = false;
+      try {
+        const response = await axios.get('http://localhost:8080/api/properties/all');
+        this.properties = response.data;
+      } catch (err) {
+        console.error('Error fetching properties:', err);
+        this.error = true;
+      } finally {
+        this.loading = false;
+      }
+    },
+    canEdit(property) {
+      return (
+          this.userRole === 'admin' ||
+          (this.userRole === 'owner' && property.ownerId === this.userId)
+      );
+    }
+  },
+  mounted() {
+    this.fetchProperties();
   }
 };
 </script>
@@ -92,6 +118,7 @@ export default {
 .property-info {
   padding: 20px;
   flex-grow: 1;
+  position: relative;
 }
 
 .property-info h3 {
@@ -104,6 +131,12 @@ export default {
   margin: 5px 0;
   color: #555;
   font-size: 16px;
+}
+
+.property-info .btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
 }
 
 .text-center {

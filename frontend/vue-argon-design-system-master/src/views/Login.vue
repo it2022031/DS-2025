@@ -74,8 +74,46 @@ export default {
         return;
       }
 
+      // Ψεύτικος έλεγχος χρήστη admin
+      if (this.name === 'admin' && this.password === 'admin123') {
+        const fakeUser = {
+          id: 1,
+          name: 'Admin User',
+          role: 'admin'
+        };
+        const fakeToken = 'fake-jwt-token';
+
+        localStorage.setItem("token", fakeToken);
+        localStorage.setItem("userRole", fakeUser.role);
+        localStorage.setItem("username", fakeUser.name);
+        localStorage.setItem("userId", fakeUser.id);
+
+        alert(`Welcome, ${fakeUser.name}!`);
+        this.$router.push("/");
+        return;
+      }
+
+      // Ψεύτικος έλεγχος χρήστη user
+      if (this.name === 'user' && this.password === 'user123') {
+        const fakeUser = {
+          id: 2,
+          name: 'Regular User',
+          role: 'user'
+        };
+        const fakeToken = 'fake-jwt-token-user';
+
+        localStorage.setItem("token", fakeToken);
+        localStorage.setItem("userRole", fakeUser.role);
+        localStorage.setItem("username", fakeUser.name);
+        localStorage.setItem("userId", fakeUser.id);
+
+        alert(`Welcome, ${fakeUser.name}!`);
+        this.$router.push("/");
+        return;
+      }
+
+      // Κανονικό API login fallback
       try {
-        // ⚠️ Σιγουρέψου ότι το endpoint σου είναι αυτό και επιστρέφει token + user
         const response = await axios.post('http://localhost:8080/api/auth/login', {
           name: this.name,
           password: this.password
@@ -83,14 +121,13 @@ export default {
 
         const { token, user } = response.data;
 
-        // ✅ Αποθήκευση στο localStorage
         localStorage.setItem("token", token);
-        localStorage.setItem("userRole", user.role); // π.χ. "admin", "owner", "user"
+        localStorage.setItem("userRole", user.role);
         localStorage.setItem("username", user.name);
         localStorage.setItem("userId", user.id);
 
         alert(`Welcome, ${user.name}!`);
-        this.$router.push("/"); // Μετάβαση στην αρχική σελίδα
+        this.$router.push("/");
 
       } catch (error) {
         console.error('Login error:', error);

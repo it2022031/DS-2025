@@ -85,9 +85,11 @@ export default {
   },
   data() {
     return {
-      showDropdown: false
+      showDropdown: false,
+      userRole: localStorage.getItem('userRole') || null,
     };
   },
+
   methods: {
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;

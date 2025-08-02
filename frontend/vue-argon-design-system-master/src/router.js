@@ -15,7 +15,7 @@ import ListRentals from "@/views/ListRentals.vue";
 import Home from './views/Home.vue';
 import About from './views/About.vue';
 import RoleRequests from './views/RoleRequests.vue';
-
+import PropertyEdit from "@/views/PropertyEdit.vue";
 
 Vue.use(Router);
 
@@ -70,6 +70,19 @@ export default new Router({
       name: 'AddProperty',
       component: AddProperty
     },
+
+
+    {
+      path: "/properties/:id/edit",
+      name: "PropertyEdit",
+      components: {
+        header: AppHeader,
+        default: PropertyEdit,
+        footer: AppFooter
+      },
+      meta: { requiresAuth: true, roles: ["owner", "admin"] }
+    },
+
 
     {
       path: "/rent",
