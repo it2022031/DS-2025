@@ -1,7 +1,10 @@
 package com.example.demo.Services;
 
+import com.example.demo.Entities.Property;
+import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
 import com.example.demo.Repositories.UserRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
@@ -91,5 +94,20 @@ public class UserService {
         }
 
         return result;
+    }
+
+    // Ξεχωριστά: rentals του χρήστη με βάση το userId
+    public List<Rental> getRentalsForUserId(Long userId) {
+        // αν θέλεις να εξακριβώσεις ότι υπάρχει user
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+        return userRepository.findRentalsByUserId(userId);
+    }
+
+    // Ξεχωριστά: properties του χρήστη με βάση το userId
+    public List<Property> getPropertiesForUserId(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+        return userRepository.findPropertiesByOwnerId(userId);
     }
 }

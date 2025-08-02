@@ -6,6 +6,9 @@ import com.example.demo.Security.JwtUtil;
 import com.example.demo.Security.Role;
 import com.example.demo.Services.CustomUserDetailsService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -30,10 +33,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin // ή @CrossOrigin(origins = "http://localhost:8081") για περιορισμό
+@CrossOrigin
 public class AuthController {
 
     private final CustomUserDetailsService userDetailsService;
@@ -53,9 +57,9 @@ public class AuthController {
 
     // DTOs
     public record RegistrationRequest(
-            String username,
-            String password,
-            String email,
+            @NotBlank String username,
+            @NotBlank @Size(min = 6) String password,
+            @Email @NotBlank String email,
             String firstName,
             String lastName,
             String passportNumber,
@@ -64,10 +68,14 @@ public class AuthController {
 
     public record AuthRequest(String username, String password) {}
 
-    public record AuthResponse(String token) {}
-
-    public record UserResponse(Long id, String username, String email,
-                               String firstName, String lastName, String role) {
+    public record UserResponse(Long id,
+                               String username,
+                               String email,
+                               String firstName,
+                               String lastName,
+                               String role,
+                               String passportNumber,
+                               String afm) {
         public static UserResponse fromEntity(User u) {
             return new UserResponse(
                     u.getId(),
@@ -75,23 +83,27 @@ public class AuthController {
                     u.getEmail(),
                     u.getFirstName(),
                     u.getLastName(),
-                    u.getRole() != null ? u.getRole().name() : null
+                    u.getRole() != null ? u.getRole().name() : null,
+                    u.getPassportNumber(),
+                    u.getAfm()
             );
         }
     }
 
+    public record AuthResponse(String token, UserResponse user) {}
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest req) {
         if (userRepository.existsByUsername(req.username())) {
-            return ResponseEntity.badRequest().body("Username already taken");
+            return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
         }
         if (userRepository.existsByEmail(req.email())) {
-            return ResponseEntity.badRequest().body("Email already in use");
+            return ResponseEntity.badRequest().body(Map.of("error", "Email already in use"));
         }
 
         User user = new User();
         user.setUsername(req.username());
-        user.setPassword(req.password()); // θα κωδικοποιηθεί στο service
+        user.setPassword(req.password()); // θα κωδικοποιηθεί μέσα στο service
         user.setEmail(req.email());
         user.setFirstName(req.firstName());
         user.setLastName(req.lastName());
@@ -100,31 +112,40 @@ public class AuthController {
         user.setRole(Role.USER);
 
         User saved = userDetailsService.registerNewUser(user);
-        return ResponseEntity.ok(UserResponse.fromEntity(saved));
+
+        // αμέσως μετά κάνουμε token generation για το νέο χρήστη
+        UserDetails ud = userDetailsService.loadUserByUsername(saved.getUsername());
+        String token = jwtUtil.generateToken(ud);
+        return ResponseEntity.ok(new AuthResponse(token, UserResponse.fromEntity(saved)));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest req) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.username(), req.password())
             );
         } catch (BadCredentialsException | DisabledException | LockedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials or account disabled/locked");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid credentials or account disabled/locked"));
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Authentication failed"));
         }
 
         UserDetails ud = userDetailsService.loadUserByUsername(req.username());
         String token = jwtUtil.generateToken(ud);
-        return ResponseEntity.ok(new AuthResponse(token));
+        User user = userRepository.findByUsername(req.username())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return ResponseEntity.ok(new AuthResponse(token, UserResponse.fromEntity(user)));
     }
 
-    // Προαιρετικό: να πάρει ο χρήστης το προφίλ του
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails ud)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthenticated"));
         }
         String username = ud.getUsername();
         User user = userRepository.findByUsername(username)

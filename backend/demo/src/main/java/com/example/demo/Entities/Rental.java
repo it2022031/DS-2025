@@ -72,6 +72,10 @@ public class Rental {
         this.paymentAmount = paymentAmount;
     }
 
+    public boolean isStatus() {
+        return status;
+    }
+
     public Boolean getStatus() {
         return status;
     }
@@ -95,4 +99,5 @@ public class Rental {
     public void setProperty(Property property) {
         this.property = property;
     }
+
 }
