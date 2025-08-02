@@ -12,34 +12,42 @@
                 body-classes="px-lg-5 py-lg-5"
                 class="border-0">
 
-            <template>
-              <div class="text-center text-muted mb-4">
-                <small>Sign in with your credentials</small>
+            <div class="text-center text-muted mb-4">
+              <small>Sign in with your credentials</small>
+            </div>
+
+            <form @submit.prevent="handleSignIn" role="form">
+              <base-input alternative
+                          class="mb-3"
+                          placeholder="Username"
+                          addon-left-icon="ni ni-email-83"
+                          v-model="username">
+              </base-input>
+
+              <base-input alternative
+                          type="password"
+                          placeholder="Password"
+                          addon-left-icon="ni ni-lock-circle-open"
+                          v-model="password">
+              </base-input>
+
+              <div class="mb-3">
+                <label>
+                  <input type="checkbox" v-model="rememberMe" /> Remember me
+                </label>
               </div>
-              <form @submit.prevent="handleSignIn" role="form">
-                <base-input alternative
-                            class="mb-3"
-                            placeholder="Username"
-                            addon-left-icon="ni ni-email-83"
-                            v-model="name">
-                </base-input>
 
-                <base-input alternative
-                            type="password"
-                            placeholder="Password"
-                            addon-left-icon="ni ni-lock-circle-open"
-                            v-model="password">
-                </base-input>
+              <div class="text-center">
+                <base-button type="primary" class="my-4" native-type="submit" :disabled="loading">
+                  {{ loading ? 'Signing in...' : 'Sign In' }}
+                </base-button>
+              </div>
 
-                <base-checkbox>
-                  Remember me
-                </base-checkbox>
+              <div v-if="error" class="text-danger small text-center">
+                {{ error }}
+              </div>
+            </form>
 
-                <div class="text-center">
-                  <base-button type="primary" class="my-4" native-type="submit">Sign In</base-button>
-                </div>
-              </form>
-            </template>
           </card>
 
           <div class="row mt-3">
@@ -63,75 +71,72 @@ export default {
   name: 'SignInForm',
   data() {
     return {
-      name: '',
-      password: ''
+      username: '',
+      password: '',
+      rememberMe: false,
+      loading: false,
+      error: null,
     };
+  },
+  created() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
   },
   methods: {
     async handleSignIn() {
-      if (!this.name.trim() || !this.password.trim()) {
-        alert("Please enter both username and password.");
+      this.error = null;
+      if (!this.username.trim() || !this.password) {
+        this.error = "Please enter both username and password.";
         return;
       }
-
-      // Ψεύτικος έλεγχος χρήστη admin
-      if (this.name === 'admin' && this.password === 'admin123') {
-        const fakeUser = {
-          id: 1,
-          name: 'Admin User',
-          role: 'admin'
-        };
-        const fakeToken = 'fake-jwt-token';
-
-        localStorage.setItem("token", fakeToken);
-        localStorage.setItem("userRole", fakeUser.role);
-        localStorage.setItem("username", fakeUser.name);
-        localStorage.setItem("userId", fakeUser.id);
-
-        alert(`Welcome, ${fakeUser.name}!`);
-        this.$router.push("/");
-        return;
-      }
-
-      // Ψεύτικος έλεγχος χρήστη user
-      if (this.name === 'user' && this.password === 'user123') {
-        const fakeUser = {
-          id: 2,
-          name: 'Regular User',
-          role: 'user'
-        };
-        const fakeToken = 'fake-jwt-token-user';
-
-        localStorage.setItem("token", fakeToken);
-        localStorage.setItem("userRole", fakeUser.role);
-        localStorage.setItem("username", fakeUser.name);
-        localStorage.setItem("userId", fakeUser.id);
-
-        alert(`Welcome, ${fakeUser.name}!`);
-        this.$router.push("/");
-        return;
-      }
-
-      // Κανονικό API login fallback
+      this.loading = true;
       try {
-        const response = await axios.post('http://localhost:8080/api/auth/login', {
-          name: this.name,
+        // login
+        const loginResp = await axios.post('http://localhost:8080/api/auth/login', {
+          username: this.username,
           password: this.password
         });
 
-        const { token, user } = response.data;
+        const token = loginResp.data.token;
+        if (!token) {
+          throw new Error("Token missing from response");
+        }
 
+        // set header globally
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         localStorage.setItem("token", token);
+
+        // fetch profile
+        const profileResp = await axios.get('http://localhost:8080/api/users/me');
+        const user = profileResp.data;
+
+        // persist user info
+        localStorage.setItem("username", user.username || `${user.firstName || ''} ${user.lastName || ''}`.trim());
         localStorage.setItem("userRole", user.role);
-        localStorage.setItem("username", user.name);
         localStorage.setItem("userId", user.id);
 
-        alert(`Welcome, ${user.name}!`);
+        alert(`Welcome, ${localStorage.getItem("username")}!`);
         this.$router.push("/");
 
-      } catch (error) {
-        console.error('Login error:', error);
-        alert("Login failed. Please check your credentials.");
+      } catch (err) {
+        console.error(err);
+        if (err.response && err.response.data) {
+          if (typeof err.response.data === 'string') {
+            this.error = err.response.data;
+          } else if (err.response.data.error) {
+            this.error = err.response.data.error;
+          } else {
+            this.error = JSON.stringify(err.response.data);
+          }
+        } else if (err.message) {
+          this.error = err.message;
+        } else {
+          this.error = "Login failed.";
+        }
+      } finally {
+        this.loading = false;
       }
     }
   }
@@ -142,7 +147,6 @@ export default {
 input {
   border-radius: 8px !important;
 }
-
 .base-button {
   border-radius: 25px !important;
   padding: 10px 20px;
