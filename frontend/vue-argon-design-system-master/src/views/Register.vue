@@ -87,7 +87,7 @@
                   v-model="idNumber"
                   alternative
                   class="mb-1"
-                  placeholder="ID or Passport Number"
+                  placeholder="Passport Number"
                   addon-left-icon="ni ni-credit-card"
                   @blur="onBlur('idNumber')"
                   @input="onInput('idNumber')"
@@ -109,22 +109,14 @@
                 {{ errors.taxNumber }}
               </div>
 
-              <div class="text-muted font-italic">
-                <small>password strength:
-                  <span class="text-success font-weight-700">strong</span>
-                </small>
-              </div>
-
               <div v-if="errorMessage" class="text-danger text-center mt-2">
                 {{ errorMessage }}
               </div>
 
               <div class="text-center">
-                <button type="submit" class="btn btn-primary my-4">
-                  <template v-if="!errorMessage && submitted">
-                    ✔️
-                  </template>
-                  Create account
+                <button type="submit" class="btn btn-primary my-4" :disabled="loading">
+                  <span v-if="loading">Creating...</span>
+                  <span v-else>Create account</span>
                 </button>
               </div>
             </form>
@@ -145,6 +137,8 @@
 <script>
 import axios from 'axios';
 
+const API_BASE = 'http://localhost:8080';
+
 export default {
   data() {
     return {
@@ -159,7 +153,8 @@ export default {
       touched: {},
       submitted: false,
       errorMessage: '',
-      success: false
+      success: false,
+      loading: false
     };
   },
   methods: {
@@ -175,7 +170,7 @@ export default {
       return this.errors[field] && (this.touched[field] || this.submitted);
     },
     validateField(field) {
-      const val = this[field] ? this[field].trim() : '';
+      const val = this[field] ? String(this[field]).trim() : '';
       this.errors[field] = '';
 
       switch (field) {
@@ -207,6 +202,7 @@ export default {
             this.errors[field] = 'Tax Number must contain only digits.';
           }
           break;
+          // idNumber is optional? If required, add similar
       }
     },
     validateAllFields() {
@@ -221,26 +217,68 @@ export default {
     },
     async submitForm() {
       this.submitted = true;
-      if (this.validateAllFields()) {
-        try {
-          const response = await axios.post('http://localhost:8080/api/users/analytical', {
-            username: this.username,
-            password: this.password,
-            firstName: this.name,
-            lastName: this.surname,
-            email: this.email,
-            passportNumber: this.idNumber,
-            afm: this.taxNumber
-          });
-          this.success = true;
-          this.errorMessage = '';
-          alert('Account created successfully for ' + response.data.username);
-        } catch (error) {
-          this.success = false;
-          this.errorMessage = 'Error creating account: ' + (error.response && error.response.data && error.response.data.message ? error.response.data.message : error.message);
-        }
-      } else {
+      this.errorMessage = '';
+      if (!this.validateAllFields()) {
         this.success = false;
+        return;
+      }
+      this.loading = true;
+      try {
+        // 1. Register
+        await axios.post(`${API_BASE}/api/auth/register`, {
+          username: this.username,
+          password: this.password,
+          email: this.email,
+          firstName: this.name,
+          lastName: this.surname,
+          passportNumber: this.idNumber,
+          afm: this.taxNumber
+        });
+
+        // 2. Auto-login to get token
+        const loginResp = await axios.post(`${API_BASE}/api/auth/login`, {
+          username: this.username,
+          password: this.password
+        });
+
+        const token = loginResp.data.token;
+        if (!token) {
+          throw new Error("Login succeeded but token missing.");
+        }
+
+        // 3. Store token & set header
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        localStorage.setItem('token', token);
+
+        // 4. Fetch profile
+        const profile = await axios.get(`${API_BASE}/api/users/me`);
+        localStorage.setItem("username", profile.data.username || `${profile.data.firstName || ''} ${profile.data.lastName || ''}`.trim());
+        localStorage.setItem("userRole", profile.data.role);
+        localStorage.setItem("userId", profile.data.id);
+
+        this.success = true;
+        alert(`Welcome, ${localStorage.getItem("username")}!`);
+        this.$router.push('/');
+
+      } catch (err) {
+        this.success = false;
+        console.error(err);
+        if (err.response && err.response.data) {
+          // backend στέλνει string ή λεπτομέρειες
+          if (typeof err.response.data === 'string') {
+            this.errorMessage = err.response.data;
+          } else if (err.response.data.error) {
+            this.errorMessage = err.response.data.error;
+          } else {
+            this.errorMessage = JSON.stringify(err.response.data);
+          }
+        } else if (err.message) {
+          this.errorMessage = err.message;
+        } else {
+          this.errorMessage = "Registration failed.";
+        }
+      } finally {
+        this.loading = false;
       }
     }
   }
@@ -255,13 +293,5 @@ input {
 .base-button {
   border-radius: 25px !important;
   padding: 10px 20px;
-}
-
-.checkmark {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  font-weight: bold;
-  font-size: 18px;
 }
 </style>
