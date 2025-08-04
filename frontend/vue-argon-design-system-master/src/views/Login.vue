@@ -125,6 +125,7 @@ export default {
         this.error = "Please enter both username and password.";
         return;
       }
+
       this.loading = true;
       try {
         // login

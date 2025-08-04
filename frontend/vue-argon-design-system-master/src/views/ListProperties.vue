@@ -46,7 +46,8 @@ export default {
   },
   computed: {
     userRole() {
-      return localStorage.getItem('userRole');
+      //return localStorage.getItem('userRole');
+      return (localStorage.getItem('userRole') || '').toUpperCase();
     },
     userId() {
       return Number(localStorage.getItem('userId'));

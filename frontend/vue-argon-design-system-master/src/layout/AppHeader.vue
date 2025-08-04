@@ -30,10 +30,10 @@
           <router-link to="/properties/add" class="nav-link">Νέα Αγγελία</router-link>
         </li>
         <li class="nav-item">
-          <router-link v-if="userRole === 'owner' || userRole === 'admin'" to="/list-properties" class="nav-link"> list-properties</router-link>
+          <router-link v-if="(userRole || '').toLowerCase() === 'owner' || (userRole || '').toLowerCase() === 'admin'" to="/list-properties" class="nav-link"> list-properties</router-link>
         </li>
         <li class="nav-item">
-          <router-link v-if="userRole === 'admin'" to="/users">list-users</router-link>
+          <router-link v-if="(userRole || '').toLowerCase() === 'admin'" to="/users"  class="nav-link">list-users</router-link>
         </li>
         <li class="nav-item">
           <router-link to="/Rentals" class="nav-link">list-rentals</router-link>

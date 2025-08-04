@@ -1,13 +1,7 @@
 <template>
   <div class="profile-page text-center mt-5">
-    <!-- Εμφάνιση avatar και ονόματος -->
     <div class="avatar-container mb-3">
-      <img
-          :src="user.avatar || defaultAvatar"
-          alt="Avatar"
-          class="avatar clickable"
-          @click="triggerFileInput"
-      />
+      <img :src="user.avatar || defaultAvatar" alt="Avatar" class="avatar clickable" @click="triggerFileInput" />
       <input type="file" ref="fileInput" @change="onAvatarChange" hidden />
     </div>
 
@@ -16,9 +10,8 @@
       <i class="ni ni-bold-down ml-2"></i>
     </h3>
 
-    <!-- Dropdown με στοιχεία προφίλ και φόρμα ενημέρωσης -->
     <div v-show="showDropdown" class="custom-dropdown mt-2 text-left">
-      <!-- ✅ Λίστα Properties -->
+      <!-- Properties Section -->
       <div class="mt-4 text-left">
         <h5>Τα Ακίνητά Μου</h5>
         <div v-if="userProperties.length === 0" class="text-muted">Δεν έχετε προσθέσει ακίνητα.</div>
@@ -41,8 +34,8 @@
           </div>
         </div>
       </div>
+
       <form @submit.prevent="saveProfile">
-        <!-- Οπτική επιβεβαίωση αποθήκευσης -->
         <div v-if="saveSuccess" class="text-success text-center mb-3">
           ✅ Το προφίλ ενημερώθηκε με επιτυχία!
         </div>
@@ -55,21 +48,6 @@
         <div class="form-group">
           <label>Email</label>
           <input type="email" v-model="user.email" class="form-control" />
-        </div>
-
-        <div class="form-group">
-          <label>Τηλέφωνο</label>
-          <input type="text" v-model="user.phone" class="form-control" />
-        </div>
-
-        <div class="form-group">
-          <label>Επάγγελμα</label>
-          <input type="text" v-model="user.profession" class="form-control" />
-        </div>
-
-        <div class="form-group">
-          <label>Τοποθεσία</label>
-          <input type="text" v-model="user.location" class="form-control" />
         </div>
 
         <div class="form-group">
@@ -106,7 +84,6 @@
           Αποσύνδεση
         </button>
 
-        <!-- ✅ Αίτημα για ρόλο OWNER -->
         <div v-if="user.role === 'user' && !requestSent" class="mt-3 text-center">
           <button @click="requestOwnerRole" class="btn btn-outline-primary">
             🔄 Ζήτησε να γίνεις Ιδιοκτήτης
@@ -121,7 +98,6 @@
   </div>
 </template>
 
-
 <script>
 import axios from "axios";
 
@@ -135,23 +111,18 @@ export default {
         surname: "",
         username: "",
         email: "",
-        phone: "",
-        profession: "",
-        location: "",
-        idNumber: "",  // Passport Number
-        taxNumber: "", // ΑΦΜ
+        idNumber: "",
+        taxNumber: "",
         avatar: "",
+        role: "",
       },
-      originalUser: {},       // ✅ κρατάει backup για "Ακύρωση"
-      saveSuccess: false,     // ✅ δείχνει μήνυμα επιτυχίας
-      saving: false,           // ✅ δείχνει loading κατάσταση
-
+      originalUser: {},
+      saveSuccess: false,
+      saving: false,
       showDropdown: false,
       requestSent: false,
-      defaultAvatar:
-          "https://cdn-icons-png.flaticon.com/512/147/147144.png",
+      defaultAvatar: "https://cdn-icons-png.flaticon.com/512/147/147144.png",
       userProperties: [],
-      loadingProps: false,
       editingProperty: null,
       propertyForm: {}
     };
@@ -160,51 +131,31 @@ export default {
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;
     },
-    closeOnOutsideClick(event) {
-      if (!this.$el.contains(event.target) && this.showDropdown) {
-        this.showDropdown = false;
-      }
-    },
     logout() {
-      localStorage.removeItem("token");
-      localStorage.removeItem("token_expiry");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("username");
+      localStorage.clear();
       this.$router.push("/login");
     },
     fetchUser() {
       const token = localStorage.getItem("token");
-      if (!token) {
-        this.$router.push("/login");
-        return;
-      }
+      if (!token) return this.$router.push("/login");
 
-      axios
-          .get("http://localhost:8080/api/auth/me", {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          .then(res => {
-            const data = res.data;
-            this.user.id = data.id;
-            this.user.username = data.username;
-            this.user.email = data.email;
-            this.user.name = data.firstName || '';    // firstName από backend -> name στο frontend
-            this.user.surname = data.lastName || '';  // lastName από backend -> surname στο frontend
-            this.user.role = data.role || '';
-
-            this.user.phone = data.phone || '';
-            this.user.profession = data.profession || '';
-            this.user.location = data.location || '';
-            this.user.idNumber = data.passportNumber || '';
-            this.user.taxNumber = data.afm || '';
-
-            this.originalUser = { ...this.user }; // ✅ κρατάει backup για "Ακύρωση αλλαγών"
-          })
-          .catch(err => {
-            console.error("Error fetching user data:", err);
-            this.$router.push("/login");
-          });
+      axios.get("http://localhost:8080/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => {
+        const d = res.data;
+        this.user = {
+          id: d.id,
+          username: d.username,
+          email: d.email,
+          name: d.firstName || '',
+          surname: d.lastName || '',
+          role: d.role || '',
+          idNumber: d.passportNumber || '',
+          taxNumber: d.afm || '',
+          avatar: d.avatar || ''
+        };
+        this.originalUser = { ...this.user };
+      }).catch(() => this.$router.push("/login"));
     },
     async fetchUserProperties() {
       const token = localStorage.getItem("token");
@@ -218,16 +169,13 @@ export default {
         console.error("❌ Error fetching properties:", err);
       }
     },
-
     startEdit(property) {
       this.editingProperty = property.id;
       this.propertyForm = { ...property };
     },
-
     async savePropertyEdit() {
       const token = localStorage.getItem("token");
       if (!token) return;
-
       try {
         await axios.put(`http://localhost:8080/api/properties/${this.propertyForm.id}`, this.propertyForm, {
           headers: { Authorization: `Bearer ${token}` }
@@ -240,44 +188,42 @@ export default {
         alert("Σφάλμα κατά την αποθήκευση.");
       }
     },
-
     cancelEdit() {
       this.editingProperty = null;
       this.propertyForm = {};
     },
-
     saveProfile() {
       const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Δεν είστε συνδεδεμένοι.");
-        this.$router.push("/login");
-        return;
-      }
+      if (!token) return this.$router.push("/login");
 
-      this.saving = true; // 🔄 δείχνει loading
+      this.saving = true;
+      const updates = {
+        firstName: this.user.name,
+        lastName: this.user.surname,
+        username: this.user.username,
+        email: this.user.email,
+        passportNumber: this.user.idNumber,
+        afm: this.user.taxNumber,
+      };
 
-      axios
-          .put("http://localhost:8080/api/users/me", this.user, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          .then(() => {
-            this.saveSuccess = true; // ✅ μήνυμα επιτυχίας
-            this.originalUser = { ...this.user }; // 🔁 ανανέωση backup
-            setTimeout(() => this.saveSuccess = false, 3000); // ⏱️ κρύψε μετά από 3 δευτ
-            this.showDropdown = false;
-          })
-          .catch(err => {
-            console.error("Error updating profile:", err);
-            alert("Σφάλμα κατά την ενημέρωση.");
-          })
-          .finally(() => {
-            this.saving = false; // ✅ stop loading
-          });
+      axios.patch("http://localhost:8080/api/users/me", updates, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(() => {
+        this.saveSuccess = true;
+        return this.fetchUser();
+      }).then(() => {
+        setTimeout(() => (this.saveSuccess = false), 3000);
+        this.showDropdown = false;
+      }).catch(err => {
+        console.error("Error updating profile:", err);
+        alert("Σφάλμα κατά την ενημέρωση.");
+      }).finally(() => {
+        this.saving = false;
+      });
     },
     resetProfile() {
       this.user = { ...this.originalUser };
     },
-
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
@@ -310,12 +256,7 @@ export default {
     },
     async requestOwnerRole() {
       const token = localStorage.getItem("token");
-
-      if (!token) {
-        alert("Δεν είστε συνδεδεμένοι.");
-        this.$router.push("/login");
-        return;
-      }
+      if (!token) return this.$router.push("/login");
 
       try {
         await axios.post("http://localhost:8080/api/role-requests", {
@@ -324,7 +265,6 @@ export default {
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
         this.requestSent = true;
       } catch (error) {
         console.error("❌ Error requesting role change:", error);
@@ -334,14 +274,12 @@ export default {
   },
   mounted() {
     const token = localStorage.getItem("token");
-    const expiry = localStorage.getItem("token_expiry"); // πρέπει να αποθηκεύεις πότε λήγει το token
-
+    const expiry = localStorage.getItem("token_expiry");
     if (!token || !expiry || new Date().getTime() > Number(expiry)) {
       localStorage.clear();
       this.$router.push("/login");
       return;
     }
-
     this.fetchUser();
     this.fetchUserProperties();
     document.addEventListener("mousedown", this.closeOnOutsideClick);
@@ -352,7 +290,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .profile-name {
   cursor: pointer;
@@ -361,44 +298,34 @@ export default {
   user-select: none;
 }
 
-.custom-dropdown {
-  display: inline-block;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 350px;
-  animation: fadeIn 0.2s ease-in-out;
-  text-align: left;
-}
-
-.avatar-container {
-  display: flex;
-  justify-content: center;
-}
-
 .avatar {
   width: 100px;
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
-  border: 3px solid #007bff;
+  border: 3px solid #ccc;
+  transition: border-color 0.3s;
 }
 
-.form-group {
-  margin-bottom: 1rem;
+.avatar:hover {
+  border-color: #007bff;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.custom-dropdown {
+  position: absolute;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 320px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  z-index: 9999;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.clickable {
+  cursor: pointer;
+  user-select: none;
 }
 </style>

@@ -110,8 +110,9 @@ export default {
     };
   },
   mounted() {
-    const role = localStorage.getItem("userRole");
-    if (role !== "owner" && role !== "admin") {
+    const storedRole = localStorage.getItem("userRole");
+    const role = storedRole ? storedRole.toUpperCase() : null;
+    if (role !== "OWNER" && role !== "ADMIN") {
       alert("Πρέπει να είστε ιδιοκτήτης για να προσθέσετε αγγελία.");
       this.$router.push("/");
     }
