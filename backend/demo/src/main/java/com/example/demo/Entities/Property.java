@@ -21,7 +21,9 @@ public class Property {
     private String street;
     private String postalCode;
     private Double squareMeters;
-    private Boolean status;  // πχ αν το property είναι ενεργό/διαθέσιμο
+
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Booking> bookings;
@@ -105,12 +107,12 @@ public class Property {
         this.squareMeters = squareMeters;
     }
 
-    public Boolean getStatus() {
-        return status;
+    public ApprovalStatus getApprovalStatus() {
+        return approvalStatus;
     }
 
-    public void setStatus(Boolean status) {
-        this.status = status;
+    public void setApprovalStatus(ApprovalStatus approvalStatus) {
+        this.approvalStatus = approvalStatus;
     }
 
     public List<Booking> getBookings() {

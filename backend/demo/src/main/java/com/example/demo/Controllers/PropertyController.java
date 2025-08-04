@@ -2,19 +2,24 @@ package com.example.demo.Controllers;
 
 import com.example.demo.Entities.Property;
 import com.example.demo.Entities.User;
-import com.example.demo.Repositories.UserRepository;
+import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Services.PropertyService;
+import com.example.demo.Repositories.UserRepository;
+import com.example.demo.dto.PropertyCreateRequest;
+import com.example.demo.dto.PropertyDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/properties")
+@CrossOrigin
 public class PropertyController {
 
     private final PropertyService propertyService;
@@ -25,85 +30,136 @@ public class PropertyController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<?> getAllProperties(Authentication authentication) {
-        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only admins can list all properties"));
-        }
-        List<Property> props = propertyService.findAll();
-        return ResponseEntity.ok(props);
-    }
-//    @PostMapping("/add")
-//    public ResponseEntity<Property> addProperty(@RequestBody Property dto) {
-//        Property newProperty = new Property();
-//        newProperty.setName(dto.getName());
-//        newProperty.setDescription(dto.getDescription());
-//        newProperty.setCountry(dto.getCountry());
-//        newProperty.setCity(dto.getCity());
-//        newProperty.setStreet(dto.getStreet());
-//        newProperty.setPostalCode(dto.getPostalCode());
-//        newProperty.setSquareMeters(dto.getSquareMeters());
-//        newProperty.setStatus(dto.getStatus());
-//
-//        Property saved = propertyService.addProperty(newProperty);
-//        return ResponseEntity.ok(saved);
-//    }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addProperty(@RequestBody PropertyCreateRequest req,
-                                         @RequestParam(required = false) Long ownerId,
-                                         Authentication authentication) {
+
+    // 1. List all properties (admin only)
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<PropertyDto>> getAllProperties() {
+        List<PropertyDto> dto = propertyService.findAll().stream()
+                .map(PropertyDto::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dto);
+    }
+
+    // 2. Create new property
+    @PostMapping
+    public ResponseEntity<?> createProperty(
+            @RequestBody PropertyCreateRequest req,
+            @RequestParam(required = false) Long ownerId,
+            Authentication auth) {
+
+        // 1) βγάλε το username του καλούντα
+        String callerUsername = ((UserDetails)auth.getPrincipal()).getUsername();
+        User caller = userRepository.findByUsername(callerUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // 2) καθόρισε το πραγματικό ownerId
+        Long finalOwnerId;
+        if (ownerId != null) {
+            // αν πέρασε ownerId, μόνο admin το επιτρέπουμε
+            if (!isAdmin) {
+                return ResponseEntity
+                        .status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Only admins can assign properties to other users"));
+            }
+            finalOwnerId = ownerId;
+        } else {
+            // χωρίς ownerId, ο καλών γίνεται owner
+            finalOwnerId = caller.getId();
+        }
+
+        // 3) basic validation
+        if (req.name() == null || req.name().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Property name is required"));
+        }
+
+        // 4) φτιάξε το entity
+        Property p = new Property();
+        p.setName(req.name());
+        p.setDescription(req.description());
+        p.setCountry(req.country());
+        p.setCity(req.city());
+        p.setStreet(req.street());
+        p.setPostalCode(req.postalCode());
+        p.setSquareMeters(req.squareMeters());
+        p.setApprovalStatus(ApprovalStatus.PENDING);
+
+        // 5) delega te στο service
+        Property saved = propertyService.createWithOwner(finalOwnerId, p);
+        return ResponseEntity.ok(PropertyDto.fromEntity(saved));
+    }
+
+
+    // 3. Get property by id
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPropertyById(@PathVariable Long id) {
+        Property p = propertyService.findByIdOptional(id)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+        return ResponseEntity.ok(PropertyDto.fromEntity(p));
+    }
+
+    // 4. Patch property (owner can update fields, admin can also change approval)
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchProperty(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> updates,
+            Authentication authentication) {
+
+        Property prop = propertyService.findByIdOptional(id)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
         String callerUsername = extractUsername(authentication);
         User caller = userRepository.findByUsername(callerUsername)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
 
-        // Καθορισμός finalOwnerId με προτεραιότητα: query param > body.ownerId > caller
-        Long finalOwnerId;
-        if (ownerId != null) {
-            if (!isAdmin(authentication) && !ownerId.equals(caller.getId())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "Cannot assign property to another user"));
+        boolean admin = isAdmin(authentication);
+        boolean owner = prop.getOwner().getId().equals(caller.getId());
+        if (!admin && !owner) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Not allowed"));
+        }
+
+        // common updates
+        updates.forEach((k,v) -> {
+            switch(k) {
+                case "name": prop.setName((String)v); break;
+                case "description": prop.setDescription((String)v); break;
+                case "country": prop.setCountry((String)v); break;
+                case "city": prop.setCity((String)v); break;
+                case "street": prop.setStreet((String)v); break;
+                case "postalCode": prop.setPostalCode((String)v); break;
+                case "squareMeters": prop.setSquareMeters(((Number)v).doubleValue()); break;
+                case "approvalStatus":
+                    if (!admin) throw new RuntimeException("Only admin can change approvalStatus");
+                    prop.setApprovalStatus(ApprovalStatus.valueOf(v.toString().toUpperCase()));
+                    break;
             }
-            finalOwnerId = ownerId;
-        } else if (req.ownerId() != null) {
-            if (!isAdmin(authentication) && !req.ownerId().equals(caller.getId())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "Cannot assign property to another user"));
-            }
-            finalOwnerId = req.ownerId();
-        } else {
-            finalOwnerId = caller.getId();
-        }
+        });
 
-        // Βασική validation
-        if (req.name() == null || req.name().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Property name is required"));
-        }
-
-        // Κατασκευή entity από request
-        Property property = new Property();
-        property.setName(req.name());
-        property.setDescription(req.description());
-        property.setCountry(req.country());
-        property.setCity(req.city());
-        property.setStreet(req.street());
-        property.setPostalCode(req.postalCode());
-        property.setSquareMeters(req.squareMeters());
-        property.setStatus(req.status());
-
-        try {
-            Property saved = propertyService.createWithOwner(finalOwnerId, property);
-            return ResponseEntity.ok(saved);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        Property saved = propertyService.save(prop);
+        return ResponseEntity.ok(PropertyDto.fromEntity(saved));
     }
 
+    // 5. Approve / reject (admin only)
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> approve(@PathVariable Long id) {
+        Property updated = propertyService.setApprovalStatus(id, ApprovalStatus.APPROVED);
+        return ResponseEntity.ok(PropertyDto.fromEntity(updated));
+    }
 
-    // βοηθητικά (μπορείς να τα βάλεις σε base class ή εδώ)
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> reject(@PathVariable Long id) {
+        Property updated = propertyService.setApprovalStatus(id, ApprovalStatus.REJECTED);
+        return ResponseEntity.ok(PropertyDto.fromEntity(updated));
+    }
+
+    // helpers
     private String extractUsername(Authentication authentication) {
         if (authentication == null) return null;
         Object principal = authentication.getPrincipal();
@@ -116,19 +172,10 @@ public class PropertyController {
         return authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
-    public record PropertyCreateRequest(
-            String name,
-            String description,
-            String country,
-            String city,
-            String street,
-            String postalCode,
-            Double squareMeters,
-            Boolean status,
-            Long ownerId // προαιρετικό, μπορεί να περαστεί εδώ αντί για ?ownerId=
-    ) {}
 
-
+    private Long resolveOwnerId(Long bodyId, Long paramId, User caller, Authentication auth) {
+        if (paramId != null) return paramId;
+        if (bodyId != null) return bodyId;
+        return caller.getId();
+    }
 }
-
-

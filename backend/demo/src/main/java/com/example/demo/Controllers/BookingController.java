@@ -31,11 +31,10 @@ public class BookingController {
         if (dto.getProperty() == null || dto.getProperty().getId() == null) {
             return ResponseEntity.badRequest().body("Property ID is required");
         }
+        Long propId = dto.getProperty().getId();
 
-        Property property = propertyService.findById(dto.getProperty().getId());
-        if (property == null) {
-            return ResponseEntity.badRequest().body("Property not found");
-        }
+        Property property = propertyService.findByIdOptional(propId)
+                .orElseThrow(() -> new RuntimeException("Property not found with id " + propId));
 
         Booking newBooking = new Booking();
         newBooking.setBookedFrom(dto.getBookedFrom());
