@@ -8,6 +8,7 @@ import com.example.demo.Services.UserService;
 import com.example.demo.Controllers.AuthController.UserResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -47,42 +48,53 @@ public class UserController {
     }
 
     // 2. Όλοι οι χρήστες — μόνο admin
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public List<UserResponse> allUsers() {
-        return userRepository.findAll().stream()
+    public ResponseEntity<?> allUsers(Authentication authentication) {
+        if (authentication == null || authentication.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only admins can list all users"));
+        }
+        List<UserResponse> users = userRepository.findAll().stream()
                 .map(UserResponse::fromEntity)
                 .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}/properties")
     public ResponseEntity<?> getPropertiesForUserId(@PathVariable Long id, Authentication authentication) {
-        User target = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
+        }
 
         String callerUsername = extractUsername(authentication);
-        boolean ok = isAdmin(authentication) || callerUsername.equals(target.getUsername());
-        if (!ok) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+        User caller = userRepository.findByUsername(callerUsername)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        boolean admin = isAdmin(authentication);
+        if (!admin && !caller.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden"));
         }
 
         List<Property> props = userService.getPropertiesForUserId(id);
-        return ResponseEntity.ok(props); // χωρίς DTO, επιστρέφεις απευθείας entities
+        return ResponseEntity.ok(props);
     }
 
     @GetMapping("/{id}/rentals")
     public ResponseEntity<?> getRentalsForUserId(@PathVariable Long id, Authentication authentication) {
-        // Πάρε τον target user για να ελέγξεις δικαιώματα
-        User target = userService.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
+        }
 
         String callerUsername = extractUsername(authentication);
-        boolean allowed = isAdmin(authentication) || callerUsername.equals(target.getUsername());
-        if (!allowed) {
+        User caller = userRepository.findByUsername(callerUsername)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        boolean admin = isAdmin(authentication);
+        if (!admin && !caller.getId().equals(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden"));
         }
 
-        // Φέρε τα rentals
         List<Rental> rentals = userService.getRentalsForUserId(id);
         return ResponseEntity.ok(rentals);
     }

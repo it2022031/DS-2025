@@ -32,4 +32,16 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    @Query("""
+        SELECT r FROM Rental r
+        WHERE r.property.id = :propertyId
+          AND r.status = true
+          AND NOT (r.endDate < :start OR r.startDate > :end)
+    """)
+    List<Rental> findOverlappingActiveRentals(
+            @Param("propertyId") Long propertyId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
 }

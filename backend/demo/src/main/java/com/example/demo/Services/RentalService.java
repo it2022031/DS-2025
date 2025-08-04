@@ -64,40 +64,78 @@ public class RentalService {
         return rentals;
 
     }
-    @Transactional
-    public Rental createRental(Long propertyId, Long userId,
-                               LocalDate startDate, LocalDate endDate,
+
+
+
+//    @Transactional
+//    public Rental createRental(Long propertyId, Long userId,
+//                               LocalDate startDate, LocalDate endDate,
+//                               Double paymentAmount) {
+//        if (startDate == null || endDate == null) {
+//            throw new IllegalArgumentException("Start and end dates are required");
+//        }
+//        if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
+//            throw new IllegalArgumentException("End date must be after start date");
+//        }
+//        if (paymentAmount == null || paymentAmount < 0) {
+//            throw new IllegalArgumentException("Payment amount must be non-negative");
+//        }
+//
+//        Property property = propertyRepository.findById(propertyId)
+//                .orElseThrow(() -> new IllegalArgumentException("Property not found with id " + propertyId));
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+//
+//        // Έλεγχος για overlap
+//        List<Rental> overlapping = rentalRepository.findActiveOverlapping(propertyId, startDate, endDate);
+//        if (!overlapping.isEmpty()) {
+//            throw new IllegalStateException("Property is already rented in the given period");
+//        }
+//
+//        Rental rental = new Rental();
+//        rental.setProperty(property);
+//        rental.setUser(user);
+//        rental.setStartDate(startDate);
+//        rental.setEndDate(endDate);
+//        rental.setPaymentAmount(paymentAmount);
+//        rental.setStatus(true); // ενεργό
+//
+//        return rentalRepository.save(rental);
+//    }
+
+
+    public Rental createRental(Long propertyId,
+                               Long userId,
+                               LocalDate startDate,
+                               LocalDate endDate,
                                Double paymentAmount) {
-        if (startDate == null || endDate == null) {
-            throw new IllegalArgumentException("Start and end dates are required");
-        }
-        if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
-            throw new IllegalArgumentException("End date must be after start date");
-        }
-        if (paymentAmount == null || paymentAmount < 0) {
-            throw new IllegalArgumentException("Payment amount must be non-negative");
+
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("startDate must be on or before endDate");
         }
 
         Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(() -> new IllegalArgumentException("Property not found with id " + propertyId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("Property not found"));
 
-        // Έλεγχος για overlap
-        List<Rental> overlapping = rentalRepository.findActiveOverlapping(propertyId, startDate, endDate);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Έλεγχος επικάλυψης
+        List<Rental> overlapping = rentalRepository.findOverlappingActiveRentals(
+                propertyId, startDate, endDate);
         if (!overlapping.isEmpty()) {
-            throw new IllegalStateException("Property is already rented in the given period");
+            throw new IllegalStateException("Property already has an active overlapping rental");
         }
 
         Rental rental = new Rental();
-        rental.setProperty(property);
-        rental.setUser(user);
         rental.setStartDate(startDate);
         rental.setEndDate(endDate);
         rental.setPaymentAmount(paymentAmount);
-        rental.setStatus(true); // ενεργό
+        rental.setStatus(true); // default approved, μπορείς να αλλάξεις αν θέλεις workflow
+        rental.setProperty(property);
+        rental.setUser(user);
 
         return rentalRepository.save(rental);
     }
-    // Προαιρετικά μπορείς να βάλεις κι άλλες μεθόδους, πχ update, delete κτλ
+
 }
