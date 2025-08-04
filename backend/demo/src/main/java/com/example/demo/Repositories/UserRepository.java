@@ -66,6 +66,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT r FROM Rental r JOIN FETCH r.property WHERE r.user.id = :userId")
     List<Rental> findRentalsByUserId(@Param("userId") Long userId);
 
+    boolean existsByUsernameAndIdNot(String username, Long id);
+    boolean existsByEmailAndIdNot(String email, Long id);
+
 //    // Properties του χρήστη (owner)
 //    @Query("SELECT p FROM Property p WHERE p.owner.id = :userId")
 //    List<Property> findPropertiesByOwnerId(@Param("userId") Long userId)

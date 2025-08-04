@@ -7,6 +7,7 @@ import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
@@ -18,13 +19,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final PropertyRepository propertyRepository;
     private final RentalRepository rentalRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
                        PropertyRepository propertyRepository,
-                       RentalRepository rentalRepository) {
+                       RentalRepository rentalRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.propertyRepository = propertyRepository;
         this.rentalRepository = rentalRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> findAll() {
@@ -130,7 +133,64 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
         return rentalRepository.findRentalsByUserId(userId); // ή όποια μέθοδο έχεις για να φέρνεις τα rentals
     }
-//    public Optional<User> findById(Long id) {
-//        return userRepository.findById(id);
-//    }
+
+
+    public User updateUserPartial(Long userId, Map<String, Object> updates) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (updates.containsKey("username")) {
+            String newUsername = updates.get("username").toString().trim();
+            if (!newUsername.isEmpty() && !newUsername.equals(user.getUsername())) {
+                if (userRepository.existsByUsernameAndIdNot(newUsername, userId)) {
+                    throw new IllegalArgumentException("Username already taken");
+                }
+                user.setUsername(newUsername);
+            }
+        }
+
+        if (updates.containsKey("email")) {
+            String newEmail = updates.get("email").toString().trim();
+            if (!newEmail.isEmpty() && !newEmail.equals(user.getEmail())) {
+                if (userRepository.existsByEmailAndIdNot(newEmail, userId)) {
+                    throw new IllegalArgumentException("Email already in use");
+                }
+                // απλός έλεγχος μορφής (μπορείς να βάλεις πιο αυστηρό ή validator)
+                if (!newEmail.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+                    throw new IllegalArgumentException("Invalid email format");
+                }
+                user.setEmail(newEmail);
+            }
+        }
+
+        if (updates.containsKey("firstName")) {
+            String fn = updates.get("firstName").toString().trim();
+            user.setFirstName(fn);
+        }
+
+        if (updates.containsKey("lastName")) {
+            String ln = updates.get("lastName").toString().trim();
+            user.setLastName(ln);
+        }
+
+        if (updates.containsKey("passportNumber")) {
+            String pn = updates.get("passportNumber").toString().trim();
+            user.setPassportNumber(pn);
+        }
+
+        if (updates.containsKey("afm")) {
+            String afm = updates.get("afm").toString().trim();
+            user.setAfm(afm);
+        }
+
+        if (updates.containsKey("password")) {
+            String pw = updates.get("password").toString();
+            if (pw.length() < 6) {
+                throw new IllegalArgumentException("Password must be at least 6 characters");
+            }
+            user.setPassword(passwordEncoder.encode(pw));
+        }
+
+        return userRepository.save(user);
+    }
 }
