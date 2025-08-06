@@ -121,6 +121,7 @@ export default {
     async submitForm() {
       const userRole = localStorage.getItem("userRole");
       const token = localStorage.getItem("token");
+      console.log("Token:", token); // Πρέπει να εμφανίζει JWT
 
       if (!userRole || !token) {
         alert("Πρέπει να είστε συνδεδεμένοι για να προσθέσετε ακίνητο.");
@@ -142,9 +143,10 @@ export default {
         alert("Please fill in all fields.");
         return;
       }
+      const username = localStorage.getItem("username"); //να φτιάξει ο αίαντας πεδίο στο backend
 
       try {
-        const response = await axios.post("http://localhost:8080/api/properties/add", {
+        const response = await axios.post("http://localhost:8080/api/properties", {
           name: this.name,
           description: this.description,
           country: this.country,

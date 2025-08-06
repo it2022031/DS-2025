@@ -81,9 +81,9 @@
             <div class="w-100 d-flex justify-content-between">
               <div>
                 <strong>#{{ rent.id }}</strong>
-                <div><strong>Property:</strong> {{ getPropertyName(rent.propertyId) }}</div>
-                <div><strong>User:</strong> {{ getUserName(rent.userId) }}</div>
-                <div><strong>Dates:</strong> {{ rent.startDate }} ➜ {{ rent.endDate }}</div>
+                <div><strong>Property:</strong> {{ getPropertyName(rent.property && rent.property.id) }}</div>
+                <div><strong>User:</strong> {{ getUserName(rent.user && rent.user.id) }}</div>
+                <div><strong>Dates:</strong> {{ rent.bookedFrom }} ➜ {{ rent.bookedTo }}</div>
                 <div><strong>Price Range:</strong> {{ rent.priceMin }}€ - {{ rent.priceMax }}€</div>
               </div>
             </div>
@@ -187,11 +187,23 @@ export default {
     filteredProperties() { return this.properties; }
   },
   methods: {
-    async fetchProperties() { try { const res = await axios.get("http://localhost:8080/api/properties/all"); this.properties = res.data; } catch (e) { console.error(e); } },
+    async fetchProperties() {
+      const token = localStorage.getItem('token');
+      try { const res = await axios.get("http://localhost:8080/api/properties/all", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }); this.properties = res.data; } catch (e) { console.error(e); } },
     async fetchUsers() { try { const res = await axios.get("http://localhost:8080/api/users"); this.users = res.data; } catch (e) { console.error(e); } },
     async fetchRents() {
       this.loadingRents = true;
-      try { const res = await axios.get("http://localhost:8080/api/rentals/all"); this.rents = res.data; } catch (e) { console.error(e); } finally { this.loadingRents = false; }
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get("http://localhost:8080/api/bookings", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }); this.rents = res.data; } catch (e) { console.error(e); } finally { this.loadingRents = false; }
     },
     normalize(d) { return d.split('T')[0]; },
     hasConflict(start, end, propId, excludeId=null) {
@@ -202,14 +214,34 @@ export default {
       ));
     },
     async createRent() {
-      if (this.hasConflict(this.form.startDate,this.form.endDate,this.form.propertyId)) { return alert('Conflict with existing rent!'); }
+      if (this.hasConflict(this.form.startDate, this.form.endDate, this.form.propertyId)) {
+        return alert('Conflict with existing rent!');
+      }
+
       try {
-        const newRent = { property:{id:this.form.propertyId}, user:{id:this.userId}, ...this.form };
-        const res = await axios.post("http://localhost:8080/api/rentals/add", newRent);
+        const newRent = {
+          property: { id: this.form.propertyId },
+          bookedFrom: this.form.startDate,
+          bookedTo: this.form.endDate,
+          priceMin: this.form.priceMin,
+          priceMax: this.form.priceMax,
+          status: true
+        };
+
+        const token = localStorage.getItem('token');
+
+        const res = await axios.post("http://localhost:8080/api/rentals", newRent, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
         this.rents.push(res.data);
         this.resetForm();
-      } catch (e) { console.error(e); alert('Failed to create rent.'); }
+      } catch (e) {
+        console.error(e);
+        alert('Failed to create rent.');
+      }
     },
+
     startEdit(rent) {
       this.editingRent = rent;
       this.editForm.startDate = this.normalize(rent.startDate);
@@ -220,13 +252,22 @@ export default {
     async updateRent() {
       if (this.hasConflict(this.editForm.startDate,this.editForm.endDate,this.editingRent.propertyId,this.editingRent.id)) { return alert('Conflict on update!'); }
       try {
-        const payload = { id:this.editingRent.id, startDate:this.editForm.startDate, endDate:this.editForm.endDate, priceMin:this.editForm.priceMin, priceMax:this.editForm.priceMax };
-        await axios.put(`http://localhost:8080/api/rentals/${payload.id}`, payload);
+        const payload = {
+          id: this.editingRent.id,
+          bookedFrom: this.editForm.startDate,
+          bookedTo: this.editForm.endDate,
+          priceMin: this.editForm.priceMin,
+          priceMax: this.editForm.priceMax,
+          status: true,
+          property: this.editingRent.property,
+          user: this.editingRent.user
+        };
+        await axios.put(`http://localhost:8080/api/bookings/${payload.id}`, payload);
         Object.assign(this.editingRent, payload);
         this.editingRent = null;
       } catch(e) { console.error(e); alert('Failed to update rent.'); }
     },
-    async cancelRent(id) { try { await axios.delete(`http://localhost:8080/api/rentals/${id}`); this.rents = this.rents.filter(r=>r.id!==id); } catch(e){console.error(e); alert('Cancel failed');} },
+    async cancelRent(id) { try { await axios.delete(`http://localhost:8080/api/bookings/${id}`); this.rents = this.rents.filter(r=>r.id!==id); } catch(e){console.error(e); alert('Cancel failed');} },
     getUserName(id){ const u=this.users.find(x=>x.id===id); return u?this.formatUserName(u):'Unknown'; },
     getPropertyName(id){ const p=this.properties.find(x=>x.id===id); return p?p.name:'Unknown'; },
     formatUserName(u){ if(u.firstName&&u.lastName)return`${u.firstName} ${u.lastName}`; if(u.username)return u.username; if(u.name)return u.name; return 'Unknown';},

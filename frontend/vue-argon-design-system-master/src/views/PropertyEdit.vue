@@ -44,10 +44,10 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Status</label>
-              <select v-model="property.status" class="form-select">
-                <option value="available">Available</option>
-                <option value="rented">Rented</option>
-                <option value="maintenance">Maintenance</option>
+              <select v-model="property.approvalStatus" class="form-select">
+                <option value="PENDING">Pending</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
               </select>
             </div>
           </div>
@@ -97,12 +97,12 @@ export default {
       if (!this.property || !this.property.id) return;
       const token = localStorage.getItem('token');  // Παίρνουμε το token ξανά
       try {
-        await axios.put(
+        await axios.patch(
             `http://localhost:8080/api/properties/${this.property.id}`,
             this.property,
             {
               headers: {
-                Authorization: `Bearer ${token}`  // Προσθέτουμε το header
+                Authorization: `Bearer ${token}`
               }
             }
         );

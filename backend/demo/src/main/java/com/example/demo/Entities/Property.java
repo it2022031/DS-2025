@@ -1,6 +1,7 @@
 package com.example.demo.Entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ public class Property {
     private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Booking> bookings;
+    @JsonManagedReference(value = "property-bookings")
+    private List<Booking> bookings = new ArrayList<>();
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

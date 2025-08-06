@@ -1,4 +1,5 @@
 package com.example.demo.Entities;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -16,7 +17,13 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id")
+    @JsonBackReference(value = "property-bookings")
     private Property property;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id") // ✅ Νέο πεδίο για user
+    @JsonBackReference(value = "user-bookings")
+    private User user;
 
     // constructors, getters, setters
 
@@ -62,4 +69,8 @@ public class Booking {
     public void setProperty(Property property) {
         this.property = property;
     }
+
+    public User getUser() { return user; }
+
+    public void setUser(User user) { this.user = user; }
 }

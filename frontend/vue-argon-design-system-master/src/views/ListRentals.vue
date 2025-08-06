@@ -1,7 +1,7 @@
 <template>
   <section class="list-rentals section bg-secondary py-5">
     <div class="container">
-      <h2 class="text-center text-white mb-4">📅 Rentals List</h2>
+      <h2 class="text-center text-white mb-4">📖 Rentals List</h2>
 
       <div v-if="loading" class="text-center text-white">Loading rentals...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load rentals.</div>
@@ -15,14 +15,12 @@
             <p><strong>User ID:</strong> {{ rental.userId }}</p>
             <p><strong>Start Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>
-            <p><strong>Payment:</strong> {{ formatPayment(rental.payment) }}</p>
             <p><strong>Status:</strong>
-              <span :class="{'approved': rental.status, 'pending': !rental.status}">
-      {{ rental.status ? 'Approved' : 'Pending' }}
-    </span>
+              <span :class="{ approved: rental.status, pending: !rental.status }">
+                {{ rental.status ? 'Active' : 'Cancelled' }}
+              </span>
             </p>
           </div>
-
         </li>
       </ul>
 
@@ -37,7 +35,7 @@
 import axios from 'axios';
 
 export default {
-  name: "ListRentals",
+  name: 'ListRentals',
   data() {
     return {
       rentals: [],
@@ -51,16 +49,18 @@ export default {
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
-    formatPayment(payment) {
-      if (payment == null) return 'N/A';
-      return `€${payment.toFixed(2)}`;
-    }
   },
   async mounted() {
     this.loading = true;
     this.error = false;
+
     try {
-      const response = await axios.get('http://localhost:8080/api/rentals/all');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:8080/api/rentals/all', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       this.rentals = response.data;
     } catch (err) {
       console.error('Error fetching rentals:', err);
@@ -77,14 +77,14 @@ export default {
   min-height: 100vh;
 }
 
-.rental-list {
+.booking-list {
   list-style: none;
   padding: 0;
   margin: 0 auto;
   max-width: 900px;
 }
 
-.rental-card {
+.booking-card {
   background-color: #fff;
   border-radius: 12px;
   overflow: hidden;
@@ -94,18 +94,18 @@ export default {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.rental-card:hover {
+.booking-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-.rental-info h3 {
+.booking-info h3 {
   margin: 0 0 10px;
   font-size: 22px;
   color: #2c3e50;
 }
 
-.rental-info p {
+.booking-info p {
   margin: 5px 0;
   color: #555;
   font-size: 16px;

@@ -6,15 +6,21 @@
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
       <div v-else-if="properties.length === 0" class="text-center text-white">No properties found.</div>
+
       <ul v-else class="property-list">
         <li v-for="property in properties" :key="property.id" class="property-card">
-          <img :src="property.image" :alt="property.name" class="property-image" />
+          <!-- Αν δεν έχεις image url, βάζουμε ένα placeholder -->
+          <img
+              :src="property.imageUrl || '/default-property.jpg'"
+              :alt="property.name"
+              class="property-image"
+          />
           <div class="property-info">
             <h3>{{ property.name }}</h3>
-            <p><strong>Owner:</strong> {{ property.ownerName }}</p>
+            <p><strong>Owner:</strong> 👤{{ property.username || 'N/A' }}</p>
             <p>{{ property.description }}</p>
             <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
-            <p><strong>Status:</strong> {{ property.status }}</p>
+            <p><strong>Status:</strong> {{ property.approvalStatus }}</p>
             <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
             <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
             <div class="mt-3">
@@ -35,33 +41,39 @@
 
 <script>
 import axios from 'axios';
+
 export default {
   name: "ListProperties",
   data() {
     return {
       properties: [],
       loading: false,
-      error: false
+      error: false,
     };
   },
   computed: {
     userRole() {
-      //return localStorage.getItem('userRole');
       return (localStorage.getItem('userRole') || '').toUpperCase();
     },
     userId() {
       return Number(localStorage.getItem('userId'));
-    }
+    },
   },
   methods: {
     async fetchProperties() {
       this.loading = true;
       this.error = false;
       try {
-        const response = await axios.get('http://localhost:8080/api/properties/all');
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:8080/api/properties/all", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        // backend επιστρέφει array από PropertyDto με ownerName και ownerId
         this.properties = response.data;
       } catch (err) {
-        console.error('Error fetching properties:', err);
+        console.error("Error fetching properties:", err);
         this.error = true;
       } finally {
         this.loading = false;
@@ -69,14 +81,14 @@ export default {
     },
     canEdit(property) {
       return (
-          this.userRole === 'admin' ||
-          (this.userRole === 'owner' && property.ownerId === this.userId)
+          this.userRole === "ADMIN" ||
+          (this.userRole === "OWNER" && property.ownerId === this.userId)
       );
-    }
+    },
   },
   mounted() {
     this.fetchProperties();
-  }
+  },
 };
 </script>
 
