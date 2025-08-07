@@ -1,9 +1,14 @@
 package com.example.demo.Controllers;
 
+import com.example.demo.Entities.ApprovalStatus;
+import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
 import com.example.demo.Repositories.UserRepository;
+import com.example.demo.Services.PropertyService;
 import com.example.demo.Services.RentalService;
+import com.example.demo.dto.RentalCreateRequest;
+import com.example.demo.dto.RentalDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.List;
+import java.util.stream.Collectors;
 
-
-import java.util.List;
 @RestController
 @RequestMapping("/api/rentals")
 @CrossOrigin(origins = "*")
@@ -26,143 +30,124 @@ public class RentalController {
 
     private final RentalService rentalService;
     private final UserRepository userRepository;
-    public RentalController(RentalService rentalService, UserRepository userRepository) {
+    private final PropertyService propertyService;
+
+    public RentalController(RentalService rentalService,
+                            UserRepository userRepository, PropertyService propertyService) {
         this.rentalService = rentalService;
         this.userRepository = userRepository;
+        this.propertyService = propertyService;
     }
 
-//    @GetMapping("/all")
-//    public List<Rental> getAllRentals() {
-//        return rentalService.findAll();
-//    }
-@GetMapping("/all")
-public ResponseEntity<?> getAllRentals(Authentication authentication) {
-    boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-    if (!isAdmin) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("error", "Only admins can list all rentals"));
-    }
-    List<Map<String, Object>> rentals = rentalService.getAllRentalData();
-    return ResponseEntity.ok(rentals);
-}
-
-//    @PostMapping("/add")
-//    public ResponseEntity<Rental> addRental(@RequestBody Rental dto) {
-//        Rental saved = rentalService.addRental(dto);
-//        return ResponseEntity.ok(saved);
-//    }
-    @GetMapping("/{id}")
-    public ResponseEntity<Rental> getRentalById(@PathVariable Long id) {
-        Rental rental = rentalService.getRentalWithRelations(id);
-        return ResponseEntity.ok(rental);
-    }
-
-//    @PostMapping("/add")
-//    public ResponseEntity<?> createRental(@RequestBody Map<String, Object> body) {
-//        try {
-//            if (!body.containsKey("propertyId") || !body.containsKey("userId") ||
-//                    !body.containsKey("startDate") || !body.containsKey("endDate") ||
-//                    !body.containsKey("paymentAmount")) {
-//                return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields"));
-//            }
-//
-//            Long propertyId = Long.valueOf(body.get("propertyId").toString());
-//            Long userId = Long.valueOf(body.get("userId").toString());
-//            LocalDate startDate = LocalDate.parse(body.get("startDate").toString());
-//            LocalDate endDate = LocalDate.parse(body.get("endDate").toString());
-//            Double paymentAmount = Double.valueOf(body.get("paymentAmount").toString());
-//
-//            Rental created = rentalService.createRental(propertyId, userId, startDate, endDate, paymentAmount);
-//            return ResponseEntity.ok(RentalDto.fromEntity(created));
-//        } catch (DateTimeParseException e) {
-//            return ResponseEntity.badRequest().body(Map.of("error", "Invalid date format. Use YYYY-MM-DD."));
-//        } catch (IllegalArgumentException | IllegalStateException e) {
-//            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body(Map.of("error", "Failed to create rental"));
-//        }
-//    }
-//
-//
-//
-//    // RentalDto.java (μπορείς και ως record αν θες)
-//    public record RentalDto(
-//            Long id,
-//            String startDate,
-//            String endDate,
-//            Double paymentAmount,
-//            Boolean status,
-//            Long propertyId,
-//            Long userId
-//    ) {
-//        public static RentalDto fromEntity(Rental r) {
-//            return new RentalDto(
-//                    r.getId(),
-//                    r.getStartDate().toString(),
-//                    r.getEndDate().toString(),
-//                    r.getPaymentAmount(),
-//                    r.getStatus(),
-//                    r.getProperty().getId(),
-//                    r.getUser().getId()
-//            );
-//        }
-//    }
-@PostMapping("/add")
-public ResponseEntity<?> createRental(@Valid @RequestBody RentalCreateRequest req,
-                                      Authentication authentication) {
-    if (authentication == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
-    }
-
-    // Έλεγχος required πεδίων (εκτός userId)
-    List<String> missing = new ArrayList<>();
-    if (req.propertyId() == null) missing.add("propertyId");
-    if (req.startDate() == null) missing.add("startDate");
-    if (req.endDate() == null) missing.add("endDate");
-    if (req.paymentAmount() == null) missing.add("paymentAmount");
-    if (!missing.isEmpty()) {
-        return ResponseEntity.badRequest().body(Map.of("error", "Missing fields: " + String.join(", ", missing)));
-    }
-
-    String callerUsername = extractUsername(authentication);
-    User caller = userRepository.findByUsername(callerUsername)
-            .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
-
-    Long finalUserId;
-    if (req.userId() != null) {
-        if (!isAdmin(authentication)) {
+    /** 1) List all rentals — admin only **/
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllRentals(Authentication authentication) {
+        boolean isAdmin = authentication != null &&
+                authentication.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isAdmin) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only admin can set userId explicitly"));
+                    .body(Map.of("error", "Only admins can list all rentals"));
         }
-        finalUserId = req.userId();
-    } else {
-        finalUserId = caller.getId();
+        List<Map<String, Object>> rentals = rentalService.getAllRentalData();
+        return ResponseEntity.ok(rentals);
     }
 
-    try {
-        LocalDate start = LocalDate.parse(req.startDate());
-        LocalDate end = LocalDate.parse(req.endDate());
-
-        Rental created = rentalService.createRental(
-                req.propertyId(),
-                finalUserId,
-                start,
-                end,
-                req.paymentAmount()
-        );
-        return ResponseEntity.ok(RentalDto.fromEntity(created));
-    } catch (DateTimeParseException e) {
-        return ResponseEntity.badRequest().body(Map.of("error", "Invalid date format. Use YYYY-MM-DD."));
-    } catch (IllegalArgumentException | IllegalStateException e) {
-        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    } catch (Exception e) {
-        return ResponseEntity.status(500).body(Map.of("error", "Failed to create rental"));
+    /** 2) Get a single rental by ID (no auth) **/
+    @GetMapping("/{id}")
+    public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {
+        Rental rental = rentalService.getRentalWithRelations(id);
+        return ResponseEntity.ok(RentalDto.fromEntity(rental));
     }
-}
 
+    /** 3) Create a new rental **/
+    @PostMapping("/add")
+    public ResponseEntity<?> createRental(
+            @Valid @RequestBody RentalCreateRequest req,
+            Authentication authentication
+    ) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthenticated"));
+        }
+
+        // --- έλεγχος ρόλου RENTER ή ADMIN ---
+        boolean isAdmin  = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isRenter = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_RENTER"));
+        if (!isAdmin && !isRenter) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only RENTERS or ADMIN can create rentals"));
+        }
+
+        // --- έλεγχος required πεδίων ---
+        List<String> missing = new ArrayList<>();
+        if (req.propertyId()    == null) missing.add("propertyId");
+        if (req.startDate()     == null) missing.add("startDate");
+        if (req.endDate()       == null) missing.add("endDate");
+        if (req.paymentAmount() == null) missing.add("paymentAmount");
+        if (!missing.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Missing fields: " + String.join(", ", missing)));
+        }
+
+        // --- φόρτωσε το Property και έλεγξε το approvalStatus ---
+        Property prop = propertyService.findByIdOptional(req.propertyId())
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+        if (prop.getApprovalStatus() != ApprovalStatus.APPROVED) {
+            // αν δεν έχει APPROVED, δεν επιτρέπουμε αίτηση
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Cannot rent a property unless it is APPROVED"));
+        }
+
+        // --- ποιος κάνει την αίτηση ---
+        String callerUsername = extractUsername(authentication);
+        User caller = userRepository.findByUsername(callerUsername)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        Long finalUserId;
+        if (req.userId() != null) {
+            if (!isAdmin) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Only ADMIN can set userId explicitly"));
+            }
+            finalUserId = req.userId();
+        } else {
+            finalUserId = caller.getId();
+        }
+
+        // --- προσπάθεια δημιουργίας ---
+        try {
+            LocalDate start = LocalDate.parse(req.startDate());
+            LocalDate end   = LocalDate.parse(req.endDate());
+
+            Rental created = rentalService.createRental(
+                    req.propertyId(),
+                    finalUserId,
+                    start,
+                    end,
+                    req.paymentAmount()
+            );
+            return ResponseEntity.ok(RentalDto.fromEntity(created));
+
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid date format. Use YYYY-MM-DD."));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to create rental"));
+        }
+    }
+
+
+
+
+    // helper to grab username
     private String extractUsername(Authentication authentication) {
-        if (authentication == null) return null;
         Object principal = authentication.getPrincipal();
         if (principal instanceof UserDetails ud) {
             return ud.getUsername();
@@ -170,38 +155,85 @@ public ResponseEntity<?> createRental(@Valid @RequestBody RentalCreateRequest re
         return principal.toString();
     }
 
+    // helper to check admin role
     private boolean isAdmin(Authentication authentication) {
-        if (authentication == null) return false;
         return authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
-    public record RentalCreateRequest(
-            Long propertyId,
-            String startDate,    // "YYYY-MM-DD"
-            String endDate,      // "YYYY-MM-DD"
-            Double paymentAmount,
-            Long userId          // προαιρετικό: μόνο admin μπορεί να το ορίσει
-    ) {}
-    public record RentalDto(
-            Long id,
-            String startDate,
-            String endDate,
-            Double paymentAmount,
-            Boolean status,
-            Long propertyId,
-            Long userId
-    ) {
-        public static RentalDto fromEntity(Rental r) {
-            return new RentalDto(
-                    r.getId(),
-                    r.getStartDate().toString(),
-                    r.getEndDate().toString(),
-                    r.getPaymentAmount(),
-                    r.getStatus(),
-                    r.getProperty().getId(),
-                    r.getUser().getId()
-            );
-        }
-    }
-}
 
+
+    @GetMapping("/owner")
+    public ResponseEntity<?> getMyPropertyRentals(Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
+        }
+        String username = auth.getName();
+        User owner = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // μόνο αν είναι πραγματικά owner (ή admin) τουλάχιστον ενός property
+        List<Rental> rentals = rentalService.getRentalsForOwner(owner.getId());
+        return ResponseEntity.ok(
+                rentals.stream()
+                        .map(RentalDto::fromEntity)    // χρησιμοποιείς το ήδη υπάρχον DTO
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @PostMapping("/{rentalId}/approve")
+    public ResponseEntity<?> approveRental(@PathVariable Long rentalId,
+                                           Authentication authentication) {
+        // must be authenticated
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
+        }
+
+        Rental rental = rentalService.getById(rentalId);
+        Long callerId = getCallerId(authentication);
+        Long ownerId  = rental.getProperty().getOwner().getId();
+
+        if (!callerId.equals(ownerId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only the property owner can approve rentals"));
+        }
+
+        Rental updated = rentalService.setApprovalStatus(rentalId, ApprovalStatus.APPROVED);
+        return ResponseEntity.ok(RentalDto.fromEntity(updated));
+    }
+
+    /**  Reject **/
+    @PostMapping("/{rentalId}/reject")
+    public ResponseEntity<?> rejectRental(@PathVariable Long rentalId,
+                                          Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
+        }
+
+        Rental rental = rentalService.getById(rentalId);
+        Long callerId = getCallerId(authentication);
+        Long ownerId  = rental.getProperty().getOwner().getId();
+
+        if (!callerId.equals(ownerId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only the property owner can reject rentals"));
+        }
+
+        Rental updated = rentalService.setApprovalStatus(rentalId, ApprovalStatus.REJECTED);
+        return ResponseEntity.ok(RentalDto.fromEntity(updated));
+    }
+
+
+//    private String extractUsername(Authentication auth) {
+//        if (auth == null) return null;
+//        Object p = auth.getPrincipal();
+//        return (p instanceof UserDetails ud) ? ud.getUsername() : p.toString();
+//    }
+
+    private Long getCallerId(Authentication auth) {
+        String uname = extractUsername(auth);
+        return userRepository.findByUsername(uname)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"))
+                .getId();
+    }
+
+}

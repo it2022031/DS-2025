@@ -17,7 +17,7 @@ public class Rental {
 
     private Double paymentAmount;
 
-    private Boolean status; // true = approved, false = pending/rejected
+
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
@@ -27,18 +27,26 @@ public class Rental {
     @JoinColumn(name = "property_id")
     private Property property;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
+
     public Rental() {}
 
     public Rental(LocalDate startDate, LocalDate endDate, Double paymentAmount, Boolean status, User user, Property property) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.paymentAmount = paymentAmount;
-        this.status = status;
+        this.approvalStatus = ApprovalStatus.PENDING;
         this.user = user;
         this.property = property;
     }
 
     // Getters & Setters
+
+
+
+
 
     public Long getId() {
         return id;
@@ -72,16 +80,12 @@ public class Rental {
         this.paymentAmount = paymentAmount;
     }
 
-    public boolean isStatus() {
-        return status;
+    public ApprovalStatus getApprovalStatus() {
+        return approvalStatus;
     }
 
-    public Boolean getStatus() {
-        return status;
-    }
-
-    public void setStatus(Boolean status) {
-        this.status = status;
+    public void setApprovalStatus(ApprovalStatus approvalStatus) {
+        this.approvalStatus = approvalStatus;
     }
 
     public User getUser() {

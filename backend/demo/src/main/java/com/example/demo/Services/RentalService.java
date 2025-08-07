@@ -1,5 +1,6 @@
 package com.example.demo.Services;
 
+import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
@@ -131,11 +132,30 @@ public class RentalService {
         rental.setStartDate(startDate);
         rental.setEndDate(endDate);
         rental.setPaymentAmount(paymentAmount);
-        rental.setStatus(true); // default approved, μπορείς να αλλάξεις αν θέλεις workflow
+        rental.setApprovalStatus(ApprovalStatus.PENDING); // default approved, μπορείς να αλλάξεις αν θέλεις workflow
         rental.setProperty(property);
         rental.setUser(user);
 
         return rentalRepository.save(rental);
     }
+
+    @Transactional
+    public Rental setApprovalStatus(Long rentalId, ApprovalStatus newStatus) {
+        Rental r = rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new RuntimeException("Rental not found with id " + rentalId));
+        r.setApprovalStatus(newStatus);
+        return rentalRepository.save(r);
+    }
+
+    public Rental getById(Long rentalId) {
+        return rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new RuntimeException("Rental not found with id " + rentalId));
+    }
+
+    public List<Rental> getRentalsForOwner(Long ownerId) {
+        return rentalRepository.findByPropertyOwnerId(ownerId);
+    }
+
+
 
 }
