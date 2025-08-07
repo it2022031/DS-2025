@@ -10,7 +10,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users",
@@ -50,8 +52,11 @@ public class User {
 
     private String afm;  // Greek Tax Identification Number
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name="user_roles", joinColumns=@JoinColumn(name="user_id"))
+    @Column(name="role")
     @Enumerated(EnumType.STRING)
-    private Role role = Role.USER;
+    private Set<Role> roles = new HashSet<>();
 
     // Κατάσταση λογαριασμού (μπορείς να τις επεκτείνεις/χρήσεις στο μέλλον)
     private boolean enabled = true;
@@ -66,6 +71,17 @@ public class User {
     @JsonIgnore
     private List<Rental> rentals = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatus renterRequestStatus;
+
+    public ApprovalStatus getRenterRequestStatus() {
+        return renterRequestStatus;
+    }
+
+    public void setRenterRequestStatus(ApprovalStatus renterRequestStatus) {
+        this.renterRequestStatus = renterRequestStatus;
+    }
+
     public User() {}
 
     // constructor για registration / δημιουργία
@@ -76,15 +92,17 @@ public class User {
                 String lastName,
                 String passportNumber,
                 String afm,
-                Role role) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
+                Role initialRole) {
+        this.username       = username;
+        this.password       = password;
+        this.email          = email;
+        this.firstName      = firstName;
+        this.lastName       = lastName;
         this.passportNumber = passportNumber;
-        this.afm = afm;
-        this.role = role != null ? role : Role.USER;
+        this.afm            = afm;
+        // ensure at least USER if null
+        this.roles.clear();
+        this.roles.add(initialRole != null ? initialRole : Role.USER);
     }
 
     // Getters & Setters
@@ -150,12 +168,26 @@ public class User {
         this.afm = afm;
     }
 
-    public Role getRole() {
-        return role;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles != null ? new HashSet<>(roles) : new HashSet<>();
+    }
+    public void addRole(Role role) {
+        if (role != null) {
+            this.roles.add(role);
+        }
+    }
+
+    /**
+     * Revoke a role.
+     */
+    public void removeRole(Role role) {
+        if (role != null) {
+            this.roles.remove(role);
+        }
     }
 
     public boolean isEnabled() {

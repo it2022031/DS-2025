@@ -15,9 +15,11 @@ public class UserPrincipal implements UserDetails {
 
     private UserPrincipal(User user) {
         this.user = user;
-        // single role -> Spring απαιτεί "ROLE_" prefix
-        String roleName = user.getRole() != null ? user.getRole().name() : "USER";
-        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + roleName));
+        // βρες ένα πρώτο role ή default σε USER
+        Role primary = user.getRoles().stream().findFirst().orElse(Role.USER);
+        this.authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_" + primary.name())
+        );
     }
 
     public static UserPrincipal fromUser(User user) {

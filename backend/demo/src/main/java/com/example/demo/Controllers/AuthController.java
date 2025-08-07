@@ -5,6 +5,7 @@ import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Security.JwtUtil;
 import com.example.demo.Security.Role;
 import com.example.demo.Services.CustomUserDetailsService;
+import com.example.demo.dto.UserResponseDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,24 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-
-import com.example.demo.Entities.User;
-import com.example.demo.Repositories.UserRepository;
-import com.example.demo.Security.JwtUtil;
-import com.example.demo.Security.Role;
-import com.example.demo.Services.CustomUserDetailsService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -55,7 +41,7 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    // DTOs
+    // --- DTOs για Register/Login ---
     public record RegistrationRequest(
             @NotBlank String username,
             @NotBlank @Size(min = 6) String password,
@@ -68,30 +54,9 @@ public class AuthController {
 
     public record AuthRequest(String username, String password) {}
 
-    public record UserResponse(Long id,
-                               String username,
-                               String email,
-                               String firstName,
-                               String lastName,
-                               String role,
-                               String passportNumber,
-                               String afm) {
-        public static UserResponse fromEntity(User u) {
-            return new UserResponse(
-                    u.getId(),
-                    u.getUsername(),
-                    u.getEmail(),
-                    u.getFirstName(),
-                    u.getLastName(),
-                    u.getRole() != null ? u.getRole().name() : null,
-                    u.getPassportNumber(),
-                    u.getAfm()
-            );
-        }
-    }
+    public record AuthResponse(String token, UserResponseDto user) {}
 
-    public record AuthResponse(String token, UserResponse user) {}
-
+    // --- Εγγραφή νέου χρήστη ---
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest req) {
         if (userRepository.existsByUsername(req.username())) {
@@ -109,16 +74,19 @@ public class AuthController {
         user.setLastName(req.lastName());
         user.setPassportNumber(req.passportNumber());
         user.setAfm(req.afm());
-        user.setRole(Role.USER);
+        // Βάλε εδώ τον default ρόλο
+        user.addRole(Role.USER);
 
         User saved = userDetailsService.registerNewUser(user);
 
-        // αμέσως μετά κάνουμε token generation για το νέο χρήστη
+        // μετά την εγγραφή, κάνουμε και login token
         UserDetails ud = userDetailsService.loadUserByUsername(saved.getUsername());
         String token = jwtUtil.generateToken(ud);
-        return ResponseEntity.ok(new AuthResponse(token, UserResponse.fromEntity(saved)));
+
+        return ResponseEntity.ok(new AuthResponse(token, UserResponseDto.fromEntity(saved)));
     }
 
+    // --- Login υπάρχοντος χρήστη ---
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest req) {
         try {
@@ -135,12 +103,14 @@ public class AuthController {
 
         UserDetails ud = userDetailsService.loadUserByUsername(req.username());
         String token = jwtUtil.generateToken(ud);
-        User user = userRepository.findByUsername(req.username())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return ResponseEntity.ok(new AuthResponse(token, UserResponse.fromEntity(user)));
+        User user = userRepository.findByUsername(req.username())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return ResponseEntity.ok(new AuthResponse(token, UserResponseDto.fromEntity(user)));
     }
 
+    // --- Επιστροφή στοιχείων τρέχοντος χρήστη ---
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails ud)) {
@@ -149,7 +119,7 @@ public class AuthController {
         }
         String username = ud.getUsername();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(UserResponse.fromEntity(user));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
 }

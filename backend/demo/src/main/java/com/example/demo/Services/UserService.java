@@ -1,11 +1,14 @@
 package com.example.demo.Services;
 
+import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
 import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.UserRepository;
+import com.example.demo.Security.Role;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -193,4 +196,64 @@ public class UserService {
 
         return userRepository.save(user);
     }
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    /** Ορίζει την αίτηση του χρήστη σε PENDING. */
+    @Transactional
+    public User requestRenter(String username) {
+        User u = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        u.setRenterRequestStatus(ApprovalStatus.PENDING);
+        return userRepository.save(u);
+    }
+
+    /**
+     * Ο admin καλεί αυτό για να εγκρίνει ή να απορρίψει την αίτηση.
+     * Αν status==APPROVED, αλλάζει και τον ρόλο σε RENTER.
+     */
+    @Transactional
+    public User handleRenterRequest(Long userId, ApprovalStatus newStatus) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+        u.setRenterRequestStatus(newStatus);
+        if (newStatus == ApprovalStatus.APPROVED) {
+            u.addRole(Role.RENTER);
+        }
+        return userRepository.save(u);
+    }
+
+    /** (Προαιρετικό) Γενική μέθοδος αλλαγής ρόλου. */
+    @Transactional
+    public User updateUserRole(Long userId, Role newRole) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+        u.addRole(newRole);
+        return userRepository.save(u);
+    }
+
+    /**
+     * Επιστρέφει όλους τους χρήστες που έχουν renterRequestStatus == PENDING
+     */
+    public List<User> findAllRenterRequests() {
+        return userRepository.findByRenterRequestStatus(ApprovalStatus.PENDING);
+    }
+
+    /**
+     * Επίσης, μέθοδος για να εγκρίνει ή να απορρίψει το αίτημα
+     */
+    public User processRenterRequest(Long userId, boolean approve) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (approve) {
+            u.addRole(Role.RENTER);
+            u.setRenterRequestStatus(ApprovalStatus.APPROVED);
+        } else {
+            u.setRenterRequestStatus(ApprovalStatus.REJECTED);
+        }
+        return userRepository.save(u);
+    }
+
+
 }

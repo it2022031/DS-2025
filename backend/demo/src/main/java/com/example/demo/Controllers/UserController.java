@@ -1,14 +1,16 @@
 package com.example.demo.Controllers;
 
+import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
 import com.example.demo.Repositories.UserRepository;
+import com.example.demo.Security.Role;
 import com.example.demo.Services.UserService;
-import com.example.demo.Controllers.AuthController.UserResponse;
+import com.example.demo.dto.RenterRequestDto;
+import com.example.demo.dto.UserResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,15 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
-
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin
 public class UserController {
 
     private final UserRepository userRepository;
-    private final UserService userService; // για rentals / properties
+    private final UserService userService;
 
     public UserController(UserRepository userRepository,
                           UserService userService) {
@@ -39,113 +39,148 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
         if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
         }
         String username = extractUsername(authentication);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(UserResponse.fromEntity(user));
+        return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
 
     // 2. Όλοι οι χρήστες — μόνο admin
     @GetMapping
     public ResponseEntity<?> allUsers(Authentication authentication) {
-        if (authentication == null || authentication.getAuthorities().stream()
-                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+        if (authentication == null || !isAdmin(authentication)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Only admins can list all users"));
         }
-        List<UserResponse> users = userRepository.findAll().stream()
-                .map(UserResponse::fromEntity)
+        List<UserResponseDto> dtos = userRepository.findAll().stream()
+                .map(UserResponseDto::fromEntity)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(dtos);
     }
 
+    // 3. Get properties for user
     @GetMapping("/{id}/properties")
     public ResponseEntity<?> getPropertiesForUserId(@PathVariable Long id, Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
-        }
-
-        String callerUsername = extractUsername(authentication);
-        User caller = userRepository.findByUsername(callerUsername)
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
-
-        boolean admin = isAdmin(authentication);
-        if (!admin && !caller.getId().equals(id)) {
+        requireAuthenticated(authentication);
+        User caller = getCaller(authentication);
+        if (!isAdmin(authentication) && !caller.getId().equals(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden"));
         }
-
         List<Property> props = userService.getPropertiesForUserId(id);
         return ResponseEntity.ok(props);
     }
 
+    // 4. Get rentals for user
     @GetMapping("/{id}/rentals")
     public ResponseEntity<?> getRentalsForUserId(@PathVariable Long id, Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
-        }
-
-        String callerUsername = extractUsername(authentication);
-        User caller = userRepository.findByUsername(callerUsername)
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
-
-        boolean admin = isAdmin(authentication);
-        if (!admin && !caller.getId().equals(id)) {
+        requireAuthenticated(authentication);
+        User caller = getCaller(authentication);
+        if (!isAdmin(authentication) && !caller.getId().equals(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden"));
         }
-
         List<Rental> rentals = userService.getRentalsForUserId(id);
         return ResponseEntity.ok(rentals);
     }
 
-    private String extractUsername(Authentication authentication) {
-        if (authentication == null) return null;
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof UserDetails ud) {
-            return ud.getUsername();
-        }
-        return principal.toString();
-    }
-
-    private boolean isAdmin(Authentication authentication) {
-        if (authentication == null) return false;
-        return authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")); // ή "ADMIN" αν έχεις διαμορφώσει διαφορετικά
-    }
-
+    // 5. Partial update του ιδίου χρήστη
     @PatchMapping("/me")
     public ResponseEntity<?> patchMe(Authentication authentication,
                                      @RequestBody Map<String, Object> updates) {
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails ud)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthenticated"));
-        }
-        String username = ud.getUsername();
-        User user = userRepository.findByUsername(username)
+        requireAuthenticated(authentication);
+        String username = ((UserDetails)authentication.getPrincipal()).getUsername();
+        User me = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         try {
-            User updated = userService.updateUserPartial(user.getId(), updates);
-            return ResponseEntity.ok(AuthController.UserResponse.fromEntity(updated)); // ή αν έχεις ξεχωριστό DTO
+            User updated = userService.updateUserPartial(me.getId(), updates);
+            return ResponseEntity.ok(UserResponseDto.fromEntity(updated));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
+    // 6. Partial update άλλου χρήστη (admin only)
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> patchUserById(@PathVariable Long id,
                                            @RequestBody Map<String, Object> updates) {
         try {
             User updated = userService.updateUserPartial(id, updates);
-            return ResponseEntity.ok(AuthController.UserResponse.fromEntity(updated));
+            return ResponseEntity.ok(UserResponseDto.fromEntity(updated));
         } catch (IllegalArgumentException e) {
-            // validation / conflict, π.χ. username/email already taken
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (RuntimeException e) {
-            // π.χ. user not found
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
 
+    // 7. Ο απλός user υποβάλλει αίτημα για να γίνει RENTER
+    @PostMapping("/become-renter")
+    public ResponseEntity<?> requestRenter(Authentication authentication) {
+        requireAuthenticated(authentication);
+        User u = getCaller(authentication);
+        u.setRenterRequestStatus(ApprovalStatus.PENDING);
+        userRepository.save(u);
+        return ResponseEntity.ok(Map.of("message", "Renter request submitted"));
+    }
+
+    // 8. Ο admin εγκρίνει/απορρίπτει το αίτημα
+    @PostMapping("/{id}/approve-renter")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> approveRenter(@PathVariable Long id) {
+        User updated = userService.processRenterRequest(id, true);
+        return ResponseEntity.ok(Map.of(
+                "id",          updated.getId(),
+                "newStatus",   updated.getRenterRequestStatus().name(),
+                "roles",       updated.getRoles().stream().map(Role::name).collect(Collectors.toList())
+        ));
+    }
+
+    @PostMapping("/{id}/reject-renter")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> rejectRenter(@PathVariable Long id) {
+        User updated = userService.processRenterRequest(id, false);
+        return ResponseEntity.ok(Map.of(
+                "id",        updated.getId(),
+                "newStatus", updated.getRenterRequestStatus().name()
+        ));
+    }
+
+    // 9. Get all outstanding renter requests (admin only)
+    @GetMapping("/renter-requests")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RenterRequestDto>> listRenterRequests() {
+        var dtos = userService.findAllRenterRequests().stream()
+                .map(RenterRequestDto::fromEntity)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    // βοηθητικά
+    private void requireAuthenticated(Authentication auth) {
+        if (auth == null) throw new RuntimeException("Unauthenticated");
+    }
+    private String extractUsername(Authentication auth) {
+        Object p = auth.getPrincipal();
+        return p instanceof UserDetails ud ? ud.getUsername() : p.toString();
+    }
+    private User getCaller(Authentication auth) {
+        String uname = extractUsername(auth);
+        return userRepository.findByUsername(uname)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
+    @GetMapping("/whoami")
+    public ResponseEntity<?> whoami(Authentication auth) {
+        return ResponseEntity.ok(
+                auth.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList())
+        );
+    }
 }

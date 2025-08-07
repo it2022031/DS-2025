@@ -1,5 +1,6 @@
 package com.example.demo.Repositories;
 
+import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
@@ -73,5 +74,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 //    @Query("SELECT p FROM Property p WHERE p.owner.id = :userId")
 //    List<Property> findPropertiesByOwnerId(@Param("userId") Long userId)
 
-
+    List<User> findByRenterRequestStatus(ApprovalStatus status);
 }

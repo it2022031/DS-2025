@@ -4,11 +4,13 @@ import com.example.demo.Entities.User;
 import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Security.Role;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -22,30 +24,33 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Χρησιμοποιείται από το Spring Security για authentication
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+        // Μετέτρεψε κάθε Role σε GrantedAuthority
+        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                .map(r -> new SimpleGrantedAuthority("ROLE_" + r.name()))
+                .toList();
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
-                user.getPassword(), // ήδη hashed
+                user.getPassword(),
                 user.isEnabled(),
-                true, // accountNonExpired
-                true, // credentialsNonExpired
+                true,  // accountNonExpired
+                true,  // credentialsNonExpired
                 user.isAccountNonLocked(),
-                Collections.singletonList(authority)
+                authorities
         );
     }
 
-    // Registration helper: κωδικοποιεί το password πριν αποθήκευση
     public User registerNewUser(User user) {
+        // κωδικοποίηση κωδικού
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (user.getRole() == null) {
-            user.setRole(Role.USER);
+        // αν δεν έχει ρόλους, βάλε τον USER
+        if (user.getRoles().isEmpty()) {
+            user.addRole(Role.USER);
         }
         return userRepository.save(user);
     }

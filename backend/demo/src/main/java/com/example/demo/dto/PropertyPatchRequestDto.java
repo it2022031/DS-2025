@@ -1,7 +1,7 @@
 package com.example.demo.dto;
 
 
-public record PropertyPatchRequest(
+public record PropertyPatchRequestDto(
         String name,
         String description,
         String country,
