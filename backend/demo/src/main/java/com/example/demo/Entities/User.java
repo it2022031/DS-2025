@@ -63,10 +63,6 @@ public class User {
     private List<Property> properties = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "user-bookings")
-    private List<Booking> bookings = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Rental> rentals = new ArrayList<>();
 
@@ -194,14 +190,6 @@ public class User {
         this.rentals = rentals;
     }
 
-    public List<Booking> getBookings() {
-        return bookings;
-    }
-
-    public void setBookings(List<Booking> bookings) {
-        this.bookings = bookings;
-    }
-
     // βοηθητικά για σχέσεις
     public void addProperty(Property property) {
         properties.add(property);
@@ -222,18 +210,6 @@ public class User {
         rentals.remove(rental);
         rental.setUser(null);
     }
-
-    public void addBooking(Booking booking) {
-        bookings.add(booking);
-        booking.setUser(this);
-    }
-
-    public void removeBooking(Booking booking) {
-        bookings.remove(booking);
-        booking.setUser(null);
-    }
-
-
 
     // υπολογιζόμενο πλήρες όνομα
     @Transient
