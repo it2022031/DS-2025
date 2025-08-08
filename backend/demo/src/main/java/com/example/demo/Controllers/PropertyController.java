@@ -178,4 +178,25 @@ public class PropertyController {
         if (bodyId != null) return bodyId;
         return caller.getId();
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deletePropertyAsAdmin(@PathVariable Long id) {
+        propertyService.adminDeleteProperty(id);
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+    @GetMapping("/status/rejected")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Property>> getAllRejectedProperties() {
+        return ResponseEntity.ok(propertyService.getRejectedProperties());
+    }
+
+    @DeleteMapping("/status/rejected")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteAllRejectedProperties() {
+        propertyService.deleteAllRejectedProperties();
+        return ResponseEntity.noContent().build();
+    }
+
 }

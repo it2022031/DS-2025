@@ -1,5 +1,6 @@
 package com.example.demo.Repositories;
 
+import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Entities.Rental;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -62,4 +63,9 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     );
 
     List<Rental> findByPropertyOwnerId(Long ownerId);
+
+    long deleteByIdAndUser_Id(Long rentalId, Long userId);
+
+    List<Rental> findByApprovalStatus(ApprovalStatus status);
+    void deleteByApprovalStatus(ApprovalStatus status);
 }

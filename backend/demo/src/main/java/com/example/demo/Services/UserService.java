@@ -255,5 +255,19 @@ public class UserService {
         return userRepository.save(u);
     }
 
+    @Transactional
+    public void adminDeleteUser(Long targetUserId, Long callerUserId) {
+        if (targetUserId.equals(callerUserId)) {
+            throw new IllegalArgumentException("Admins cannot delete themselves.");
+        }
+
+        User toDelete = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + targetUserId));
+
+        // (προαιρετικό) αν δεν θέλεις να σβήνονται άλλοι admins, βάλε εδώ έλεγχο ρόλου
+
+        userRepository.delete(toDelete); // ενεργοποιεί cascade/orphanRemoval προς properties/rentals
+    }
+
 
 }

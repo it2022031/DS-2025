@@ -52,4 +52,25 @@ public class PropertyService {
         prop.setApprovalStatus(newStatus);
         return propertyRepository.save(prop);
     }
+
+    /** Admin: διαγραφή οποιουδήποτε property */
+    @Transactional
+    public void adminDeleteProperty(Long propertyId) {
+        Property p = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new IllegalArgumentException("Property not found: " + propertyId));
+
+        // εδώ μπορείς προαιρετικά να κάνεις validations (π.χ. να μην έχει ενεργά rentals)
+        // if (rentalRepository.existsByPropertyIdAndStatusActive(propertyId)) throw new ...
+
+        propertyRepository.delete(p); // ενεργοποιεί cascade/orphanRemoval προς bookings/rentals
+    }
+
+    public List<Property> getRejectedProperties() {
+        return propertyRepository.findByApprovalStatus(ApprovalStatus.REJECTED);
+    }
+
+    @Transactional
+    public void deleteAllRejectedProperties() {
+        propertyRepository.deleteByApprovalStatus(ApprovalStatus.REJECTED);
+    }
 }

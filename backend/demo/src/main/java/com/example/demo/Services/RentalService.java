@@ -156,6 +156,24 @@ public class RentalService {
         return rentalRepository.findByPropertyOwnerId(ownerId);
     }
 
+    @Transactional
+    public void adminDeleteRental(Long rentalId) {
+        Rental rental = rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new IllegalArgumentException("Rental not found: " + rentalId));
+
+        // Αν χρειάζεσαι validations (π.χ. να μην είναι ήδη πληρωμένο), βάλε εδώ
+        rentalRepository.delete(rental);
+    }
+
+
+    public List<Rental> getRejectedRentals() {
+        return rentalRepository.findByApprovalStatus(ApprovalStatus.REJECTED);
+    }
+
+    @Transactional
+    public void deleteAllRejectedRentals() {
+        rentalRepository.deleteByApprovalStatus(ApprovalStatus.REJECTED);
+    }
 
 
 }

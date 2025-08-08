@@ -75,4 +75,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 //    List<Property> findPropertiesByOwnerId(@Param("userId") Long userId)
 
     List<User> findByRenterRequestStatus(ApprovalStatus status);
+
 }

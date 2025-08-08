@@ -183,4 +183,25 @@ public class UserController {
                         .collect(Collectors.toList())
         );
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteUserAsAdmin(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // ποιος καλεί (για τον έλεγχο "μην διαγράψεις τον εαυτό σου")
+        String callerUsername = extractUsername(authentication);
+        Long callerId = userRepository.findByUsername(callerUsername)
+                .orElseThrow(() -> new RuntimeException("Caller not found"))
+                .getId();
+
+        try {
+            userService.adminDeleteUser(id, callerId);
+            return ResponseEntity.noContent().build(); // 204
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

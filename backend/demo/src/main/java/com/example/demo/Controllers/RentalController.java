@@ -12,6 +12,7 @@ import com.example.demo.dto.RentalDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -234,6 +235,26 @@ public class RentalController {
         return userRepository.findByUsername(uname)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"))
                 .getId();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteRentalAsAdmin(@PathVariable Long id) {
+        rentalService.adminDeleteRental(id);
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+    @GetMapping("/status/rejected")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Rental>> getAllRejectedRentals() {
+        return ResponseEntity.ok(rentalService.getRejectedRentals());
+    }
+
+    @DeleteMapping("/status/rejected")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteAllRejectedRentals() {
+        rentalService.deleteAllRejectedRentals();
+        return ResponseEntity.noContent().build();
     }
 
 }
