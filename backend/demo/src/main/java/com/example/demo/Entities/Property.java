@@ -1,6 +1,7 @@
 package com.example.demo.Entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -37,6 +38,10 @@ public class Property {
     @JsonBackReference(value = "user-properties")
     private User owner;
     // constructors, getters, setters
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "property-reviews")
+    private List<Review> reviews = new ArrayList<>();
 
     public Property() {
     }

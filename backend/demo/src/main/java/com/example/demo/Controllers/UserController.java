@@ -16,7 +16,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -203,5 +205,66 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @PostMapping("/{id}/upload-photo")
+    public ResponseEntity<?> uploadPhoto(@PathVariable Long id,
+                                         @RequestParam("file") MultipartFile file,
+                                         Authentication authentication) throws IOException {
+        if (authentication == null) return ResponseEntity.status(401).body(Map.of("error","Unauthorized"));
+
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User caller = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isOwner = caller.getId().equals(id);
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isOwner && !isAdmin) {
+            return ResponseEntity.status(403).body(Map.of("error","Forbidden"));
+        }
+
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error","Empty file"));
+        }
+
+        int updated = userRepository.updateProfilePicture(
+                id, file.getBytes(), file.getContentType(), file.getOriginalFilename());
+
+        if (updated == 0) return ResponseEntity.status(404).body(Map.of("error","User not found"));
+        return ResponseEntity.ok(Map.of("message","Photo uploaded successfully"));
+    }
+
+
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<?> getPhoto(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User caller = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isOwner = caller.getId().equals(id);
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(a -> a.equals("ROLE_ADMIN")); // <-- έλεγχος από authorities
+
+        if (!isOwner && !isAdmin) {
+            return ResponseEntity.status(403).body(Map.of("error", "Forbidden"));
+        }
+
+        User targetUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        byte[] img = targetUser.getProfilePicture();
+        if (img == null || img.length == 0) {
+            return ResponseEntity.status(404).body(Map.of("error", "No photo found"));
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/jpeg") // ή χρησιμοποίησε αποθηκευμένο contentType
+                .body(img);
     }
 }

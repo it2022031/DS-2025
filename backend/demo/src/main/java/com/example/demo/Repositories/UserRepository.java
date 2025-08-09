@@ -4,7 +4,9 @@ import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Entities.Property;
 import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -76,4 +78,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByRenterRequestStatus(ApprovalStatus status);
 
+
+    @Modifying
+    @Transactional
+    @Query("""
+        UPDATE User u SET 
+            u.profilePicture = :picture,
+            u.profilePictureContentType = :contentType,
+            u.profilePictureFilename = :filename
+        WHERE u.id = :id
+    """)
+    int updateProfilePicture(@Param("id") Long id,
+                             @Param("picture") byte[] picture,
+                             @Param("contentType") String contentType,
+                             @Param("filename") String filename);
 }

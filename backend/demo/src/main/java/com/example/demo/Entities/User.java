@@ -74,13 +74,20 @@ public class User {
     @Enumerated(EnumType.STRING)
     private ApprovalStatus renterRequestStatus;
 
-    public ApprovalStatus getRenterRequestStatus() {
-        return renterRequestStatus;
-    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "user-reviews")
+    private List<Review> reviews = new ArrayList<>();
 
-    public void setRenterRequestStatus(ApprovalStatus renterRequestStatus) {
-        this.renterRequestStatus = renterRequestStatus;
-    }
+    // μην βάζεις @Lob εδώ
+    @Basic(fetch = FetchType.LAZY) // προαιρετικό
+    @Column(name = "profile_picture", columnDefinition = "bytea")
+    private byte[] profilePicture;
+
+    @Column(name = "profile_picture_content_type")
+    private String profilePictureContentType;
+
+    @Column(name = "profile_picture_filename")
+    private String profilePictureFilename;
 
     public User() {}
 
@@ -107,6 +114,45 @@ public class User {
 
     // Getters & Setters
 
+    public String getProfilePictureContentType() {
+        return profilePictureContentType;
+    }
+
+    public void setProfilePictureContentType(String profilePictureContentType) {
+        this.profilePictureContentType = profilePictureContentType;
+    }
+
+    public String getProfilePictureFilename() {
+        return profilePictureFilename;
+    }
+
+    public void setProfilePictureFilename(String profilePictureFilename) {
+        this.profilePictureFilename = profilePictureFilename;
+    }
+
+    public byte[] getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(byte[] profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
+    }
+
+    public ApprovalStatus getRenterRequestStatus() {
+        return renterRequestStatus;
+    }
+
+    public void setRenterRequestStatus(ApprovalStatus renterRequestStatus) {
+        this.renterRequestStatus = renterRequestStatus;
+    }
     public Long getId() {
         return id;
     }
