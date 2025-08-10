@@ -43,6 +43,11 @@ public class Property {
     @JsonManagedReference(value = "property-reviews")
     private List<Review> reviews = new ArrayList<>();
 
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PropertyPhoto> photos = new ArrayList<>();
+
+
     public Property() {
     }
 
