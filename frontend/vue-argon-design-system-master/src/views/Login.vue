@@ -73,10 +73,11 @@
     </div>
   </section>
 </template>
-
 <script>
 import api from "@/api";
 import { eventBus } from "@/eventBus";
+
+const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/147/147144.png";
 
 export default {
   name: "Login",
@@ -91,9 +92,9 @@ export default {
     };
   },
   created() {
+    // ΜΗΝ χρησιμοποιείς μεταβλητή 'user' εδώ – απλός έλεγχος token
     const token = localStorage.getItem("token");
     const expiry = localStorage.getItem("token_expiry");
-
     if (token && expiry && Date.now() < Number(expiry)) {
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       this.isLoggedIn = true;
@@ -112,56 +113,80 @@ export default {
 
       this.loading = true;
       try {
-        // 1. Login
+        // 1) Login
         const loginResp = await api.post("/auth/login", {
           username: this.username,
-          password: this.password,
+          password: this.password
         });
 
-        const token = loginResp.data.token;
+        const token = loginResp.data && loginResp.data.token;
         if (!token) throw new Error("Token missing from response");
 
         const ttl = this.rememberMe ? 7 * 24 * 3600 * 1000 : 3600 * 1000;
+        const expiry = Date.now() + ttl;
         localStorage.setItem("token", token);
-        localStorage.setItem("token_expiry", Date.now() + ttl);
+        localStorage.setItem("token_expiry", String(expiry));
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        // 2. Παίρνουμε στοιχεία χρήστη
-        const profileResp = await api.get("/auth/me");
-        const user = profileResp.data;
+        // 2) Προφίλ
+        const meResp = await api.get("/auth/me");
+        const user = meResp.data || {};
 
-        // 3. Παίρνουμε ρόλους από το whoami
-        const rolesResp = await api.get("/users/whoami");
-        const roles = rolesResp.data.map(r => r.replace("ROLE_", "").toUpperCase());
-
-        // 4. Σώζουμε στο localStorage
+        // 3) Ρόλοι
+        const roles = Array.isArray(user.roles) ? user.roles : [];
         localStorage.setItem("userRoles", JSON.stringify(roles));
         if (roles.length > 0) {
-          localStorage.setItem("userRole", roles[0]);
+          localStorage.setItem("userRole", roles[0]); // optional
         }
-        localStorage.setItem("username", user.username || `${user.firstName || ""} ${user.lastName || ""}`.trim());
-        localStorage.setItem("userId", user.id);
+
+        // 4) Στοιχεία χρήστη
+        localStorage.setItem(
+            "username",
+            user.username || `${user.firstName || ""} ${user.lastName || ""}`.trim()
+        );
+        if (user.id != null) localStorage.setItem("userId", String(user.id));
+
+        // 5) Avatar (ΜΗΝ προσπαθείς να διαβάσεις user.avatar – φέρε blob)
+        let avatarUrl = DEFAULT_AVATAR;
+        try {
+          const uid = localStorage.getItem("userId");
+          if (uid) {
+            const blobRes = await api.get(`/users/${uid}/photo`, {
+              responseType: "blob"
+            });
+            if (blobRes && blobRes.data && blobRes.data.size > 0) {
+              avatarUrl = URL.createObjectURL(blobRes.data);
+            }
+          }
+        } catch (e) {
+          // αν δεν υπάρχει φωτο, κράτα το default
+        }
+        localStorage.setItem("userAvatar", avatarUrl);
+        eventBus.$emit("avatar-updated");
 
         this.isLoggedIn = true;
+        alert(`Welcome, ${localStorage.getItem("username")}!`);
         eventBus.$emit("login-status-changed", true);
         this.$router.push("/");
       } catch (err) {
         console.error(err);
         this.error =
-            (err.response && err.response.data && err.response.data.error) ||
-            err.message || "Login failed.";
+            (err.response && err.response.data && (err.response.data.error || err.response.data.message)) ||
+            err.message ||
+            "Login failed.";
       } finally {
         this.loading = false;
       }
-    }
-,
+    },
     logout() {
       localStorage.clear();
-      delete api.defaults.headers.common["Authorization"];
+      if (api && api.defaults && api.defaults.headers && api.defaults.headers.common) {
+        delete api.defaults.headers.common.Authorization;
+      }
       this.isLoggedIn = false;
-      eventBus.$emit("login-status-changed", false);
-      if (this.$route.path !== "/login") {
-        this.$router.push("/login").catch(() => {});
+      // αποφυγή NavigationDuplicated
+      if (this.$route.path !== '/login') {
+        this.$router.push('/login').catch(() => {});
       }
     }
   }

@@ -143,6 +143,16 @@ export default new Router({
       }
     },
     {
+      path: "/my-properties",
+      name: "my-properties",
+      components: {
+        header: AppHeader,
+        default: () => import("./views/MyProperties.vue"),
+        footer: AppFooter
+      },
+      meta: { requiresAuth: true } // προαιρετικό
+    },
+    {
       path: "/about",
       name: "about",
       components: {
@@ -151,5 +161,6 @@ export default new Router({
         footer: AppFooter
       }
     }
+
   ]
 });

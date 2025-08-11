@@ -141,22 +141,50 @@ export default {
 
       axios.get("http://localhost:8080/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` }
-      }).then(res => {
-        const d = res.data;
-        this.user = {
-          id: d.id,
-          username: d.username,
-          email: d.email,
-          name: d.firstName || '',
-          surname: d.lastName || '',
-          role: d.role || '',
-          idNumber: d.passportNumber || '',
-          taxNumber: d.afm || '',
-          avatar: d.avatar || ''
-        };
-        this.originalUser = { ...this.user };
-      }).catch(() => this.$router.push("/login"));
+      })
+          .then(res => {
+            const d = res.data;
+            this.user = {
+              id: d.id,
+              username: d.username,
+              email: d.email,
+              name: d.firstName || '',
+              surname: d.lastName || '',
+              role: d.role || '',
+              idNumber: d.passportNumber || '',
+              taxNumber: d.afm || '',
+              avatar: "" // θα το φορτώσουμε πιο κάτω
+            };
+            this.originalUser = { ...this.user };
+
+            return axios.get(`http://localhost:8080/api/users/${this.user.id}/photo`, {
+              headers: { Authorization: `Bearer ${token}` },
+              responseType: "blob"
+            });
+          })
+          .then(photoRes => {
+            if (photoRes.data && photoRes.data.size > 0) {
+              // φτιάξε object URL για προεπισκόπηση στο profile
+              const objectUrl = URL.createObjectURL(photoRes.data);
+              this.user.avatar = objectUrl;
+
+              // για το header προτιμάμε URL στο endpoint με cache-buster
+              const headerUrl = `http://localhost:8080/api/users/${this.user.id}/photo?t=${Date.now()}`;
+              localStorage.setItem("userAvatar", newUrl);
+              eventBus.$emit("avatar-updated");
+            } else {
+              this.user.avatar = this.defaultAvatar;
+              localStorage.setItem("userAvatar", this.defaultAvatar);
+              eventBus.$emit("profile-avatar-updated", this.defaultAvatar);
+            }
+          })
+          .catch(err => {
+            console.error("❌ Error fetching user:", err);
+            this.$router.push("/login");
+          });
     },
+
+
     async fetchUserProperties() {
       const token = localStorage.getItem("token");
       if (!token) return;
@@ -227,33 +255,67 @@ export default {
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
-    onAvatarChange(event) {
-      const file = event.target.files[0];
+    async onAvatarChange(e) {
+      // Χωρίς optional chaining
+      const files = e && e.target && e.target.files ? e.target.files : null;
+      const file = files && files.length ? files[0] : null;
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = e => {
-        this.user.avatar = e.target.result;
-      };
-      reader.readAsDataURL(file);
-
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        this.$router.push("/login");
+        return;
+      }
 
-      const formData = new FormData();
-      formData.append('avatar', file);
+      try {
+        // Ανέβασμα
+        const formData = new FormData();
+        formData.append("avatar", file);
 
-      axios.post('http://localhost:8080/api/users/me/avatar', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+        await axios.post(
+            "http://localhost:8080/api/users/me/avatar",
+            formData,
+            {
+              headers: {
+                Authorization: "Bearer " + token,
+                "Content-Type": "multipart/form-data"
+              }
+            }
+        );
+
+        // Λήψη blob για preview
+        const uid = localStorage.getItem("userId");
+        const blobRes = await axios.get(
+            "http://localhost:8080/api/users/" + uid + "/photo",
+            {
+              headers: { Authorization: "Bearer " + token },
+              responseType: "blob"
+            }
+        );
+
+        // Καθάρισε παλιό objectURL
+        if (this.user.avatar && typeof this.user.avatar === "string" && this.user.avatar.indexOf("blob:") === 0) {
+          URL.revokeObjectURL(this.user.avatar);
         }
-      }).then(() => {
-        alert('Avatar ενημερώθηκε!');
-      }).catch(() => {
-        alert('Σφάλμα κατά την ενημέρωση του avatar.');
-      });
-    },
+
+        const newUrl = URL.createObjectURL(blobRes.data);
+        this.user.avatar = newUrl;
+
+        // Ανανέωσε αποθήκη & header
+        localStorage.setItem("userAvatar", newUrl);
+        // αν χρησιμοποιείς eventBus:
+        // import { eventBus } from "@/eventBus";
+        // eventBus.$emit("avatar-updated");
+      } catch (err) {
+        console.error("Avatar upload failed:", err);
+        alert("Σφάλμα στο ανέβασμα avatar.");
+      } finally {
+        // καθάρισε το input για να επιλέγεις ξανά το ίδιο αρχείο αν θέλεις
+        if (e && e.target) e.target.value = "";
+      }
+    }
+
+,
     async requestOwnerRole() {
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
