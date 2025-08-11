@@ -7,7 +7,7 @@ import Landing from "./views/Landing.vue";
 import Login from "./views/Login.vue";
 import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
-import UserList from "./views/ListUsers.vue"; // ή ./components/UserList.vue ανάλογα πού το έβαλες
+import UserList from "./views/ListUsers.vue";
 import ListProperties from './views/ListProperties.vue';
 import AddProperty from "@/views/AddProperty.vue";
 import Rent from './views/Rent.vue';
@@ -16,22 +16,13 @@ import Home from './views/Home.vue';
 import About from './views/About.vue';
 import RoleRequests from './views/RoleRequests.vue';
 import PropertyEdit from "@/views/PropertyEdit.vue";
+import RequestRenter from "@/views/RequestRenter.vue";
 
 Vue.use(Router);
 
 export default new Router({
   linkExactActiveClass: "active",
   routes: [
-    // {
-    //   path: "/",
-    //   name: "components",
-    //   components: {
-    //     header: AppHeader,
-    //     default: Components,
-    //     footer: AppFooter
-    //   }
-    // },
-
     {
       path: "/",
       name: "home",
@@ -41,11 +32,23 @@ export default new Router({
         footer: AppFooter
       }
     },
-
     {
-      path: '/rentals',
-      name: 'ListRentals',
-      component: ListRentals,
+      path: "/request-renter",
+      name: "request-renter",
+      components: {
+        header: AppHeader,
+        default: RequestRenter,
+        footer: AppFooter
+      }
+    },
+    {
+      path: "/rentals",
+      name: "ListRentals",
+      components: {
+        header: AppHeader,
+        default: ListRentals,
+        footer: AppFooter
+      }
     },
     {
       path: "/list-properties",
@@ -68,10 +71,12 @@ export default new Router({
     {
       path: '/properties/add',
       name: 'AddProperty',
-      component: AddProperty
+      components: {
+        header: AppHeader,
+        default: AddProperty,
+        footer: AppFooter
+      }
     },
-
-
     {
       path: "/properties/:id/edit",
       name: "PropertyEdit",
@@ -82,8 +87,6 @@ export default new Router({
       },
       meta: { requiresAuth: true, roles: ["owner", "admin"] }
     },
-
-
     {
       path: "/rent",
       name: "rent",
@@ -93,19 +96,10 @@ export default new Router({
         footer: AppFooter
       }
     },
-
-    //   {
-    //     path: "/landing",
-    //     name: "landing",
-    //     components: {
-    //       header: AppHeader,
-    //       default: Landing,
-    //       footer: AppFooter
-    //     }
-    //   },
     {
       path: "/login",
       name: "login",
+      // αν θες χωρίς header/footer, βάλε μόνο component
       components: {
         header: AppHeader,
         default: Login,
@@ -121,7 +115,6 @@ export default new Router({
         footer: AppFooter
       }
     },
-
     {
       path: "/admin/role-requests",
       name: "role-requests",
@@ -135,8 +128,6 @@ export default new Router({
         roles: ["admin"]
       }
     },
-
-
     {
       path: "/profile",
       name: "profile",
@@ -145,15 +136,12 @@ export default new Router({
         default: Profile,
         footer: AppFooter
       },
-
       meta: {
         showInMenu: true,
         label: "Προφίλ",
         align: "right"
       }
     },
-
-
     {
       path: "/about",
       name: "about",
@@ -162,17 +150,6 @@ export default new Router({
         default: About,
         footer: AppFooter
       }
-    },
-
-
-    // scrollBehavior: to => {
-    //   if (to.hash) {
-    //     return { selector: to.hash };
-    //   } else {
-    //     return { x: 0, y: 0 };
-    //   }
-    // }
-
+    }
   ]
-
 });

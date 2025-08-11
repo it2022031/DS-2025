@@ -110,12 +110,12 @@ export default {
     };
   },
   mounted() {
-    const storedRole = localStorage.getItem("userRole");
-    const role = storedRole ? storedRole.toUpperCase() : null;
-    if (role !== "OWNER" && role !== "ADMIN") {
-      alert("Πρέπει να είστε ιδιοκτήτης για να προσθέσετε αγγελία.");
-      this.$router.push("/");
-    }
+    // const storedRole = localStorage.getItem("userRole");
+    // const role = storedRole ? storedRole.toUpperCase() : null;
+    // if (role !== "OWNER" && role !== "ADMIN") {
+    //   alert("Πρέπει να είστε ιδιοκτήτης για να προσθέσετε αγγελία.");
+    //   this.$router.push("/");
+    // }
   },
   methods: {
     async submitForm() {

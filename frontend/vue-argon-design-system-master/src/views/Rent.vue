@@ -273,7 +273,46 @@ export default {
     formatUserName(u){ if(u.firstName&&u.lastName)return`${u.firstName} ${u.lastName}`; if(u.username)return u.username; if(u.name)return u.name; return 'Unknown';},
     resetForm(){ this.form={propertyId:'',startDate:'',endDate:'',priceMin:0,priceMax:0}; }
   },
-  mounted() { this.fetchProperties();this.fetchUsers();this.fetchRents(); }
+  mounted() {
+    let storedRolesRaw = localStorage.getItem("userRoles");
+    let storedRoles = [];
+
+    try {
+      storedRoles = storedRolesRaw ? JSON.parse(storedRolesRaw) : [];
+    } catch (e) {
+      console.error("Failed to parse roles from localStorage:", e);
+    }
+
+    const roleUpper = storedRoles
+        .map(r => (typeof r === "string" ? r : r.role || "").toString().toUpperCase())
+        .filter(Boolean);
+
+    console.log("Roles array:", roleUpper);
+
+    // Αν ακόμα δεν έχει φορτωθεί τίποτα, μην κάνεις redirect αμέσως
+    if (roleUpper.length === 0) {
+      console.warn("No roles found yet — skipping redirect until roles are set.");
+      return;
+    }
+
+    if (!roleUpper.includes("RENTER") && !roleUpper.includes("ADMIN")) {
+      if (this.$route.path !== "/request-renter") {
+        this.$router.push("/request-renter").catch(() => {});
+      }
+      return;
+    }
+
+    console.log("Access granted to Rent page");
+    this.fetchProperties();
+    this.fetchUsers();
+    this.fetchRents();
+  }
+
+
+
+
+
+
 };
 </script>
 

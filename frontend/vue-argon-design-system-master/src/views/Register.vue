@@ -266,8 +266,8 @@ export default {
 
         // 4. Fetch profile
         const profile = await axios.get(`${API_BASE}/api/users/me`);
+        localStorage.setItem("userRoles", JSON.stringify(profile.data.roles || []));
         localStorage.setItem("username", profile.data.username || `${profile.data.firstName || ''} ${profile.data.lastName || ''}`.trim());
-        localStorage.setItem("userRole", profile.data.role);
         localStorage.setItem("userId", profile.data.id);
 
         this.success = true;

@@ -23,22 +23,33 @@
         <li class="nav-item">
           <router-link to="/" class="nav-link">Home</router-link>
         </li>
-        <li class="nav-item">
-          <router-link to="/Rent" class="nav-link">Ενοικίαση</router-link>
+
+        <!-- Ενοικίαση: μόνο logged in -->
+        <li v-if="isLoggedIn" class="nav-item">
+          <router-link to="/rent" class="nav-link">Ενοικίαση</router-link>
         </li>
-        <li class="nav-item">
+
+        <!-- Νέα Αγγελία: OWNER ή ADMIN -->
+        <li v-if="isLoggedIn && hasRole('OWNER','ADMIN')" class="nav-item">
           <router-link to="/properties/add" class="nav-link">Νέα Αγγελία</router-link>
         </li>
-        <li class="nav-item">
-          <router-link v-if="(userRole || '').toLowerCase() === 'owner' || (userRole || '').toLowerCase() === 'admin'" to="/list-properties" class="nav-link"> list-properties</router-link>
+
+        <!-- Λίστα Ακινήτων: OWNER ή ADMIN -->
+        <li v-if="isLoggedIn && hasRole('OWNER','ADMIN')" class="nav-item">
+          <router-link to="/list-properties" class="nav-link">Λίστα Ακινήτων</router-link>
         </li>
-        <li class="nav-item">
-          <router-link v-if="(userRole || '').toLowerCase() === 'admin'" to="/users"  class="nav-link">list-users</router-link>
+
+        <!-- Λίστα Χρηστών: μόνο ADMIN -->
+        <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
+          <router-link to="/users" class="nav-link">Λίστα Χρηστών</router-link>
         </li>
-        <li class="nav-item">
-          <router-link to="/Rentals" class="nav-link">list-rentals</router-link>
+
+        <!-- Λίστα Ενοικιάσεων: μόνο logged in -->
+        <li v-if="isLoggedIn" class="nav-item">
+          <router-link to="/rentals" class="nav-link">Λίστα Ενοικιάσεων</router-link>
         </li>
       </ul>
+
 
       <!-- Δεξιό μενού -->
       <ul class="navbar-nav align-items-lg-center ml-lg-auto">
@@ -87,33 +98,40 @@ export default {
   data() {
     return {
       showDropdown: false,
-      userRole: localStorage.getItem('userRole') || null,
-      isLoggedIn: !!localStorage.getItem('token'),
+      roles: [],
+      isLoggedIn: !!localStorage.getItem('token')
     };
   },
   created() {
-    // Ακούμε το event και ενημερώνουμε το isLoggedIn
+    this.loadRoles();
     eventBus.$on('login-status-changed', (status) => {
       this.isLoggedIn = status;
-      this.userRole = localStorage.getItem('userRole');
+      this.loadRoles();
     });
   },
   methods: {
-    toggleDropdown() {
-      this.showDropdown = !this.showDropdown;
-    },
-    closeOnOutsideClick(event) {
-      const dropdown = this.$el.querySelector(".custom-dropdown");
-      if (dropdown && !dropdown.contains(event.target)) {
-        this.showDropdown = false;
+    loadRoles() {
+      try {
+        const stored = JSON.parse(localStorage.getItem("userRoles") || "[]");
+        this.roles = Array.isArray(stored)
+            ? stored.map(r => (typeof r === "string" ? r.toUpperCase() : (r.role || "").toUpperCase()))
+            : [];
+      } catch {
+        this.roles = [];
       }
     },
+    hasRole(...requiredRoles) {
+      return this.roles.some(r => requiredRoles.includes(r));
+    },
+    toggleDropdown() { this.showDropdown = !this.showDropdown; },
     logout() {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userRole");
+      localStorage.clear();
       eventBus.$emit('login-status-changed', false);
       this.isLoggedIn = false;
-      this.$router.push("/login");
+
+      if (this.$route.path !== "/login") {
+        this.$router.push("/login");
+      }
     }
   },
   mounted() {
