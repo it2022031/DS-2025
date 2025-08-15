@@ -72,7 +72,9 @@ public class User {
     private List<Rental> rentals = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private ApprovalStatus renterRequestStatus;
+    @Column(nullable = false)
+    private ApprovalStatus renterRequestStatus = ApprovalStatus.REJECTED;
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "user-reviews")
