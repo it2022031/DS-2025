@@ -227,32 +227,121 @@ export default {
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
+
+    // onAvatarChange(event) {
+    //   const file = event.target.files[0];
+    //   if (!file) return;
+    //
+    //   const reader = new FileReader();
+    //   reader.onload = e => {
+    //     this.user.avatar = e.target.result;
+    //   };
+    //   reader.readAsDataURL(file);
+    //
+    //   const token = localStorage.getItem("token");
+    //   if (!token) return;
+    //
+    //   const formData = new FormData();
+    //   formData.append('avatar', file);
+    //
+    //   axios.post('http://localhost:8080/api/users/#/upload-photo', formData, {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //       'Content-Type': 'multipart/form-data'
+    //     }
+    //   }).then(() => {
+    //     alert('Avatar ενημερώθηκε!');
+    //   }).catch(() => {
+    //     alert('Σφάλμα κατά την ενημέρωση του avatar.');
+    //   });
+    // },
+
+    // onAvatarChange(event) {
+    //   const file = event.target.files[0];
+    //   if (!file) return;
+    //
+    //   // Preview immediately (local)
+    //   const reader = new FileReader();
+    //   reader.onload = e => {
+    //     this.user.avatar = e.target.result;
+    //   };
+    //   reader.readAsDataURL(file);
+    //
+    //   // Upload to backend
+    //   const token = localStorage.getItem("token");
+    //   if (!token) return this.$router.push("/login");
+    //
+    //   const formData = new FormData();
+    //   formData.append("file", file); // backend expects "file"
+    //
+    //
+    //   axios.post(`http://localhost:8080/api/users/${this.user.id}/upload-photo`, formData, {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //       "Content-Type": "multipart/form-data"
+    //     }
+    //   }).then(() => {
+    //     alert("✅ Avatar ενημερώθηκε!");
+    //     // replace preview with backend-served photo (fresh)
+    //     this.user.avatar = `http://localhost:8080/api/users/${this.user.id}/photo?ts=${Date.now()}`;
+    //   }).catch(err => {
+    //     console.error("❌ Error uploading avatar:", err);
+    //     alert("Σφάλμα κατά την ενημέρωση του avatar.");
+    //   });
+    // },
+
     onAvatarChange(event) {
       const file = event.target.files[0];
       if (!file) return;
 
+      // Preview immediately (local)
       const reader = new FileReader();
       reader.onload = e => {
         this.user.avatar = e.target.result;
       };
       reader.readAsDataURL(file);
 
+      // Upload to backend
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) return this.$router.push("/login");
 
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append("file", file);
 
-      axios.post('http://localhost:8080/api/users/me/avatar', formData, {
+      axios.post(`http://localhost:8080/api/users/${this.user.id}/upload-photo`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          "Content-Type": "multipart/form-data"
         }
       }).then(() => {
-        alert('Avatar ενημερώθηκε!');
-      }).catch(() => {
-        alert('Σφάλμα κατά την ενημέρωση του avatar.');
+        alert("✅ Avatar ενημερώθηκε!");
+        // Now reload from backend with Authorization
+        this.loadAvatar();
+      }).catch(err => {
+        console.error("❌ Error uploading avatar:", err);
+        alert("Σφάλμα κατά την ενημέρωση του avatar.");
       });
+    },
+
+    async loadAvatar() {
+      const token = localStorage.getItem("token");
+      if (!token) return this.$router.push("/login");
+
+      try {
+        const response = await axios.get(
+            `http://localhost:8080/api/users/${this.user.id}/photo`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              responseType: "blob",
+            }
+        );
+        this.user.avatar = URL.createObjectURL(response.data);
+      } catch (err) {
+        console.error("❌ Error loading avatar:", err);
+        this.user.avatar = null;
+      }
     },
     async requestOwnerRole() {
       const token = localStorage.getItem("token");
