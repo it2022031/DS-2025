@@ -87,10 +87,28 @@ export default {
     };
   },
   methods: {
+    // async fetchUsers() {
+    //   this.loading = true;
+    //   try {
+    //     const res = await axios.get("http://localhost:8080/api/users");
+    //     this.users = res.data;
+    //   } catch (err) {
+    //     console.error("Error fetching users:", err);
+    //     this.error = true;
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // }
+
     async fetchUsers() {
       this.loading = true;
       try {
-        const res = await axios.get("http://localhost:8080/api/users");
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:8080/api/users", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         this.users = res.data;
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -99,6 +117,7 @@ export default {
         this.loading = false;
       }
     },
+
     toggleUserSelection(user) {
       if (this.selectedUser && this.selectedUser.id === user.id) {
         this.selectedUser = null;
