@@ -30,12 +30,12 @@
         </li>
 
         <!-- Νέα Αγγελία: OWNER ή ADMIN -->
-        <li v-if="isLoggedIn && hasRole('OWNER','ADMIN')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('USER','ADMIN')" class="nav-item">
           <router-link to="/properties/add" class="nav-link">Νέα Αγγελία</router-link>
         </li>
 
         <!-- Λίστα Ακινήτων: OWNER ή ADMIN -->
-        <li v-if="isLoggedIn && hasRole('OWNER','ADMIN')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('USER','ADMIN')" class="nav-item">
           <router-link to="/list-properties" class="nav-link">Λίστα Ακινήτων</router-link>
         </li>
 
@@ -45,7 +45,7 @@
         </li>
 
         <!-- Λίστα Ενοικιάσεων: μόνο logged in -->
-        <li v-if="isLoggedIn" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
           <router-link to="/rentals" class="nav-link">Λίστα Ενοικιάσεων</router-link>
         </li>
       </ul>

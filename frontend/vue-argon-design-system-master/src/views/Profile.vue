@@ -13,8 +13,8 @@
     <div v-show="showDropdown" class="custom-dropdown mt-2 text-left">
       <!-- Properties Section -->
       <div class="mt-4 text-left">
-        <h5>Τα Ακίνητά Μου</h5>
-        <div v-if="userProperties.length === 0" class="text-muted">Δεν έχετε προσθέσει ακίνητα.</div>
+        <h5>My Profile</h5>
+        <div v-if="userProperties.length === 0" class="text-muted"></div>
         <div v-else>
           <div v-for="p in userProperties" :key="p.id" class="property-item p-3 border rounded mb-3">
             <div v-if="editingProperty === p.id">
@@ -41,7 +41,7 @@
         </div>
 
         <div class="form-group">
-          <label>Όνομα</label>
+          <label>First Name</label>
           <input type="text" v-model="user.name" class="form-control" />
         </div>
 
@@ -51,7 +51,7 @@
         </div>
 
         <div class="form-group">
-          <label>Επίθετο</label>
+          <label>Last Name</label>
           <input type="text" v-model="user.surname" class="form-control" />
         </div>
 
@@ -61,7 +61,7 @@
         </div>
 
         <div class="form-group">
-          <label>Αριθμός Διαβατηρίου</label>
+          <label>Passport Number</label>
           <input type="text" v-model="user.idNumber" class="form-control" />
         </div>
 
@@ -72,16 +72,16 @@
 
         <button type="submit" class="btn btn-primary btn-block mt-3" :disabled="saving">
           <span v-if="saving">Αποθήκευση...</span>
-          <span v-else>Αποθήκευση</span>
+          <span v-else>Save Changes</span>
         </button>
 
         <button class="btn btn-secondary btn-block mt-2" @click.prevent="resetProfile" :disabled="saving">
-          Ακύρωση αλλαγών
+          Cancel
         </button>
 
         <hr />
         <button @click.prevent="logout" class="btn btn-link btn-block text-danger">
-          Αποσύνδεση
+          Log Out
         </button>
 
         <div v-if="user.role === 'user' && !requestSent" class="mt-3 text-center">

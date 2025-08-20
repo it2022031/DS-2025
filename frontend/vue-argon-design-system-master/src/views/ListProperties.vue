@@ -65,11 +65,14 @@ export default {
       this.error = false;
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:8080/api/properties/all", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await axios.get(
+            `http://localhost:8080/api/users/${this.userId}/properties`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+        );
         // backend επιστρέφει array από PropertyDto με ownerName και ownerId
         this.properties = response.data;
       } catch (err) {
@@ -91,6 +94,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .section {

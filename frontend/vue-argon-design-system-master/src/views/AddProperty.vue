@@ -13,7 +13,7 @@
                 body-classes="px-lg-5 py-lg-5"
                 class="border-0">
             <div class="text-center text-muted mb-4">
-              <small>Add a new property</small>
+              <large>Add a New Property</large>
             </div>
 
             <form @submit.prevent="submitForm" role="form">
@@ -67,6 +67,14 @@
                   v-model.number="squareMeters"
                   addon-left-icon="ni ni-ruler-pencil" />
 
+              <base-input
+                  alternative
+                  class="mb-3"
+                  placeholder="Price Per Day"
+                  type="number"
+                  v-model.number="price"
+                  addon-left-icon="ni ni-money-coins" />
+
               <div class="text-center">
                 <button type="submit" class="btn btn-primary my-4">
                   <template v-if="success">✔️</template>
@@ -106,6 +114,7 @@ export default {
       street: '',
       postalCode: '',
       squareMeters: null,
+      price: null,
       success: false
     };
   },
@@ -138,7 +147,8 @@ export default {
           !this.city.trim() ||
           !this.street.trim() ||
           !this.postalCode.trim() ||
-          !this.squareMeters
+          !this.squareMeters ||
+          !this.price
       ) {
         alert("Please fill in all fields.");
         return;
@@ -153,7 +163,8 @@ export default {
           city: this.city,
           street: this.street,
           postalCode: this.postalCode,
-          squareMeters: this.squareMeters
+          squareMeters: this.squareMeters,
+          price: this.price
         }, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -170,6 +181,7 @@ export default {
         this.street = '';
         this.postalCode = '';
         this.squareMeters = null;
+        this.price = null;
 
       } catch (error) {
         console.error("Error adding property:", error);
