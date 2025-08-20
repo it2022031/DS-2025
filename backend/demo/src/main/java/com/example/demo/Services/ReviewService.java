@@ -71,4 +71,8 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
+
+    public List<Review> getReviewsByUser(Long userId) {
+        return reviewRepository.findByUserId(userId);
+    }
 }

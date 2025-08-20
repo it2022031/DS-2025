@@ -125,4 +125,10 @@ public class ReviewController {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         }
     }
+    // GET: όλα τα reviews ενός χρήστη
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Review>> getReviewsByUser(@PathVariable Long userId) {
+        List<Review> reviews = reviewService.getReviewsByUser(userId);
+        return ResponseEntity.ok(reviews);
+    }
 }
