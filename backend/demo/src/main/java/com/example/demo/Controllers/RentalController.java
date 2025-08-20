@@ -72,7 +72,7 @@ public class RentalController {
                     .body(Map.of("error", "Unauthenticated"));
         }
 
-        // --- έλεγχος ρόλου RENTER ή ADMIN ---
+        // --- έλεγχος ρόλων ---
         boolean isAdmin  = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean isRenter = authentication.getAuthorities().stream()
@@ -82,28 +82,26 @@ public class RentalController {
                     .body(Map.of("error", "Only RENTERS or ADMIN can create rentals"));
         }
 
-        // --- έλεγχος required πεδίων ---
+        // --- έλεγχος required πεδίων (χωρίς paymentAmount πλέον) ---
         List<String> missing = new ArrayList<>();
-        if (req.propertyId()    == null) missing.add("propertyId");
-        if (req.startDate()     == null) missing.add("startDate");
-        if (req.endDate()       == null) missing.add("endDate");
-        if (req.paymentAmount() == null) missing.add("paymentAmount");
+        if (req.propertyId() == null) missing.add("propertyId");
+        if (req.startDate()  == null) missing.add("startDate");
+        if (req.endDate()    == null) missing.add("endDate");
         if (!missing.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Missing fields: " + String.join(", ", missing)));
         }
 
-        // --- φόρτωσε το Property και έλεγξε το approvalStatus ---
+        // --- φόρτωσε το Property και έλεγξε approval ---
         Property prop = propertyService.findByIdOptional(req.propertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
         if (prop.getApprovalStatus() != ApprovalStatus.APPROVED) {
-            // αν δεν έχει APPROVED, δεν επιτρέπουμε αίτηση
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Cannot rent a property unless it is APPROVED"));
         }
 
         // --- ποιος κάνει την αίτηση ---
-        String callerUsername = extractUsername(authentication);
+        String callerUsername = ((UserDetails) authentication.getPrincipal()).getUsername();
         User caller = userRepository.findByUsername(callerUsername)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
 
@@ -118,18 +116,19 @@ public class RentalController {
             finalUserId = caller.getId();
         }
 
-        // --- προσπάθεια δημιουργίας ---
+        // --- δημιουργία ---
         try {
             LocalDate start = LocalDate.parse(req.startDate());
             LocalDate end   = LocalDate.parse(req.endDate());
 
+            // Καλούμε το service ΧΩΡΙΣ ποσό — το service θα υπολογίσει pricePerDay × days
             Rental created = rentalService.createRental(
                     req.propertyId(),
                     finalUserId,
                     start,
-                    end,
-                    req.paymentAmount()
+                    end
             );
+
             return ResponseEntity.ok(RentalDto.fromEntity(created));
 
         } catch (DateTimeParseException e) {
@@ -143,6 +142,7 @@ public class RentalController {
                     .body(Map.of("error", "Failed to create rental"));
         }
     }
+
 
 
 

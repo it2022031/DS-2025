@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,6 @@ public class PropertyController {
             @RequestParam(required = false) Long ownerId,
             Authentication auth) {
 
-        // 1) βγάλε το username του καλούντα
         String callerUsername = ((UserDetails)auth.getPrincipal()).getUsername();
         User caller = userRepository.findByUsername(callerUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -68,10 +68,8 @@ public class PropertyController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        // 2) καθόρισε το πραγματικό ownerId
         Long finalOwnerId;
         if (ownerId != null) {
-            // αν πέρασε ownerId, μόνο admin το επιτρέπουμε
             if (!isAdmin) {
                 return ResponseEntity
                         .status(HttpStatus.FORBIDDEN)
@@ -79,17 +77,18 @@ public class PropertyController {
             }
             finalOwnerId = ownerId;
         } else {
-            // χωρίς ownerId, ο καλών γίνεται owner
             finalOwnerId = caller.getId();
         }
 
-        // 3) basic validation
         if (req.name() == null || req.name().isBlank()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Property name is required"));
         }
+        if (req.price() == null || req.price().compareTo(BigDecimal.ZERO) <= 0) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Price must be positive"));
+        }
 
-        // 4) φτιάξε το entity
         Property p = new Property();
         p.setName(req.name());
         p.setDescription(req.description());
@@ -99,8 +98,8 @@ public class PropertyController {
         p.setPostalCode(req.postalCode());
         p.setSquareMeters(req.squareMeters());
         p.setApprovalStatus(ApprovalStatus.PENDING);
+        p.setPrice(req.price());   // 👈 εδώ βάζουμε το price
 
-        // 5) delega te στο service
         Property saved = propertyService.createWithOwner(finalOwnerId, p);
         return ResponseEntity.ok(PropertyDto.fromEntity(saved));
     }
@@ -115,6 +114,7 @@ public class PropertyController {
     }
 
     // 4. Patch property (owner can update fields, admin can also change approval)
+    // 4. Patch property (owner can update fields, admin can also change approval)
     @PatchMapping("/{id}")
     public ResponseEntity<?> patchProperty(
             @PathVariable Long id,
@@ -124,35 +124,119 @@ public class PropertyController {
         Property prop = propertyService.findByIdOptional(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        String callerUsername = extractUsername(authentication);
+        // <-- πάρε username χωρίς helper
+        String callerUsername = ((UserDetails) authentication.getPrincipal()).getUsername();
         User caller = userRepository.findByUsername(callerUsername)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
 
-        boolean admin = isAdmin(authentication);
-        boolean owner = prop.getOwner().getId().equals(caller.getId());
-        if (!admin && !owner) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Not allowed"));
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isOwner = prop.getOwner() != null && prop.getOwner().getId().equals(caller.getId());
+
+        if (!isAdmin && !isOwner) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Not allowed"));
         }
 
-        // common updates
-        updates.forEach((k,v) -> {
-            switch(k) {
-                case "name": prop.setName((String)v); break;
-                case "description": prop.setDescription((String)v); break;
-                case "country": prop.setCountry((String)v); break;
-                case "city": prop.setCity((String)v); break;
-                case "street": prop.setStreet((String)v); break;
-                case "postalCode": prop.setPostalCode((String)v); break;
-                case "squareMeters": prop.setSquareMeters(((Number)v).doubleValue()); break;
-                case "approvalStatus":
-                    if (!admin) throw new RuntimeException("Only admin can change approvalStatus");
-                    prop.setApprovalStatus(ApprovalStatus.valueOf(v.toString().toUpperCase()));
-                    break;
+        // επιτρεπτά πεδία για owner
+        Set<String> ownerAllowed = Set.of(
+                "name", "description", "country", "city", "street",
+                "postalCode", "squareMeters", "price" // <-- price (BigDecimal)
+        );
+        // μόνο για admin
+        Set<String> adminOnly = Set.of("approvalStatus");
+
+        List<String> unknown = new ArrayList<>();
+        List<String> notAllowed = new ArrayList<>();
+        List<String> validationErrors = new ArrayList<>();
+
+        for (Map.Entry<String, Object> e : updates.entrySet()) {
+            String key = e.getKey();
+            Object val = e.getValue();
+
+            boolean keyAllowedForOwner = ownerAllowed.contains(key);
+            boolean keyAdminOnly = adminOnly.contains(key);
+
+            if (!keyAllowedForOwner && !keyAdminOnly) {
+                unknown.add(key);
+                continue;
             }
-        });
+            if (!isAdmin && keyAdminOnly) {
+                notAllowed.add(key);
+                continue;
+            }
+
+            try {
+                switch (key) {
+                    case "name" -> prop.setName(asString(val));
+                    case "description" -> prop.setDescription(asString(val));
+                    case "country" -> prop.setCountry(asString(val));
+                    case "city" -> prop.setCity(asString(val));
+                    case "street" -> prop.setStreet(asString(val));
+                    case "postalCode" -> prop.setPostalCode(asString(val));
+
+                    case "squareMeters" -> {
+                        Double d = asDouble(val);
+                        if (d == null || d <= 0) validationErrors.add("squareMeters must be > 0");
+                        else prop.setSquareMeters(d);
+                    }
+
+                    case "price" -> { // <-- BigDecimal
+                        BigDecimal bd = asBigDecimal(val);
+                        if (bd == null || bd.compareTo(BigDecimal.ZERO) <= 0)
+                            validationErrors.add("price must be > 0");
+                        else
+                            prop.setPrice(bd);
+                    }
+
+                    case "approvalStatus" -> {
+                        String s = asString(val);
+                        try { prop.setApprovalStatus(ApprovalStatus.valueOf(s)); }
+                        catch (Exception ex) {
+                            validationErrors.add("approvalStatus must be one of: " +
+                                    Arrays.toString(ApprovalStatus.values()));
+                        }
+                    }
+
+                    default -> unknown.add(key);
+                }
+            } catch (ClassCastException ex) {
+                validationErrors.add("Invalid type for field '" + key + "'");
+            }
+        }
+
+        if (!unknown.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Unknown fields: " + String.join(", ", unknown)));
+        }
+        if (!notAllowed.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Fields not allowed for your role: " + String.join(", ", notAllowed)));
+        }
+        if (!validationErrors.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", validationErrors));
+        }
 
         Property saved = propertyService.save(prop);
         return ResponseEntity.ok(PropertyDto.fromEntity(saved));
+    }
+
+    /** helpers **/
+    private static String asString(Object v) {
+        return v == null ? null : String.valueOf(v);
+    }
+    private static Double asDouble(Object v) {
+        if (v == null) return null;
+        if (v instanceof Number n) return n.doubleValue();
+        try { return Double.parseDouble(String.valueOf(v)); }
+        catch (NumberFormatException e) { return null; }
+    }
+    private static java.math.BigDecimal asBigDecimal(Object v) {
+        if (v == null) return null;
+        if (v instanceof java.math.BigDecimal b) return b;
+        if (v instanceof Number n) return new java.math.BigDecimal(n.toString());
+        try { return new java.math.BigDecimal(String.valueOf(v)); }
+        catch (NumberFormatException e) { return null; }
     }
 
     // 5. Approve / reject (admin only)

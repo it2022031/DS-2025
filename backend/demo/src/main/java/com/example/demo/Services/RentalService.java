@@ -12,7 +12,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,18 +108,25 @@ public class RentalService {
 //    }
 
 
+    @Transactional
     public Rental createRental(Long propertyId,
                                Long userId,
                                LocalDate startDate,
-                               LocalDate endDate,
-                               Double paymentAmount) {
+                               LocalDate endDate) {
 
-        if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("startDate must be on or before endDate");
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("startDate and endDate are required");
+        }
+        if (!endDate.isAfter(startDate)) { // exclusive end (διανυκτερεύσεις)
+            throw new IllegalArgumentException("endDate must be after startDate");
         }
 
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new IllegalArgumentException("Property not found"));
+
+        if (property.getPrice() == null) {
+            throw new IllegalStateException("Property price is not set");
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -128,11 +138,20 @@ public class RentalService {
             throw new IllegalStateException("Property already has an active overlapping rental");
         }
 
+        long days = ChronoUnit.DAYS.between(startDate, endDate); // 20–25 => 5 μέρες
+        if (days <= 0) {
+            throw new IllegalArgumentException("Rental must be at least 1 day");
+        }
+
+        BigDecimal amount = property.getPrice()                       // BigDecimal
+                .multiply(BigDecimal.valueOf(days))
+                .setScale(2, RoundingMode.HALF_UP);
+
         Rental rental = new Rental();
         rental.setStartDate(startDate);
         rental.setEndDate(endDate);
-        rental.setPaymentAmount(paymentAmount);
-        rental.setApprovalStatus(ApprovalStatus.PENDING); // default approved, μπορείς να αλλάξεις αν θέλεις workflow
+        rental.setPaymentAmount(amount);                              // BigDecimal στο entity
+        rental.setApprovalStatus(ApprovalStatus.PENDING);
         rental.setProperty(property);
         rental.setUser(user);
 

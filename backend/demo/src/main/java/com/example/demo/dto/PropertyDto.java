@@ -2,6 +2,8 @@ package com.example.demo.dto;
 
 import com.example.demo.Entities.Property;
 
+import java.math.BigDecimal;
+
 public record PropertyDto(
         Long id,
         String name,
@@ -12,7 +14,8 @@ public record PropertyDto(
         String postalCode,
         Double squareMeters,
         String approvalStatus,
-        Long ownerId
+        Long ownerId ,
+        BigDecimal price
 ) {
     public static PropertyDto fromEntity(Property p) {
         return new PropertyDto(
@@ -25,7 +28,8 @@ public record PropertyDto(
                 p.getPostalCode(),
                 p.getSquareMeters(),
                 p.getApprovalStatus() != null ? p.getApprovalStatus().name() : null,
-                p.getOwner() != null ? p.getOwner().getId() : null
+                p.getOwner() != null ? p.getOwner().getId() : null ,
+                p.getPrice()
         );
     }
 }

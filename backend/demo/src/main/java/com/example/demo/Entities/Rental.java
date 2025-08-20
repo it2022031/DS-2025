@@ -1,6 +1,8 @@
 package com.example.demo.Entities;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -15,7 +17,8 @@ public class Rental {
 
     private LocalDate endDate;
 
-    private Double paymentAmount;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal paymentAmount;
 
 
 
@@ -33,16 +36,16 @@ public class Rental {
 
     public Rental() {}
 
-    public Rental(LocalDate startDate, LocalDate endDate, Double paymentAmount, Boolean status, User user, Property property) {
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.paymentAmount = paymentAmount;
-        this.approvalStatus = ApprovalStatus.PENDING;
-        this.user = user;
+    public Rental(ApprovalStatus approvalStatus, Property property, User user, BigDecimal paymentAmount, LocalDate endDate, LocalDate startDate, Long id) {
+        this.approvalStatus = approvalStatus;
         this.property = property;
+        this.user = user;
+        this.paymentAmount = paymentAmount;
+        this.endDate = endDate;
+        this.startDate = startDate;
+        this.id = id;
     }
-
-    // Getters & Setters
+// Getters & Setters
 
 
 
@@ -72,11 +75,11 @@ public class Rental {
         this.endDate = endDate;
     }
 
-    public Double getPaymentAmount() {
+    public BigDecimal getPaymentAmount() {
         return paymentAmount;
     }
 
-    public void setPaymentAmount(Double paymentAmount) {
+    public void setPaymentAmount(BigDecimal paymentAmount) {
         this.paymentAmount = paymentAmount;
     }
 

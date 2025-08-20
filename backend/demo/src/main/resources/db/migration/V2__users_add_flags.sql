@@ -17,3 +17,13 @@ ALTER TABLE users ADD COLUMN enabled boolean DEFAULT true;
 UPDATE users SET enabled = true WHERE enabled IS NULL;
 ALTER TABLE users ALTER COLUMN enabled SET NOT NULL;
 ALTER TABLE users ALTER COLUMN enabled DROP DEFAULT;
+
+-- afto trexe giani xaxax
+ALTER TABLE properties ADD COLUMN price numeric(12,2);
+
+ALTER TABLE rentals
+    ALTER COLUMN payment_amount TYPE numeric(12,2)
+        USING round((payment_amount)::numeric, 2);
+
+ALTER TABLE rentals ADD COLUMN payment_amount numeric(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE rentals ALTER COLUMN payment_amount DROP DEFAULT;
