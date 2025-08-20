@@ -46,7 +46,7 @@ public class PropertyController {
 
     // 1. List all properties (admin only)
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','RENTER')")
     public ResponseEntity<List<PropertyDto>> getAllProperties() {
         List<PropertyDto> dto = propertyService.findAll().stream()
                 .map(PropertyDto::fromEntity)
