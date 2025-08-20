@@ -45,7 +45,7 @@
         </li>
 
         <!-- Λίστα Ενοικιάσεων: μόνο logged in -->
-        <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('ADMIN', 'USER')" class="nav-item">
           <router-link to="/rentals" class="nav-link">Λίστα Ενοικιάσεων</router-link>
         </li>
       </ul>
