@@ -17,6 +17,7 @@ import About from './views/About.vue';
 import RoleRequests from './views/RoleRequests.vue';
 import PropertyEdit from "@/views/PropertyEdit.vue";
 import RequestRenter from "@/views/RequestRenter.vue";
+import AllProperties from "@/views/AllProperties.vue";
 
 Vue.use(Router);
 
@@ -150,6 +151,15 @@ export default new Router({
         default: About,
         footer: AppFooter
       }
-    }
+    },
+      {
+          path: '/approved-properties',
+          name: 'AllProperties',
+          components: {
+              header: AppHeader,
+              default: AllProperties,
+              footer: AppFooter
+          }
+      }
   ]
 });

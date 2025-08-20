@@ -26,7 +26,7 @@
 
         <!-- Ενοικίαση: μόνο logged in -->
         <li v-if="isLoggedIn" class="nav-item">
-          <router-link to="/rent" class="nav-link">Ενοικίαση</router-link>
+          <router-link to="/approved-properties" class="nav-link">Ενοικίαση</router-link>
         </li>
 
         <!-- Νέα Αγγελία: OWNER ή ADMIN -->
