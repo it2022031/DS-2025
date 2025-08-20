@@ -1,14 +1,19 @@
 package com.example.demo.Controllers;
 
+import com.example.demo.Entities.ApprovalStatus;
+import com.example.demo.Entities.Rental;
 import com.example.demo.Entities.Review;
 import com.example.demo.Entities.User;
+import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Services.ReviewService;
 import com.example.demo.Repositories.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -19,10 +24,11 @@ public class ReviewController {
 
     private final ReviewService reviewService;
     private final UserRepository userRepository;
-
-    public ReviewController(ReviewService reviewService, UserRepository userRepository) {
+    private final RentalRepository rentalRepository;
+    public ReviewController(ReviewService reviewService, UserRepository userRepository, RentalRepository rentalRepository) {
         this.reviewService = reviewService;
         this.userRepository = userRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     // GET: reviews for a property
@@ -32,24 +38,43 @@ public class ReviewController {
     }
 
     // POST: add review (must be logged in)
+    // POST: add review (must be logged in & rental completed)
     @PostMapping("/{id}/reviews")
-    public ResponseEntity<Review> addReviewForProperty(@PathVariable Long id,
-                                                       @RequestBody Map<String, Object> body,
-                                                       Authentication authentication) {
+    public ResponseEntity<?> addReviewForProperty(@PathVariable Long id,
+                                                  @RequestBody Map<String, Object> body,
+                                                  Authentication authentication) {
         if (authentication == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "You must be logged in"));
         }
 
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // --- βρες rentals για αυτό το property και τον συγκεκριμένο χρήστη
+        List<Rental> rentals = rentalRepository.findByPropertyIdAndUserId(id, user.getId());
+
+        LocalDate now = LocalDate.now();
+
+        boolean hasValidRental = rentals.stream().anyMatch(r ->
+                r.getApprovalStatus() == ApprovalStatus.APPROVED &&
+                        r.getEndDate().isBefore(now)   // έχει λήξει
+        );
+
+        if (!hasValidRental) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You can only leave a review after completing an approved rental"));
+        }
+
+        // --- προχώρα με το review
         String content = (String) body.get("content");
         int rating = (int) body.getOrDefault("rating", 0);
 
         Review saved = reviewService.addReview(id, user.getId(), content, rating);
         return ResponseEntity.ok(saved);
     }
+
 
     @PatchMapping("/reviews/{reviewId}")
     public ResponseEntity<?> updateReview(@PathVariable Long reviewId,
