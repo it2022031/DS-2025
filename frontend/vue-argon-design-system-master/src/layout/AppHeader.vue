@@ -25,8 +25,12 @@
         </li>
 
         <!-- Ενοικίαση: μόνο logged in -->
-        <li v-if="isLoggedIn" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('RENTER', 'ADMIN')" class="nav-item">
           <router-link to="/approved-properties" class="nav-link">Ενοικίαση</router-link>
+        </li>
+
+        <li v-if="isLoggedIn && (!hasRole('ADMIN') && !hasRole('RENTER'))" class="nav-item">
+          <router-link to="/rent" class="nav-link">Ενοικίαση</router-link>
         </li>
 
         <!-- Νέα Αγγελία: OWNER ή ADMIN -->
