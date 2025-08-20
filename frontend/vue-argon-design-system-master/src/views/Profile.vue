@@ -152,9 +152,14 @@ export default {
           role: d.role || '',
           idNumber: d.passportNumber || '',
           taxNumber: d.afm || '',
-          avatar: d.avatar || ''
+          avatar: '' // don’t rely on backend string, we’ll fetch blob
         };
         this.originalUser = { ...this.user };
+
+        // 👇 Load avatar blob from backend
+        if (this.user.id) {
+          this.loadAvatar();
+        }
       }).catch(() => this.$router.push("/login"));
     },
     async fetchUserProperties() {
@@ -331,16 +336,14 @@ export default {
         const response = await axios.get(
             `http://localhost:8080/api/users/${this.user.id}/photo`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
               responseType: "blob",
             }
         );
         this.user.avatar = URL.createObjectURL(response.data);
       } catch (err) {
         console.error("❌ Error loading avatar:", err);
-        this.user.avatar = null;
+        this.user.avatar = this.defaultAvatar;
       }
     },
     async requestOwnerRole() {
