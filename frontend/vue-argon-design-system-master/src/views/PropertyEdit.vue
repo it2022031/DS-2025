@@ -43,13 +43,37 @@
               <input v-model.number="property.squareMeters" type="number" class="form-control" min="0" />
             </div>
             <div class="col-md-4">
+              <label class="form-label">Price Per Day</label>
+              <input v-model.number="property.price" type="number" class="form-control" min="0" />
+            </div>
+<!--            <div class="col-md-4">-->
+<!--              <label class="form-label">Status</label>-->
+<!--              <select v-model="property.approvalStatus" class="form-select">-->
+<!--                <option value="PENDING">Pending</option>-->
+<!--                <option value="APPROVED">Approved</option>-->
+<!--                <option value="REJECTED">Rejected</option>-->
+<!--              </select>-->
+<!--            </div>-->
+            <div class="col-md-4">
               <label class="form-label">Status</label>
-              <select v-model="property.approvalStatus" class="form-select">
+
+              <!-- If ADMIN: show editable select -->
+              <select
+                  v-if="userRole === 'ADMIN'"
+                  v-model="property.approvalStatus"
+                  class="form-select"
+              >
                 <option value="PENDING">Pending</option>
                 <option value="APPROVED">Approved</option>
                 <option value="REJECTED">Rejected</option>
               </select>
+
+              <!-- If not ADMIN: show read-only status text -->
+              <div v-else class="form-control-plaintext">
+                {{ property.approvalStatus }}
+              </div>
             </div>
+
           </div>
 
           <div class="mt-4 d-flex justify-content-end">
@@ -69,10 +93,20 @@ export default {
   name: 'PropertyEdit',
   data() {
     return {
-      property: null,
+      property: {
+        approvalStatus: ""
+      },
       loading: false,
       error: false,
     };
+  },
+  computed: {
+    userRole() {
+      return (localStorage.getItem("userRole") || "").toUpperCase();
+    },
+    userId() {
+      return Number(localStorage.getItem("userId"));
+    }
   },
   async mounted() {
     this.loading = true;
@@ -93,24 +127,55 @@ export default {
     }
   },
   methods: {
+    // async saveProperty() {
+    //   if (!this.property || !this.property.id) return;
+    //   const token = localStorage.getItem('token');  // Παίρνουμε το token ξανά
+    //   try {
+    //     await axios.patch(
+    //         `http://localhost:8080/api/properties/${this.property.id}`,
+    //         this.property,
+    //         {
+    //           headers: {
+    //             Authorization: `Bearer ${token}`
+    //           }
+    //         }
+    //     );
+    //     this.$router.push('/list-properties');
+    //   } catch (err) {
+    //     console.error('Error saving property:', err);
+    //     alert('Failed to save changes.');
+    //   }
+    // }
+
     async saveProperty() {
-      if (!this.property || !this.property.id) return;
-      const token = localStorage.getItem('token');  // Παίρνουμε το token ξανά
-      try {
-        await axios.patch(
-            `http://localhost:8080/api/properties/${this.property.id}`,
-            this.property,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            }
-        );
-        this.$router.push('/list-properties');
-      } catch (err) {
-        console.error('Error saving property:', err);
-        alert('Failed to save changes.');
-      }
+
+      const token = localStorage.getItem("token");
+
+      // Construct payload with only editable fields
+      const payload = {
+        name: this.property.name,
+        price: this.property.price,
+        description: this.property.description,
+        // add more fields that are actually editable
+        city: this.property.city,
+        country: this.property.country,
+        street: this.property.street,
+        postalCode: this.property.postalCode,
+        squareMeters: this.property.squareMeters
+      };
+
+      axios.patch(`http://localhost:8080/api/properties/${this.property.id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+          .then(response => {
+            console.log("Property updated:", response.data);
+          })
+          .catch(error => {
+            console.error("Error saving property");
+          });
+
     }
   }
 };

@@ -23,6 +23,8 @@
             <p><strong>Status:</strong> {{ property.approvalStatus }}</p>
             <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
             <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
+            <p><strong>Price:</strong> {{ property.price }} €</p>
+
             <div class="mt-3">
               <router-link
                   v-if="canEdit(property)"
@@ -84,8 +86,8 @@ export default {
     },
     canEdit(property) {
       return (
-          this.userRole === "ADMIN" ||
-          (this.userRole === "OWNER" && property.ownerId === this.userId)
+          (this.userRole === "ADMIN" || this.userRole === "USER")
+          // && property.ownerId === this.userId
       );
     },
   },
