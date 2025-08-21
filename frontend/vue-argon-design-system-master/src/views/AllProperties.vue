@@ -38,6 +38,14 @@
               <label>Price per Day (max €)</label>
               <input type="number" v-model.number="filters.price" class="form-control" />
             </div>
+            <div class="form-group mb-2">
+              <label>Check-in Date</label>
+              <input type="date" v-model="checkinDate" class="form-control" />
+            </div>
+            <div class="form-group mb-2">
+              <label>Check-out Date</label>
+              <input type="date" v-model="checkoutDate" class="form-control" />
+            </div>
             <button class="btn btn-primary w-100 mt-2" @click="clearFilters">Clear Filters</button>
           </div>
         </div>
@@ -84,6 +92,8 @@ export default {
       loading: false,
       error: false,
       searchQuery: '',
+      checkinDate: '',
+      checkoutDate: '',
       filters: {
         country: '',
         city: '',
@@ -91,30 +101,23 @@ export default {
         postalCode: '',
         price: null,
       },
+      occupiedDatesCache: {}, // store occupied dates per property
     };
   },
   computed: {
     filteredProperties() {
-      const _this = this;
-      return this.properties.filter(function (p) {
-        const matchesSearch = p.name && p.name.toLowerCase().includes(_this.searchQuery.toLowerCase());
-        const matchesCountry = _this.filters.country
-            ? (p.country && p.country.toLowerCase().includes(_this.filters.country.toLowerCase()))
-            : true;
-        const matchesCity = _this.filters.city
-            ? (p.city && p.city.toLowerCase().includes(_this.filters.city.toLowerCase()))
-            : true;
-        const matchesSquare = _this.filters.squareMeters
-            ? (p.squareMeters && p.squareMeters >= _this.filters.squareMeters)
-            : true;
-        const matchesPostal = _this.filters.postalCode
-            ? (p.postalCode && p.postalCode.toString().includes(_this.filters.postalCode))
-            : true;
-        const matchesPrice = _this.filters.price
-            ? (p.price && p.price <= _this.filters.price)
+      return this.properties.filter((p) => {
+        const matchesSearch = p.name && p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesCountry = this.filters.country ? (p.country && p.country.toLowerCase().includes(this.filters.country.toLowerCase())) : true;
+        const matchesCity = this.filters.city ? (p.city && p.city.toLowerCase().includes(this.filters.city.toLowerCase())) : true;
+        const matchesSquare = this.filters.squareMeters ? (p.squareMeters >= this.filters.squareMeters) : true;
+        const matchesPostal = this.filters.postalCode ? (p.postalCode && p.postalCode.toString().includes(this.filters.postalCode)) : true;
+        const matchesPrice = this.filters.price ? (p.price <= this.filters.price) : true;
+        const matchesDates = this.checkinDate && this.checkoutDate
+            ? this.isAvailable(p.id, this.checkinDate, this.checkoutDate)
             : true;
 
-        return matchesSearch && matchesCountry && matchesCity && matchesSquare && matchesPostal && matchesPrice;
+        return matchesSearch && matchesCountry && matchesCity && matchesSquare && matchesPostal && matchesPrice && matchesDates;
       });
     },
   },
@@ -124,35 +127,67 @@ export default {
       this.error = false;
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(
-            `http://localhost:8080/api/properties/all`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-        );
+        const response = await axios.get(`http://localhost:8080/api/properties/all`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         this.properties = response.data;
       } catch (err) {
-        console.error("Error fetching properties:", err);
+        console.error(err);
         this.error = true;
       } finally {
         this.loading = false;
       }
     },
     clearFilters() {
-      this.filters = {
-        country: '',
-        city: '',
-        squareMeters: null,
-        postalCode: '',
-        price: null,
-      };
       this.searchQuery = '';
+      this.checkinDate = '';
+      this.checkoutDate = '';
+      this.filters = { country: '', city: '', squareMeters: null, postalCode: '', price: null };
     },
+    async fetchOccupiedDates(propertyId) {
+      if (this.occupiedDatesCache[propertyId]) return this.occupiedDatesCache[propertyId];
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`http://localhost:8080/api/properties/${propertyId}/closed-dates`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        this.occupiedDatesCache[propertyId] = response.data.map(d => ({
+          startDate: new Date(d.startDate),
+          endDate: new Date(d.endDate)
+        }));
+        return this.occupiedDatesCache[propertyId];
+      } catch (err) {
+        console.error(`Failed to fetch occupied dates for property ${propertyId}`, err);
+        return [];
+      }
+    },
+    isAvailable(propertyId, checkin, checkout) {
+      const checkinDate = new Date(checkin);
+      const checkoutDate = new Date(checkout);
+      const occupied = this.occupiedDatesCache[propertyId];
+      if (!occupied) return true; // not yet fetched, assume available
+
+      // Check if any occupied period overlaps
+      return !occupied.some(period => {
+        return checkinDate <= period.endDate && checkoutDate >= period.startDate;
+      });
+    },
+    updateAvailability() {
+      // Could be empty if computed handles filtering
+      // Or you can do extra logic if needed
+      console.log('Availability updated');
+    }
   },
-  mounted() {
-    this.fetchProperties();
+
+  async created() {
+    await this.fetchProperties();
+
+    // pre-fetch occupied dates for all properties
+    for (let property of this.properties) {
+      await this.fetchOccupiedDates(property.id);
+    }
   },
 };
 </script>
