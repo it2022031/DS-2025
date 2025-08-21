@@ -4,23 +4,28 @@ import com.example.demo.Entities.Property;
 import com.example.demo.Entities.User;
 import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Repositories.PropertyRepository;
+import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.UserRepository;
+import com.example.demo.dto.DateRange;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 @Service
 public class PropertyService {
 
     private final PropertyRepository propertyRepository;
     private final UserRepository userRepository;
+    private final RentalRepository rentalRepository;
+
 
     public PropertyService(PropertyRepository propertyRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository, RentalRepository rentalRepository) {
         this.propertyRepository = propertyRepository;
         this.userRepository = userRepository;
+        this.rentalRepository = rentalRepository;
     }
 
     public List<Property> findAll() {
@@ -73,4 +78,79 @@ public class PropertyService {
     public void deleteAllRejectedProperties() {
         propertyRepository.deleteByApprovalStatus(ApprovalStatus.REJECTED);
     }
+
+    @Transactional(readOnly = true)
+    public List<DateRange> getClosedDateRanges(Long propertyId) {
+        // βεβαιώσου ότι υπάρχει το property (προαιρετικό)
+        propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new IllegalArgumentException("Property not found"));
+
+        LocalDate today = LocalDate.now();
+
+        var rentals = rentalRepository
+                .findByPropertyIdAndApprovalStatusAndEndDateGreaterThanEqual(
+                        propertyId, ApprovalStatus.APPROVED, today);
+
+        // μετατροπή σε ranges (clip το start στο today αν είναι παρελθόν)
+        List<DateRange> raw = new ArrayList<>();
+        for (var r : rentals) {
+            LocalDate start = r.getStartDate().isBefore(today) ? today : r.getStartDate();
+            LocalDate end   = r.getEndDate();
+            if (!end.isBefore(start)) {
+                raw.add(new DateRange(start.toString(), end.toString()));
+            }
+        }
+
+        // merge overlapping/adjacent ranges
+        return mergeRanges(raw);
+    }
+
+    /**
+     * Επιστρέφει flat λίστα με όλες τις μεμονωμένες ημερομηνίες (yyyy-MM-dd)
+     * που είναι κλειστό το property, με βάση τα merged ranges.
+     */
+    @Transactional(readOnly = true)
+    public List<String> getClosedDatesFlat(Long propertyId) {
+        List<DateRange> ranges = getClosedDateRanges(propertyId);
+        List<String> days = new ArrayList<>();
+        for (DateRange dr : ranges) {
+            LocalDate s = LocalDate.parse(dr.startDate());
+            LocalDate e = LocalDate.parse(dr.endDate());
+            for (LocalDate d = s; !d.isAfter(e); d = d.plusDays(1)) {
+                days.add(d.toString());
+            }
+        }
+        return days;
+    }
+
+    // ---- helpers ----
+
+    private List<DateRange> mergeRanges(List<DateRange> ranges) {
+        if (ranges.isEmpty()) return ranges;
+
+        // sort by start
+        List<DateRange> sorted = new ArrayList<>(ranges);
+        Collections.sort(sorted, Comparator.comparing(r -> LocalDate.parse(r.startDate())));
+
+        List<DateRange> merged = new ArrayList<>();
+        LocalDate curStart = LocalDate.parse(sorted.get(0).startDate());
+        LocalDate curEnd   = LocalDate.parse(sorted.get(0).endDate());
+
+        for (int i = 1; i < sorted.size(); i++) {
+            LocalDate s = LocalDate.parse(sorted.get(i).startDate());
+            LocalDate e = LocalDate.parse(sorted.get(i).endDate());
+
+            // overlap ή ακριβώς συνεχόμενα (curEnd.plusDays(1).isAfterOrEquals(s))
+            if (!s.isAfter(curEnd.plusDays(1))) {
+                if (e.isAfter(curEnd)) curEnd = e;
+            } else {
+                merged.add(new DateRange(curStart.toString(), curEnd.toString()));
+                curStart = s;
+                curEnd   = e;
+            }
+        }
+        merged.add(new DateRange(curStart.toString(), curEnd.toString()));
+        return merged;
+    }
+
 }

@@ -9,6 +9,7 @@ import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Services.PropertyService;
 import com.example.demo.Repositories.UserRepository;
+import com.example.demo.dto.DateRange;
 import com.example.demo.dto.PropertyCreateRequest;
 import com.example.demo.dto.PropertyDto;
 import org.springframework.http.HttpHeaders;
@@ -437,6 +438,20 @@ public class PropertyController {
                 .toList();
 
         return ResponseEntity.ok(photoDtos);
+    }
+
+    @GetMapping("/{id}/closed-dates")
+    public ResponseEntity<?> getClosedDates(
+            @PathVariable Long id,
+            @RequestParam(name = "flatten", defaultValue = "false") boolean flatten
+    ) {
+        if (flatten) {
+            List<String> dates = propertyService.getClosedDatesFlat(id);
+            return ResponseEntity.ok(dates);
+        } else {
+            List<DateRange> ranges = propertyService.getClosedDateRanges(id);
+            return ResponseEntity.ok(ranges);
+        }
     }
 
 }

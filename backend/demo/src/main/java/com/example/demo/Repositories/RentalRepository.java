@@ -69,5 +69,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     List<Rental> findByApprovalStatus(ApprovalStatus status);
     void deleteByApprovalStatus(ApprovalStatus status);
     List<Rental> findByPropertyIdAndUserId(Long propertyId, Long userId);
-
+    List<Rental> findByPropertyIdAndApprovalStatusAndEndDateGreaterThanEqual(
+            Long propertyId, ApprovalStatus status, LocalDate date);
 }
