@@ -181,7 +181,7 @@
             <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>
             <p><strong>Status:</strong>
               <span :class="{ approved: rental.status, pending: !rental.status }">
-                {{ rental.status ? 'Active' : 'Cancelled' }}
+                {{ rental.status ? 'Approved' : 'Pending' }}
               </span>
             </p>
           </div>
@@ -209,6 +209,76 @@
   </section>
 </template>
 
+<!--<script>-->
+<!--import axios from 'axios';-->
+
+<!--export default {-->
+<!--  name: 'ListRentals',-->
+<!--  data() {-->
+<!--    return {-->
+<!--      rentals: [],-->
+<!--      loading: false,-->
+<!--      error: false,-->
+<!--      baseURL: 'http://localhost:8080' // adjust if needed-->
+<!--    };-->
+<!--  },-->
+<!--  methods: {-->
+<!--    formatDate(dateStr) {-->
+<!--      if (!dateStr) return 'N/A';-->
+<!--      const options = { year: 'numeric', month: 'short', day: 'numeric' };-->
+<!--      return new Date(dateStr).toLocaleDateString(undefined, options);-->
+<!--    },-->
+<!--    async approveRental(rentalId) {-->
+<!--      try {-->
+<!--        const token = localStorage.getItem('token');-->
+<!--        await axios.post(`${this.baseURL}/api/rentals/${rentalId}/approve`, {}, {-->
+<!--          headers: { Authorization: `Bearer ${token}` }-->
+<!--        });-->
+<!--        const rental = this.rentals.find(r => r.id === rentalId);-->
+<!--        if (rental) rental.status = true;-->
+<!--        alert(`Rental ${rentalId} approved ✅`);-->
+<!--      } catch (err) {-->
+<!--        console.error(`Error approving rental ${rentalId}:`, err);-->
+<!--        alert(`Failed to approve rental ${rentalId}`);-->
+<!--      }-->
+<!--    },-->
+<!--    async rejectRental(rentalId) {-->
+<!--      try {-->
+<!--        const token = localStorage.getItem('token');-->
+<!--        await axios.post(`${this.baseURL}/api/rentals/${rentalId}/reject`, {}, {-->
+<!--          headers: { Authorization: `Bearer ${token}` }-->
+<!--        });-->
+<!--        const rental = this.rentals.find(r => r.id === rentalId);-->
+<!--        if (rental) rental.status = false;-->
+<!--        alert(`Rental ${rentalId} rejected ❌`);-->
+<!--      } catch (err) {-->
+<!--        console.error(`Error rejecting rental ${rentalId}:`, err);-->
+<!--        alert(`Failed to reject rental ${rentalId}`);-->
+<!--      }-->
+<!--    }-->
+<!--  },-->
+<!--  async mounted() {-->
+<!--    this.loading = true;-->
+<!--    this.error = false;-->
+
+<!--    try {-->
+<!--      const token = localStorage.getItem('token');-->
+<!--      const response = await axios.get(`${this.baseURL}/api/rentals/owner`, {-->
+<!--        headers: {-->
+<!--          Authorization: `Bearer ${token}`-->
+<!--        }-->
+<!--      });-->
+<!--      this.rentals = response.data.filter(p => p.approvalStatus == "PENDING");-->
+<!--    } catch (err) {-->
+<!--      console.error('Error fetching rentals:', err);-->
+<!--      this.error = true;-->
+<!--    } finally {-->
+<!--      this.loading = false;-->
+<!--    }-->
+<!--  }-->
+<!--};-->
+<!--</script>-->
+
 <script>
 import axios from 'axios';
 
@@ -228,56 +298,61 @@ export default {
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
+
+    // 🔄 Centralized fetch method
+    async fetchRentals() {
+      this.loading = true;
+      this.error = false;
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${this.baseURL}/api/rentals/owner`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        this.rentals = response.data.filter(p => p.approvalStatus == "PENDING");
+      } catch (err) {
+        console.error('Error fetching rentals:', err);
+        this.error = true;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async approveRental(rentalId) {
       try {
         const token = localStorage.getItem('token');
         await axios.post(`${this.baseURL}/api/rentals/${rentalId}/approve`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const rental = this.rentals.find(r => r.id === rentalId);
-        if (rental) rental.status = true;
         alert(`Rental ${rentalId} approved ✅`);
+        await this.fetchRentals(); // 👈 refresh list
       } catch (err) {
         console.error(`Error approving rental ${rentalId}:`, err);
         alert(`Failed to approve rental ${rentalId}`);
       }
     },
+
     async rejectRental(rentalId) {
       try {
         const token = localStorage.getItem('token');
         await axios.post(`${this.baseURL}/api/rentals/${rentalId}/reject`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const rental = this.rentals.find(r => r.id === rentalId);
-        if (rental) rental.status = false;
         alert(`Rental ${rentalId} rejected ❌`);
+        await this.fetchRentals(); // 👈 refresh list
       } catch (err) {
         console.error(`Error rejecting rental ${rentalId}:`, err);
         alert(`Failed to reject rental ${rentalId}`);
       }
     }
   },
-  async mounted() {
-    this.loading = true;
-    this.error = false;
 
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${this.baseURL}/api/rentals/owner`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      this.rentals = response.data;
-    } catch (err) {
-      console.error('Error fetching rentals:', err);
-      this.error = true;
-    } finally {
-      this.loading = false;
-    }
+  // ✅ Call fetchRentals on mount
+  async mounted() {
+    await this.fetchRentals();
   }
 };
 </script>
+
 
 <style scoped>
 .section {
