@@ -157,13 +157,20 @@ export default {
         const response = await axios.get(`http://localhost:8080/api/properties/all`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        this.properties = response.data;
+        this.properties = response.data.filter(p => p.approvalStatus == "APPROVED");
       } catch (err) {
         console.error(err);
         this.error = true;
       } finally {
         this.loading = false;
       }
+    },
+    dateInSelected() {
+      console.log("AAA" + this.checkinDate);
+      return this.checkinDate;
+    },
+    dateOutSelected() {
+      return this.checkoutDate;
     },
     clearFilters() {
       this.searchQuery = '';
