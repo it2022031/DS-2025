@@ -275,11 +275,35 @@ public class PropertyController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deletePropertyAsAdmin(@PathVariable Long id) {
+    public ResponseEntity<?> deleteProperty(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        // Βρες το property
+        Property property = propertyService.findByIdOptional(id)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        // Βρες τον τρέχοντα χρήστη
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User caller = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isOwner = property.getOwner() != null &&
+                property.getOwner().getId().equals(caller.getId());
+
+        if (!isAdmin && !isOwner) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You are not allowed to delete this property"));
+        }
+
+        // Κάνε το delete
         propertyService.adminDeleteProperty(id);
         return ResponseEntity.noContent().build(); // 204
     }
+
 
     @GetMapping("/status/rejected")
     @PreAuthorize("hasRole('ADMIN')")
