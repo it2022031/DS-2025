@@ -25,15 +25,45 @@
             <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
             <p><strong>Price:</strong> {{ property.price }} €</p>
 
-            <div class="mt-3">
+<!--            <div class="property-actions">-->
+<!--              <router-link-->
+<!--                  v-if="canEdit(property)"-->
+<!--                  :to="`/properties/${property.id}/edit`"-->
+<!--                  class="btn btn-sm btn-outline-light"-->
+<!--              >-->
+<!--                Edit-->
+<!--              </router-link>-->
+<!--            </div>-->
+<!--            <div class="property-actions" v-if="canDelete(property)">-->
+<!--              <button-->
+
+<!--                  @click="deleteProperty(property.id)"-->
+<!--                  class="btn btn-sm btn-outline-danger"-->
+<!--              >-->
+<!--                🗑 Delete-->
+<!--              </button>-->
+<!--            </div>-->
+
+            <div class="property-actions mt-3 d-flex align-items-center"
+                 v-if="canEdit(property) || canDelete(property)">
               <router-link
                   v-if="canEdit(property)"
                   :to="`/properties/${property.id}/edit`"
-                  class="btn btn-sm btn-outline-light"
+                  class="btn btn-sm btn-outline-light mr-2"
               >
-                Edit
+              ✏️ Edit
               </router-link>
+
+              <button
+                  v-if="canDelete(property)"
+                  @click="deleteProperty(property.id)"
+                  class="btn btn-sm btn-outline-danger"
+              >
+                🗑 Delete
+              </button>
             </div>
+
+
           </div>
         </li>
       </ul>
@@ -84,13 +114,39 @@ export default {
         this.loading = false;
       }
     },
+    async deleteProperty(propertyId) {
+      if (!confirm("Are you sure you want to delete this property?")) return;
+
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`http://localhost:8080/api/properties/${propertyId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Remove from local list
+        this.properties = this.properties.filter(p => p.id !== propertyId);
+
+        alert(`Property ${propertyId} deleted 🗑`);
+      } catch (err) {
+        console.error(`Error deleting property ${propertyId}:`, err);
+        alert(`Failed to delete property ${propertyId}`);
+      }
+    },
     canEdit(property) {
       return (
           (this.userRole === "ADMIN" || this.userRole === "USER")
           // && property.ownerId === this.userId
       );
     },
+    canDelete(property) {
+      // allow delete if ADMIN or the property belongs to the logged in user
+      return (
+          (this.userRole === "ADMIN" || this.userRole === "USER")
+          // && property.ownerId === this.userId
+      );
+    },
   },
+
   mounted() {
     this.fetchProperties();
   },
@@ -178,4 +234,26 @@ export default {
   padding-top: 3rem;
   padding-bottom: 3rem;
 }
+
+/* Remove or override the absolute positioning */
+.property-info .btn {
+  position: static;   /* or remove this whole rule from your CSS */
+  bottom: auto;
+  right: auto;
+}
+
+/* Layout + spacing (Bootstrap 4 friendly) */
+.property-actions {
+  display: flex;
+  align-items: center;
+}
+
+
+.property-actions {
+  display: flex;
+  gap: 8px;              /* adds spacing between buttons */
+  justify-content: flex-start;  /* keeps them aligned to the left */
+  margin-top: 12px;      /* optional spacing from above */
+}
+
 </style>
