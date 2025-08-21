@@ -18,6 +18,7 @@ import RoleRequests from './views/RoleRequests.vue';
 import PropertyEdit from "@/views/PropertyEdit.vue";
 import RequestRenter from "@/views/RequestRenter.vue";
 import AllProperties from "@/views/AllProperties.vue";
+import PropertyDetails from "@/views/PropertyDetails.vue";
 
 Vue.use(Router);
 
@@ -160,6 +161,16 @@ export default new Router({
               default: AllProperties,
               footer: AppFooter
           }
+      },
+      {
+          path: "/properties/:id",
+          name: "PropertyDetails",
+          components: {
+              header: AppHeader,
+              default: PropertyDetails,
+              footer: AppFooter
+          },
+          props: true, // this allows you to receive "id" as a prop in PropertyDetails
       }
   ]
 });

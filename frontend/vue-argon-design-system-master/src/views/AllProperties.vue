@@ -57,22 +57,49 @@
           <div v-else-if="filteredProperties.length === 0" class="text-center text-white">No properties found.</div>
 
           <ul v-else class="approved-properties list-unstyled">
-            <li v-for="property in filteredProperties" :key="property.id" class="property-card mb-3 d-flex">
-              <img
-                  :src="property.imageUrl || '/default-property.jpg'"
-                  :alt="property.name"
-                  class="property-image"
-              />
-              <div class="property-info p-3 flex-grow-1">
-                <h3>{{ property.name }}</h3>
-                <p><strong>Owner:</strong> 👤{{ property.username || 'N/A' }}</p>
-                <p>{{ property.description }}</p>
-                <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
-                <p><strong>Status:</strong> {{ property.approvalStatus }}</p>
-                <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
-                <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
-                <p><strong>Price per day:</strong> {{ property.price }} €</p>
-              </div>
+<!--            <li v-for="property in filteredProperties" :key="property.id" class="property-card mb-3 d-flex">-->
+<!--              <img-->
+<!--                  :src="property.imageUrl || '/default-property.jpg'"-->
+<!--                  :alt="property.name"-->
+<!--                  class="property-image"-->
+<!--              />-->
+<!--              <div class="property-info p-3 flex-grow-1">-->
+<!--                <h3>{{ property.name }}</h3>-->
+<!--                <p><strong>Owner:</strong> 👤{{ property.username || 'N/A' }}</p>-->
+<!--                <p>{{ property.description }}</p>-->
+<!--                <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>-->
+<!--                <p><strong>Status:</strong> {{ property.approvalStatus }}</p>-->
+<!--                <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>-->
+<!--                <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>-->
+<!--                <p><strong>Price per day:</strong> {{ property.price }} €</p>-->
+<!--              </div>-->
+<!--            </li>-->
+            <li
+                v-for="property in filteredProperties"
+                :key="property.id"
+                class="property-card mb-3 d-flex"
+            >
+              <router-link
+                  :to="{ name: 'PropertyDetails', params: { id: property.id } }"
+                  class="d-flex w-100 text-decoration-none text-dark"
+                  target="_blank"
+              >
+                <img
+                    :src="property.imageUrl || '/default-property.jpg'"
+                    :alt="property.name"
+                    class="property-image"
+                />
+                <div class="property-info p-3 flex-grow-1">
+                  <h3>{{ property.name }}</h3>
+                  <p><strong>Owner:</strong> 👤{{ property.username || 'N/A' }}</p>
+                  <p>{{ property.description }}</p>
+                  <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
+                  <p><strong>Status:</strong> {{ property.approvalStatus }}</p>
+                  <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
+                  <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
+                  <p><strong>Price per day:</strong> {{ property.price }} €</p>
+                </div>
+              </router-link>
             </li>
           </ul>
         </div>
@@ -178,7 +205,11 @@ export default {
       // Could be empty if computed handles filtering
       // Or you can do extra logic if needed
       console.log('Availability updated');
-    }
+    },
+    // goToProperty(id) {
+    //   const url = this.$router.resolve({ name: "PropertyDetails", params: { id } });
+    //   window.open(url.href, "_blank"); // open in new tab
+    // },
   },
 
   async created() {
