@@ -82,7 +82,7 @@
               <router-link
                   :to="{ name: 'PropertyDetails', params: { id: property.id } }"
                   class="d-flex w-100 text-decoration-none text-dark"
-                  target="_blank"
+                  target="_parent"
               >
                 <img
                     :src="property.imageUrl || '/default-property.jpg'"
