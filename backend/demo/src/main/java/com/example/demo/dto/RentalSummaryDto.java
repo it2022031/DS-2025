@@ -4,27 +4,24 @@ import com.example.demo.Entities.Rental;
 import java.math.BigDecimal;
 
 public record RentalSummaryDto(
+        Long rentalId,        // <-- ΝΕΟ
         Long propertyId,
         String propertyName,
-        Long ownerId,
         String ownerName,
+        Long ownerId,
         String startDate,
         String endDate,
         String status,
         BigDecimal totalPrice
 ) {
     public static RentalSummaryDto fromEntity(Rental r) {
-        var p = r.getProperty();
-        var o = p.getOwner();
-        String ownerFullName = ((o.getFirstName() == null ? "" : o.getFirstName()) + " " +
-                (o.getLastName()  == null ? "" : o.getLastName())).trim();
-        if (ownerFullName.isEmpty()) ownerFullName = o.getUsername();
-
         return new RentalSummaryDto(
-                p.getId(),
-                p.getName(),
-                o.getId(),
-                ownerFullName,
+                r.getId(),                                // <-- ΝΕΟ
+                r.getProperty().getId(),
+                r.getProperty().getName(),
+                r.getProperty().getOwner().getFirstName()
+                        + " " + r.getProperty().getOwner().getLastName(),
+                r.getProperty().getOwner().getId(),
                 r.getStartDate().toString(),
                 r.getEndDate().toString(),
                 r.getApprovalStatus() != null ? r.getApprovalStatus().name() : null,
