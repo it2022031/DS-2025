@@ -75,7 +75,7 @@
                 />
                 <div class="property-info p-3 flex-grow-1">
                   <h3>{{ property.name }}</h3>
-                  <p><strong>Owner:</strong> 👤{{ property.ownerId}}</p>
+                  <p><strong>Owner:</strong> 👤 {{property.ownerFirstName}} {{property.ownerLastName}}</p>
                   <p>{{ property.description }}</p>
                   <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
                   <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>

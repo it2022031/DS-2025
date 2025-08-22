@@ -17,7 +17,7 @@
         <!-- Info -->
         <div class="col-md-6">
           <h2>{{ property.name }}</h2>
-          <p><strong>Owner:</strong> 👤{{ property.ownerId}}</p>
+          <p><strong>Owner:</strong> 👤{{ property.ownerFirstName}} {{property.ownerLastName}}</p>
           <p>{{ property.description }}</p>
           <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
           <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
