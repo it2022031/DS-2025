@@ -7,10 +7,15 @@ import com.example.demo.Entities.User;
 import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.UserRepository;
-import jakarta.transaction.Transactional;
+import com.example.demo.dto.RentalSummaryDto;
+//import jakarta.transaction.Transactional;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
+
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -180,7 +185,7 @@ public class RentalService {
         Rental rental = rentalRepository.findById(rentalId)
                 .orElseThrow(() -> new IllegalArgumentException("Rental not found: " + rentalId));
 
-        // Αν χρειάζεσαι validations (π.χ. να μην είναι ήδη πληρωμένο), βάλε εδώ
+        // Αν χρειάζεσαι validations (π.χ. Nα μην είναι ήδη πληρωμένο), βάλε εδώ
         rentalRepository.delete(rental);
     }
 
@@ -192,6 +197,14 @@ public class RentalService {
     @Transactional
     public void deleteAllRejectedRentals() {
         rentalRepository.deleteByApprovalStatus(ApprovalStatus.REJECTED);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RentalSummaryDto> getRentalsByRenter(Long renterId) {
+        return rentalRepository.findAllByRenterIdWithPropertyOwner(renterId)
+                .stream()
+                .map(RentalSummaryDto::fromEntity)
+                .toList();
     }
 
 

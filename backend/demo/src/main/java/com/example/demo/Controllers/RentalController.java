@@ -54,6 +54,33 @@ public class RentalController {
         return ResponseEntity.ok(rentals);
     }
 
+    @GetMapping("/by-renter/{renterId}")
+    public ResponseEntity<?> getRentalsByRenter(
+            @PathVariable Long renterId,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Not authenticated"));
+        }
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        var caller = userRepository.findByUsername(username).orElse(null);
+
+        boolean sameRenter = caller != null && caller.getId().equals(renterId);
+
+        if (!isAdmin && !sameRenter) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only ADMIN or the same renter can view these rentals"));
+        }
+
+        var result = rentalService.getRentalsByRenter(renterId);
+        return ResponseEntity.ok(result);
+    }
+
     /** 2) Get a single rental by ID (no auth) **/
     @GetMapping("/{id}")
     public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {

@@ -75,4 +75,13 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             Long propertyId, ApprovalStatus status, LocalDate date);
     List<Rental> findByPropertyIdAndApprovalStatusInAndEndDateGreaterThanEqual(
             Long propertyId, Collection<ApprovalStatus> statuses, LocalDate date);
+    @Query("""
+       SELECT r
+       FROM Rental r
+       JOIN FETCH r.property p
+       JOIN FETCH p.owner o
+       WHERE r.user.id = :renterId
+       ORDER BY r.startDate DESC
+       """)
+    List<Rental> findAllByRenterIdWithPropertyOwner(@Param("renterId") Long renterId);
 }
