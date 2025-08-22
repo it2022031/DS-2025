@@ -56,6 +56,7 @@
 
           <div v-if="!editMode">
             <button class="btn btn-primary" @click="editMode = true">✏️ Επεξεργασία</button>
+            <button class="btn btn-danger ml-2" @click="deleteUser(selectedUser.id)">🗑️ Διαγραφή</button>
             <button class="btn btn-secondary ml-2" @click="selectedUser = null">Κλείσιμο</button>
           </div>
 
@@ -87,19 +88,6 @@ export default {
     };
   },
   methods: {
-    // async fetchUsers() {
-    //   this.loading = true;
-    //   try {
-    //     const res = await axios.get("http://localhost:8080/api/users");
-    //     this.users = res.data;
-    //   } catch (err) {
-    //     console.error("Error fetching users:", err);
-    //     this.error = true;
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // }
-
     async fetchUsers() {
       this.loading = true;
       try {
@@ -128,10 +116,12 @@ export default {
         this.editMode = false;
       }
     },
+
     cancelEdit() {
       this.selectedUser = { ...this.originalUser };
       this.editMode = false;
     },
+
     async saveProfile() {
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
@@ -161,8 +151,28 @@ export default {
       }).finally(() => {
         this.saving = false;
       });
+    },
+
+    async deleteUser(userId) {
+      if (!confirm("Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτόν τον χρήστη;")) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) return this.$router.push("/login");
+
+      try {
+        await axios.delete(`http://localhost:8080/api/users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert("Ο χρήστης διαγράφηκε με επιτυχία.");
+        this.selectedUser = null;
+        this.fetchUsers();
+      } catch (err) {
+        console.error("Error deleting user:", err);
+        alert("Σφάλμα κατά τη διαγραφή του χρήστη.");
+      }
     }
   },
+
   mounted() {
     this.fetchUsers();
   }
