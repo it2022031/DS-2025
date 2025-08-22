@@ -57,23 +57,6 @@
           <div v-else-if="filteredProperties.length === 0" class="text-center text-white">No properties found.</div>
 
           <ul v-else class="approved-properties list-unstyled">
-<!--            <li v-for="property in filteredProperties" :key="property.id" class="property-card mb-3 d-flex">-->
-<!--              <img-->
-<!--                  :src="property.imageUrl || '/default-property.jpg'"-->
-<!--                  :alt="property.name"-->
-<!--                  class="property-image"-->
-<!--              />-->
-<!--              <div class="property-info p-3 flex-grow-1">-->
-<!--                <h3>{{ property.name }}</h3>-->
-<!--                <p><strong>Owner:</strong> 👤{{ property.username || 'N/A' }}</p>-->
-<!--                <p>{{ property.description }}</p>-->
-<!--                <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>-->
-<!--                <p><strong>Status:</strong> {{ property.approvalStatus }}</p>-->
-<!--                <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>-->
-<!--                <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>-->
-<!--                <p><strong>Price per day:</strong> {{ property.price }} €</p>-->
-<!--              </div>-->
-<!--            </li>-->
             <li
                 v-for="property in filteredProperties"
                 :key="property.id"
@@ -84,6 +67,7 @@
                   class="d-flex w-100 text-decoration-none text-dark"
                   target="_parent"
               >
+                <!-- Show first photo -->
                 <img
                     :src="property.imageUrl || '/default-property.jpg'"
                     :alt="property.name"
@@ -109,7 +93,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   name: "AllProperties",
@@ -118,14 +102,14 @@ export default {
       properties: [],
       loading: false,
       error: false,
-      searchQuery: '',
-      checkinDate: '',
-      checkoutDate: '',
+      searchQuery: "",
+      checkinDate: "",
+      checkoutDate: "",
       filters: {
-        country: '',
-        city: '',
+        country: "",
+        city: "",
         squareMeters: null,
-        postalCode: '',
+        postalCode: "",
         price: null,
       },
       occupiedDatesCache: {}, // store occupied dates per property
@@ -134,17 +118,41 @@ export default {
   computed: {
     filteredProperties() {
       return this.properties.filter((p) => {
-        const matchesSearch = p.name && p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-        const matchesCountry = this.filters.country ? (p.country && p.country.toLowerCase().includes(this.filters.country.toLowerCase())) : true;
-        const matchesCity = this.filters.city ? (p.city && p.city.toLowerCase().includes(this.filters.city.toLowerCase())) : true;
-        const matchesSquare = this.filters.squareMeters ? (p.squareMeters >= this.filters.squareMeters) : true;
-        const matchesPostal = this.filters.postalCode ? (p.postalCode && p.postalCode.toString().includes(this.filters.postalCode)) : true;
-        const matchesPrice = this.filters.price ? (p.price <= this.filters.price) : true;
-        const matchesDates = this.checkinDate && this.checkoutDate
-            ? this.isAvailable(p.id, this.checkinDate, this.checkoutDate)
+        const matchesSearch =
+            p.name &&
+            p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesCountry = this.filters.country
+            ? p.country &&
+            p.country.toLowerCase().includes(this.filters.country.toLowerCase())
             : true;
+        const matchesCity = this.filters.city
+            ? p.city &&
+            p.city.toLowerCase().includes(this.filters.city.toLowerCase())
+            : true;
+        const matchesSquare = this.filters.squareMeters
+            ? p.squareMeters >= this.filters.squareMeters
+            : true;
+        const matchesPostal = this.filters.postalCode
+            ? p.postalCode &&
+            p.postalCode.toString().includes(this.filters.postalCode)
+            : true;
+        const matchesPrice = this.filters.price
+            ? p.price <= this.filters.price
+            : true;
+        const matchesDates =
+            this.checkinDate && this.checkoutDate
+                ? this.isAvailable(p.id, this.checkinDate, this.checkoutDate)
+                : true;
 
-        return matchesSearch && matchesCountry && matchesCity && matchesSquare && matchesPostal && matchesPrice && matchesDates;
+        return (
+            matchesSearch &&
+            matchesCountry &&
+            matchesCity &&
+            matchesSquare &&
+            matchesPostal &&
+            matchesPrice &&
+            matchesDates
+        );
       });
     },
   },
@@ -154,10 +162,44 @@ export default {
       this.error = false;
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://localhost:8080/api/properties/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        this.properties = response.data.filter(p => p.approvalStatus == "APPROVED");
+        const response = await axios.get(
+            `http://localhost:8080/api/properties/all`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+        );
+
+        // Only approved properties
+        this.properties = response.data.filter(
+            (p) => p.approvalStatus == "APPROVED"
+        );
+
+        // Fetch photos for each property
+        await Promise.all(
+            this.properties.map(async (property) => {
+              try {
+                const photosRes = await axios.get(
+                    `http://localhost:8080/api/properties/${property.id}/photos`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                if (photosRes.data && photosRes.data.length > 0) {
+                  property.imageUrl = photosRes.data[0].url; // first photo
+                  property.photos = photosRes.data; // all photos stored if needed
+                } else {
+                  property.imageUrl = "/default-property.jpg";
+                  property.photos = [];
+                }
+              } catch (err) {
+                console.error(
+                    `Error fetching photos for property ${property.id}:`,
+                    err
+                );
+                property.imageUrl = "/default-property.jpg";
+                property.photos = [];
+              }
+            })
+        );
       } catch (err) {
         console.error(err);
         this.error = true;
@@ -165,35 +207,41 @@ export default {
         this.loading = false;
       }
     },
-    dateInSelected() {
-      console.log("AAA" + this.checkinDate);
-      return this.checkinDate;
-    },
-    dateOutSelected() {
-      return this.checkoutDate;
-    },
     clearFilters() {
-      this.searchQuery = '';
-      this.checkinDate = '';
-      this.checkoutDate = '';
-      this.filters = { country: '', city: '', squareMeters: null, postalCode: '', price: null };
+      this.searchQuery = "";
+      this.checkinDate = "";
+      this.checkoutDate = "";
+      this.filters = {
+        country: "",
+        city: "",
+        squareMeters: null,
+        postalCode: "",
+        price: null,
+      };
     },
     async fetchOccupiedDates(propertyId) {
-      if (this.occupiedDatesCache[propertyId]) return this.occupiedDatesCache[propertyId];
+      if (this.occupiedDatesCache[propertyId])
+        return this.occupiedDatesCache[propertyId];
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://localhost:8080/api/properties/${propertyId}/closed-dates`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        });
-        this.occupiedDatesCache[propertyId] = response.data.map(d => ({
+        const response = await axios.get(
+            `http://localhost:8080/api/properties/${propertyId}/closed-dates`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+        );
+        this.occupiedDatesCache[propertyId] = response.data.map((d) => ({
           startDate: new Date(d.startDate),
-          endDate: new Date(d.endDate)
+          endDate: new Date(d.endDate),
         }));
         return this.occupiedDatesCache[propertyId];
       } catch (err) {
-        console.error(`Failed to fetch occupied dates for property ${propertyId}`, err);
+        console.error(
+            `Failed to fetch occupied dates for property ${propertyId}`,
+            err
+        );
         return [];
       }
     },
@@ -204,25 +252,15 @@ export default {
       if (!occupied) return true; // not yet fetched, assume available
 
       // Check if any occupied period overlaps
-      return !occupied.some(period => {
+      return !occupied.some((period) => {
         return checkinDate <= period.endDate && checkoutDate >= period.startDate;
       });
     },
-    updateAvailability() {
-      // Could be empty if computed handles filtering
-      // Or you can do extra logic if needed
-      console.log('Availability updated');
-    },
-    // goToProperty(id) {
-    //   const url = this.$router.resolve({ name: "PropertyDetails", params: { id } });
-    //   window.open(url.href, "_blank"); // open in new tab
-    // },
   },
-
   async created() {
     await this.fetchProperties();
 
-    // pre-fetch occupied dates for all properties
+    // Pre-fetch occupied dates for all properties
     for (let property of this.properties) {
       await this.fetchOccupiedDates(property.id);
     }
@@ -298,4 +336,3 @@ export default {
   padding-bottom: 3rem;
 }
 </style>
-
