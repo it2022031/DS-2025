@@ -17,13 +17,18 @@
           />
           <div class="property-info">
             <h3>{{ property.name }}</h3>
-            <p><strong>Owner:</strong> 👤{{ property.username || 'N/A' }}</p>
             <p>{{ property.description }}</p>
             <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
-            <p><strong>Status:</strong> {{ property.approvalStatus }}</p>
-            <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
             <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
-            <p><strong>Price:</strong> {{ property.price }} €</p>
+            <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
+            <p><strong>Price Per Day:</strong> {{ property.price }} €</p>
+            <p>
+              <strong>Approval Status (by Admin):</strong>
+              <span :class="statusClass(property.approvalStatus)">
+                {{ property.approvalStatus }}
+              </span>
+            </p>
+
 
             <!-- Render all photos as thumbnails -->
             <div class="mt-2" v-if="property.photos && property.photos.length">
@@ -88,6 +93,15 @@ export default {
     },
   },
   methods: {
+    statusClass(status) {
+      if (!status) return '';
+      switch(status.toLowerCase()) {
+        case 'approved': return 'approved';
+        case 'pending': return 'pending';
+        case 'rejected': return 'rejected';
+        default: return '';
+      }
+    },
     async fetchProperties() {
       this.loading = true;
       this.error = false;
@@ -284,5 +298,21 @@ export default {
   justify-content: flex-start;  /* keeps them aligned to the left */
   margin-top: 12px;      /* optional spacing from above */
 }
+
+.approved {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.pending {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.rejected {
+  color: #dc3545;
+  font-weight: bold;
+}
+
 
 </style>

@@ -17,82 +17,59 @@
             </div>
 
             <form @submit.prevent="submitForm" role="form">
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Property Name"
-                  v-model="name"
-                  addon-left-icon="ni ni-building" />
+              <base-input alternative class="mb-3"
+                          placeholder="Property Name"
+                          v-model="name"
+                          addon-left-icon="ni ni-building" />
 
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Description"
-                  v-model="description"
-                  addon-left-icon="ni ni-align-left-2" />
+              <base-input alternative class="mb-3"
+                          placeholder="Description"
+                          v-model="description"
+                          addon-left-icon="ni ni-align-left-2" />
 
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Country"
-                  v-model="country"
-                  addon-left-icon="ni ni-world-2" />
+              <base-input alternative class="mb-3"
+                          placeholder="Country"
+                          v-model="country"
+                          addon-left-icon="ni ni-world-2" />
 
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="City"
-                  v-model="city"
-                  addon-left-icon="ni ni-square-pin" />
+              <base-input alternative class="mb-3"
+                          placeholder="City"
+                          v-model="city"
+                          addon-left-icon="ni ni-square-pin" />
 
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Street"
-                  v-model="street"
-                  addon-left-icon="ni ni-map-big" />
+              <base-input alternative class="mb-3"
+                          placeholder="Street"
+                          v-model="street"
+                          addon-left-icon="ni ni-map-big" />
 
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Postal Code"
-                  v-model="postalCode"
-                  addon-left-icon="ni ni-key-25" />
+              <base-input alternative class="mb-3"
+                          placeholder="Postal Code"
+                          v-model="postalCode"
+                          addon-left-icon="ni ni-key-25" />
 
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Square Meters"
-                  type="number"
-                  v-model.number="squareMeters"
-                  addon-left-icon="ni ni-ruler-pencil" />
+              <base-input alternative class="mb-3"
+                          placeholder="Square Meters"
+                          type="number"
+                          v-model.number="squareMeters"
+                          addon-left-icon="ni ni-ruler-pencil" />
 
-              <base-input
-                  alternative
-                  class="mb-3"
-                  placeholder="Price Per Day"
-                  type="number"
-                  v-model.number="price"
-                  addon-left-icon="ni ni-money-coins" />
+              <base-input alternative class="mb-3"
+                          placeholder="Price Per Day"
+                          type="number"
+                          v-model.number="price"
+                          addon-left-icon="ni ni-money-coins" />
 
               <div class="text-center">
                 <button type="submit" class="btn btn-primary my-4">
-                  <template v-if="success">✔️</template>
                   Add Property
                 </button>
               </div>
             </form>
 
-            <div v-if="success" class="text-center my-3">
-              <base-button type="success" disabled>
-                ✔️ Property added successfully!
-              </base-button>
-            </div>
-
-            <!-- Πίσω κουμπί -->
-            <div class="text-center mt-3">
-              <button class="btn btn-light" @click="$router.back()">← Back</button>
-            </div>
+<!--            &lt;!&ndash; Πίσω κουμπί &ndash;&gt;-->
+<!--            <div class="text-center mt-3">-->
+<!--              <button class="btn btn-light" @click="$router.back()">← Back</button>-->
+<!--            </div>-->
           </card>
         </div>
       </div>
@@ -114,26 +91,16 @@ export default {
       street: '',
       postalCode: '',
       squareMeters: null,
-      price: null,
-      success: false
+      price: null
     };
-  },
-  mounted() {
-    // const storedRole = localStorage.getItem("userRole");
-    // const role = storedRole ? storedRole.toUpperCase() : null;
-    // if (role !== "OWNER" && role !== "ADMIN") {
-    //   alert("Πρέπει να είστε ιδιοκτήτης για να προσθέσετε αγγελία.");
-    //   this.$router.push("/");
-    // }
   },
   methods: {
     async submitForm() {
       const userRole = localStorage.getItem("userRole");
       const token = localStorage.getItem("token");
-      console.log("Token:", token); // Πρέπει να εμφανίζει JWT
 
       if (!userRole || !token) {
-        alert("Πρέπει να είστε συνδεδεμένοι για να προσθέσετε ακίνητο.");
+        alert("You must be logged in to add a property.");
         setTimeout(() => {
           this.$router.push("/login");
         }, 1500);
@@ -153,7 +120,6 @@ export default {
         alert("Please fill in all fields.");
         return;
       }
-      const username = localStorage.getItem("username"); //να φτιάξει ο αίαντας πεδίο στο backend
 
       try {
         const response = await axios.post("http://localhost:8080/api/properties", {
@@ -171,9 +137,9 @@ export default {
           }
         });
 
-        this.success = true;
-        alert(`Property "${response.data.name}" added successfully!`);
+        alert(`Property "${response.data.name}" added successfully! ✅`);
 
+        // Reset form
         this.name = '';
         this.description = '';
         this.country = '';
@@ -191,7 +157,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 input {

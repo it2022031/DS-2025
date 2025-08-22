@@ -47,7 +47,7 @@
               <input v-model.number="property.price" type="number" class="form-control" min="0" />
             </div>
             <div class="col-md-4">
-              <label class="form-label">Status</label>
+              <label class="form-label">Approval Status</label>
 
               <select v-if="userRole === 'ADMIN'" v-model="property.approvalStatus" class="form-select">
                 <option value="PENDING">Pending</option>

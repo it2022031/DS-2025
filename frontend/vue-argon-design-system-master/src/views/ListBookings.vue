@@ -1,3 +1,83 @@
+<!--<template>-->
+<!--  <section class="list-rentals section bg-secondary py-5">-->
+<!--    <div class="container">-->
+<!--      <h2 class="text-center text-white mb-4">📖 Rentals List</h2>-->
+
+<!--      <div v-if="loading" class="text-center text-white">Loading rentals...</div>-->
+<!--      <div v-else-if="error" class="text-center text-danger">Failed to load rentals.</div>-->
+<!--      <div v-else-if="rentals.length === 0" class="text-center text-white">No rentals found.</div>-->
+
+<!--      <ul v-else class="rental-list">-->
+<!--        <li v-for="rental in rentals" :key="rental.id" class="rental-card">-->
+<!--          <div class="rental-info">-->
+<!--            <h3>Booking ID: {{ rental.id }}</h3>-->
+<!--&lt;!&ndash;            <p><strong>Property's Name:</strong> {{  }}</p>&ndash;&gt;-->
+<!--&lt;!&ndash;            <p><strong>Owner's Name:</strong> {{ }}</p>&ndash;&gt;-->
+<!--            <p><strong>Start Date:</strong> {{ formatDate(rental.startDate) }}</p>-->
+<!--            <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>-->
+<!--            <p><strong>Approval Status (by Owner):</strong>-->
+<!--              <span :class="{ approved: rental.status, pending: !rental.status }">-->
+<!--                {{ rental.status ? 'Approved' : 'Pending' }}-->
+<!--              </span>-->
+<!--            </p>-->
+<!--          </div>-->
+
+<!--        </li>-->
+<!--      </ul>-->
+
+<!--&lt;!&ndash;      <div class="text-center mt-4">&ndash;&gt;-->
+<!--&lt;!&ndash;        <button class="btn btn-light" @click="$router.back()">← Back</button>&ndash;&gt;-->
+<!--&lt;!&ndash;      </div>&ndash;&gt;-->
+<!--    </div>-->
+<!--  </section>-->
+<!--</template>-->
+
+
+<!--<script>-->
+<!--import axios from 'axios';-->
+
+<!--export default {-->
+<!--  name: 'ListRentals',-->
+<!--  data() {-->
+<!--    return {-->
+<!--      rentals: [],-->
+<!--      loading: false,-->
+<!--      error: false,-->
+<!--      baseURL: 'http://localhost:8080',-->
+<!--      userId: localStorage.getItem('userId') // ✅ read directly here-->
+<!--    };-->
+<!--  },-->
+<!--  methods: {-->
+<!--    formatDate(dateStr) {-->
+<!--      if (!dateStr) return 'N/A';-->
+<!--      const options = { year: 'numeric', month: 'short', day: 'numeric' };-->
+<!--      return new Date(dateStr).toLocaleDateString(undefined, options);-->
+<!--    },-->
+<!--    async fetchRentals() {-->
+<!--      this.loading = true;-->
+<!--      this.error = false;-->
+<!--      try {-->
+<!--        const token = localStorage.getItem('token');-->
+<!--        const response = await axios.get(-->
+<!--            `${this.baseURL}/api/users/${this.userId}/rentals`,-->
+<!--            { headers: { Authorization: `Bearer ${token}` } }-->
+<!--        );-->
+<!--        this.rentals = response.data;-->
+<!--      } catch (err) {-->
+<!--        console.error('Error fetching rentals:', err);-->
+<!--        this.error = true;-->
+<!--      } finally {-->
+<!--        this.loading = false;-->
+<!--      }-->
+<!--    }-->
+<!--  },-->
+<!--  async mounted() {-->
+<!--    await this.fetchRentals();-->
+<!--  }-->
+<!--};-->
+<!--</script>-->
+
+
 <template>
   <section class="list-rentals section bg-secondary py-5">
     <div class="container">
@@ -10,28 +90,25 @@
       <ul v-else class="rental-list">
         <li v-for="rental in rentals" :key="rental.id" class="rental-card">
           <div class="rental-info">
-            <h3>Rental ID: {{ rental.id }}</h3>
-            <p><strong>Property ID:</strong> {{ rental.propertyId }}</p>
-            <p><strong>User ID:</strong> {{ rental.userId }}</p>
+            <h3>Booking ID: {{ rental.rentalId }}</h3>
+            <p><strong>Property's Name:</strong> {{ rental.propertyName}}</p>
+            <p><strong>Owner's Name:</strong> {{ rental.ownerName}}</p>
             <p><strong>Start Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>
-            <p><strong>Status:</strong>
-              <span :class="{ approved: rental.status, pending: !rental.status }">
-                {{ rental.status ? 'Approved' : 'Pending' }}
-              </span>
+            <p><strong>Total Price:</strong> {{ rental.totalPrice}}<strong> €</strong></p>
+            <p>
+              <strong>Approval Status (by Owner):</strong>
+              <span :class="statusClass(rental.status)">
+    {{ rental.status }}
+  </span>
             </p>
-          </div>
 
+          </div>
         </li>
       </ul>
-
-      <div class="text-center mt-4">
-        <button class="btn btn-light" @click="$router.back()">← Back</button>
-      </div>
     </div>
   </section>
 </template>
-
 
 <script>
 import axios from 'axios';
@@ -44,7 +121,7 @@ export default {
       loading: false,
       error: false,
       baseURL: 'http://localhost:8080',
-      userId: localStorage.getItem('userId') // ✅ read directly here
+      userId: localStorage.getItem('userId')
     };
   },
   methods: {
@@ -53,16 +130,26 @@ export default {
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
+    statusClass(status) {
+      switch(status.toLowerCase()) {
+        case 'approved': return 'approved';
+        case 'pending': return 'pending';
+        case 'rejected': return 'rejected';
+        default: return '';
+      }
+    },
     async fetchRentals() {
       this.loading = true;
       this.error = false;
       try {
         const token = localStorage.getItem('token');
+
         const response = await axios.get(
-            `${this.baseURL}/api/users/${this.userId}/rentals`,
+            `${this.baseURL}/api/rentals/by-renter/${this.userId}`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
-        this.rentals = response.data;
+
+        this.rentals = response.data; // assume each item has propertyName and ownerName
       } catch (err) {
         console.error('Error fetching rentals:', err);
         this.error = true;
@@ -70,14 +157,14 @@ export default {
         this.loading = false;
       }
     }
+
+
   },
   async mounted() {
     await this.fetchRentals();
   }
 };
 </script>
-
-
 
 
 <style scoped>
@@ -126,6 +213,11 @@ export default {
 
 .pending {
   color: #ffc107;
+  font-weight: bold;
+}
+
+.rejected {
+  color: #dc3545;
   font-weight: bold;
 }
 

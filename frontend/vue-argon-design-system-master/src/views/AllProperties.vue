@@ -75,12 +75,11 @@
                 />
                 <div class="property-info p-3 flex-grow-1">
                   <h3>{{ property.name }}</h3>
-                  <p><strong>Owner:</strong> 👤{{ property.username || 'N/A' }}</p>
+                  <p><strong>Owner:</strong> 👤{{ property.ownerId}}</p>
                   <p>{{ property.description }}</p>
                   <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
-                  <p><strong>Status:</strong> {{ property.approvalStatus }}</p>
-                  <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
                   <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
+                  <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
                   <p><strong>Price per day:</strong> {{ property.price }} €</p>
                 </div>
               </router-link>
