@@ -329,7 +329,6 @@ public class PropertyController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
@@ -347,7 +346,6 @@ public class PropertyController {
         }
 
         // 🛑 Έλεγχος μέγιστου αριθμού φωτογραφιών
-
         long existingPhotos = propertyPhotoRepository.countByPropertyId(propertyId);
         if (existingPhotos >= 5 && !isAdmin) {
             return ResponseEntity.badRequest().body(
@@ -359,6 +357,14 @@ public class PropertyController {
             return ResponseEntity.badRequest().body(Map.of("error", "Empty file"));
         }
 
+        // 🛑 Έλεγχος μεγέθους αρχείου (μέχρι 10MB)
+        final long MAX_SIZE = 10L * 1024 * 1024; // 10 MB
+        if (file.getSize() > MAX_SIZE) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Το αρχείο ξεπερνά το επιτρεπόμενο όριο των 10MB"));
+        }
+
+        // ✅ Αποθήκευση φωτογραφίας
         PropertyPhoto photo = new PropertyPhoto();
         photo.setImage(file.getBytes());
         photo.setContentType(file.getContentType());
@@ -369,6 +375,7 @@ public class PropertyController {
 
         return ResponseEntity.ok(Map.of("message", "Photo uploaded successfully"));
     }
+
 
 
     @GetMapping("/photos/{photoId}")
