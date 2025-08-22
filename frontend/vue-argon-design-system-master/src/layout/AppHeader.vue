@@ -34,12 +34,12 @@
         </li>
 
         <!-- Νέα Αγγελία: OWNER ή ADMIN -->
-        <li v-if="isLoggedIn && hasRole('USER','ADMIN')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('USER') && (!hasRole('ADMIN'))" class="nav-item">
           <router-link to="/properties/add" class="nav-link">Νέα Αγγελία</router-link>
         </li>
 
         <!-- Λίστα Ακινήτων: OWNER ή ADMIN -->
-        <li v-if="isLoggedIn && hasRole('USER', 'RENTER', 'ADMIN')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('USER', 'RENTER') && (!hasRole('ADMIN'))" class="nav-item">
           <router-link to="/list-properties" class="nav-link">Λίστα Ακινήτων</router-link>
         </li>
 
@@ -49,13 +49,18 @@
         </li>
 
         <!-- Λίστα Ενοικιάσεων: μόνο logged in -->
-        <li v-if="isLoggedIn && hasRole('ADMIN', 'USER')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('USER') && (!hasRole('ADMIN'))" class="nav-item">
           <router-link to="/rentals" class="nav-link">Λίστα Ενοικιάσεων</router-link>
         </li>
 
         <!-- Λίστα ΚΡΑΤΗΣΕΩΝ: μόνο logged in -->
-        <li v-if="isLoggedIn && hasRole('ADMIN', 'RENTER')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('RENTER') && (!hasRole('ADMIN'))" class="nav-item">
           <router-link to="/list-bookings" class="nav-link">Λίστα Κρατήσεων</router-link>
+        </li>
+
+        <!-- Λίστα ΚΡΑΤΗΣΕΩΝ: μόνο logged in -->
+        <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
+          <router-link to="/approve-reject-properties" class="nav-link">Λίστα Pending Properties</router-link>
         </li>
       </ul>
 
