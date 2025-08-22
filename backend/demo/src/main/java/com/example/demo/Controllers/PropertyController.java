@@ -410,6 +410,48 @@ public class PropertyController {
         return ResponseEntity.ok(Map.of("message", "Photo deleted successfully"));
     }
 
+    @PatchMapping("/photos/{photoId}")
+    public ResponseEntity<?> replacePhoto(
+            @PathVariable Long photoId,
+            @RequestPart("file") MultipartFile file,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Not authenticated"));
+        }
+
+        // --- έλεγχος ρόλου admin ---
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // --- φόρτωσε το photo και βρες τον owner ---
+        var photo = propertyPhotoRepository.findById(photoId)
+                .orElseThrow(() -> new RuntimeException("Photo not found"));
+
+        var ownerId = photo.getProperty().getOwner().getId();
+
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        var caller = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isOwner = caller.getId().equals(ownerId);
+
+        if (!isAdmin && !isOwner) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Only admin or property owner can update photo"));
+        }
+
+        try {
+            photo.setImage(file.getBytes());
+            propertyPhotoRepository.save(photo);
+            return ResponseEntity.ok(Map.of("message", "Photo updated successfully"));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to update photo"));
+        }
+    }
+
     @GetMapping("/{propertyId}/photos")
     public ResponseEntity<?> getAllPropertyPhotos(@PathVariable Long propertyId) {
         List<PropertyPhoto> photos = propertyPhotoRepository.findByPropertyId(propertyId);
@@ -453,5 +495,6 @@ public class PropertyController {
             return ResponseEntity.ok(ranges);
         }
     }
+
 
 }

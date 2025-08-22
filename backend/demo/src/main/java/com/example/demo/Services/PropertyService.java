@@ -1,15 +1,19 @@
 package com.example.demo.Services;
 
 import com.example.demo.Entities.Property;
+import com.example.demo.Entities.PropertyPhoto;
 import com.example.demo.Entities.User;
 import com.example.demo.Entities.ApprovalStatus;
+import com.example.demo.Repositories.PropertyPhotoRepository;
 import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.UserRepository;
 import com.example.demo.dto.DateRange;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -19,13 +23,14 @@ public class PropertyService {
     private final PropertyRepository propertyRepository;
     private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
-
+    private final PropertyPhotoRepository photoRepo;
 
     public PropertyService(PropertyRepository propertyRepository,
-                           UserRepository userRepository, RentalRepository rentalRepository) {
+                           UserRepository userRepository, RentalRepository rentalRepository, PropertyPhotoRepository photoRepo) {
         this.propertyRepository = propertyRepository;
         this.userRepository = userRepository;
         this.rentalRepository = rentalRepository;
+        this.photoRepo = photoRepo;
     }
 
     public List<Property> findAll() {
@@ -154,4 +159,37 @@ public class PropertyService {
         return merged;
     }
 
+
+
+//    @Transactional
+//    public PropertyPhoto replacePhoto(Long photoId, MultipartFile file, User caller, boolean isAdmin) throws IOException {
+//        if (file == null || file.isEmpty()) {
+//            throw new IllegalArgumentException("No file provided");
+//        }
+//        // basic validation
+//        long maxSize = 5L * 1024 * 1024; // 5MB
+//        if (file.getSize() > maxSize) {
+//            throw new IllegalArgumentException("File too large (max 5MB)");
+//        }
+//        String ct = file.getContentType();
+//        if (ct == null || !(ct.startsWith("image/"))) {
+//            throw new IllegalArgumentException("Only image/* content types are allowed");
+//        }
+//
+//        PropertyPhoto photo = photoRepo.findById(photoId)
+//                .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
+//
+//        // owner or admin check
+//        Long ownerId = photo.getProperty().getOwner().getId();
+//        if (!isAdmin && !ownerId.equals(caller.getId())) {
+//            throw new SecurityException("Not allowed to modify this photo");
+//        }
+//
+//        // update bytes + metadata
+//        photo.setImage(file.getBytes());                 // byte[]/@Lob field
+//        photo.setContentType(ct);
+//        photo.setFilename(file.getOriginalFilename());
+//
+//        return photoRepo.save(photo);
+//    }
 }
