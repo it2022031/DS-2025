@@ -14,7 +14,10 @@ public record PropertyDto(
         String postalCode,
         Double squareMeters,
         String approvalStatus,
-        Long ownerId ,
+        Long ownerId,
+        String ownerFirstName,   // νέο
+        String ownerLastName,    // νέο
+        String ownerUsername,    // νέο
         BigDecimal price
 ) {
     public static PropertyDto fromEntity(Property p) {
@@ -28,7 +31,10 @@ public record PropertyDto(
                 p.getPostalCode(),
                 p.getSquareMeters(),
                 p.getApprovalStatus() != null ? p.getApprovalStatus().name() : null,
-                p.getOwner() != null ? p.getOwner().getId() : null ,
+                p.getOwner() != null ? p.getOwner().getId() : null,
+                p.getOwner() != null ? p.getOwner().getFirstName() : null,
+                p.getOwner() != null ? p.getOwner().getLastName() : null,
+                p.getOwner() != null ? p.getOwner().getUsername() : null,
                 p.getPrice()
         );
     }
