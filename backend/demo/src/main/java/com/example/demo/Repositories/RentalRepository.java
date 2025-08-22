@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,12 +51,13 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     /**
      * Ενεργά rentals που επικαλύπτονται με το ζητούμενο διάστημα για ένα ακίνητο.
      */
-    @Query(
-            "SELECT r FROM Rental r"
-                    + " WHERE r.property.id = :propertyId"
-                    + "   AND r.approvalStatus = 'APPROVED'"
-                    + "   AND NOT (r.endDate < :start OR r.startDate > :end)"
-    )
+    @Query("""
+        SELECT r FROM Rental r
+        WHERE r.property.id = :propertyId
+          AND r.approvalStatus IN ('APPROVED','PENDING')
+          AND r.endDate  > :start
+          AND r.startDate < :end
+""")
     List<Rental> findOverlappingActiveRentals(
             @Param("propertyId") Long propertyId,
             @Param("start") LocalDate start,
@@ -71,4 +73,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     List<Rental> findByPropertyIdAndUserId(Long propertyId, Long userId);
     List<Rental> findByPropertyIdAndApprovalStatusAndEndDateGreaterThanEqual(
             Long propertyId, ApprovalStatus status, LocalDate date);
+    List<Rental> findByPropertyIdAndApprovalStatusInAndEndDateGreaterThanEqual(
+            Long propertyId, Collection<ApprovalStatus> statuses, LocalDate date);
 }

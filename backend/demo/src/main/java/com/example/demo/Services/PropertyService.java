@@ -87,9 +87,10 @@ public class PropertyService {
 
         LocalDate today = LocalDate.now();
 
-        var rentals = rentalRepository
-                .findByPropertyIdAndApprovalStatusAndEndDateGreaterThanEqual(
-                        propertyId, ApprovalStatus.APPROVED, today);
+        var rentals = rentalRepository.findByPropertyIdAndApprovalStatusInAndEndDateGreaterThanEqual(
+                propertyId, List.of(ApprovalStatus.APPROVED, ApprovalStatus.PENDING), today
+        );
+
 
         // μετατροπή σε ranges (clip το start στο today αν είναι παρελθόν)
         List<DateRange> raw = new ArrayList<>();
