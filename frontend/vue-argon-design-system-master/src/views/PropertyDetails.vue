@@ -5,19 +5,32 @@
       <div v-else-if="error" class="text-center text-danger">Failed to load property.</div>
       <div v-else-if="!property" class="text-center">Property not found.</div>
       <div v-else class="row">
-        <!-- Image -->
+        <!-- Images -->
         <div class="col-md-6">
+          <!-- Main photo -->
           <img
-              :src="property.imageUrl || '/default-property.jpg'"
+              :src="mainPhotoUrl"
               :alt="property.name"
-              class="img-fluid rounded shadow"
+              class="img-fluid rounded shadow mb-3"
           />
+
+          <!-- Thumbnails -->
+          <div v-if="property.photos && property.photos.length > 1" class="d-flex flex-wrap">
+            <img
+                v-for="photo in property.photos"
+                :key="photo.id"
+                :src="photo.url"
+                :alt="photo.filename"
+                class="border rounded me-2 mb-2 thumbnail"
+                @click="setMainPhoto(photo.url)"
+            />
+          </div>
         </div>
 
         <!-- Info -->
         <div class="col-md-6">
           <h2>{{ property.name }}</h2>
-          <p><strong>Owner:</strong> 👤{{ property.ownerFirstName}} {{property.ownerLastName}}</p>
+          <p><strong>Owner:</strong> 👤 {{ property.ownerFirstName }} {{ property.ownerLastName }}</p>
           <p>{{ property.description }}</p>
           <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
           <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
@@ -72,7 +85,8 @@ export default {
       error: false,
       checkinDate: "",
       checkoutDate: "",
-      occupiedDates: []
+      occupiedDates: [],
+      mainPhotoUrl: "/default-property.jpg", // default main photo
     };
   },
   methods: {
@@ -87,7 +101,7 @@ export default {
         );
         this.property = response.data;
 
-        // fetch occupied dates
+        // Fetch occupied dates
         const datesRes = await axios.get(
             `http://localhost:8080/api/properties/${this.property.id}/closed-dates`,
             { headers: { Authorization: `Bearer ${token}` } }
@@ -96,6 +110,26 @@ export default {
           startDate: new Date(d.startDate),
           endDate: new Date(d.endDate)
         }));
+
+        // Fetch photos
+        try {
+          const photosRes = await axios.get(
+              `http://localhost:8080/api/properties/${this.property.id}/photos`,
+              { headers: { Authorization: `Bearer ${token}` } }
+          );
+          this.property.photos = photosRes.data.map(photo => ({
+            ...photo,
+            url: photo.url || "/default-property.jpg",
+          }));
+
+          // set main photo
+          if (this.property.photos && this.property.photos.length > 0) {
+            this.mainPhotoUrl = this.property.photos[0].url;
+          }
+        } catch (err) {
+          console.error("Error fetching property photos:", err);
+          this.property.photos = [];
+        }
       } catch (err) {
         console.error(err);
         this.error = true;
@@ -123,8 +157,8 @@ export default {
 
         const rentalData = {
           propertyId: this.property.id,
-          startDate: this.checkinDate,   // match backend naming
-          endDate: this.checkoutDate     // match backend naming
+          startDate: this.checkinDate,
+          endDate: this.checkoutDate
         };
 
         const response = await axios.post(
@@ -136,15 +170,16 @@ export default {
         alert("✅ Rental created successfully!");
         console.log("Rental created:", response.data);
 
-        // Refresh occupied dates so user sees the update
+        // Refresh occupied dates
         await this.fetchProperty();
       } catch (err) {
         console.error("Failed to create rental:", err);
         alert("❌ Failed to create rental. Please try again.");
       }
+    },
+    setMainPhoto(url) {
+      this.mainPhotoUrl = url;
     }
-
-
   },
   created() {
     this.fetchProperty();
@@ -160,5 +195,16 @@ export default {
 img {
   max-height: 350px;
   object-fit: cover;
+}
+
+.thumbnail {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.thumbnail:hover {
+  transform: scale(1.05);
 }
 </style>

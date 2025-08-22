@@ -11,8 +11,8 @@
         <li v-for="user in users" :key="user.id" class="user-card">
           <div class="user-info">
             <h3>{{ user.username }}</h3>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>Status:</strong> {{ user.status }}</p>
+            <p><strong>Email: </strong> {{ user.email }}</p>
+            <p><strong>Status: </strong> <span style="color: #ffc107;">{{ user.status }}</span></p>
 
             <div class="user-actions mt-3 d-flex align-items-center"
                  v-if="canModerate(user)">
