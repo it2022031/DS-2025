@@ -9,9 +9,9 @@
 
       <ul v-else class="property-list">
         <li v-for="property in properties" :key="property.id" class="property-card">
-          <!-- Αν δεν έχεις image url, βάζουμε ένα placeholder -->
+          <!-- Display first photo or placeholder -->
           <img
-              :src="property.imageUrl || '/default-property.jpg'"
+              :src="property.photos && property.photos.length ? property.photos[0].url : '/default-property.jpg'"
               :alt="property.name"
               class="property-image"
           />
@@ -25,24 +25,21 @@
             <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
             <p><strong>Price:</strong> {{ property.price }} €</p>
 
-<!--            <div class="property-actions">-->
-<!--              <router-link-->
-<!--                  v-if="canEdit(property)"-->
-<!--                  :to="`/properties/${property.id}/edit`"-->
-<!--                  class="btn btn-sm btn-outline-light"-->
-<!--              >-->
-<!--                Edit-->
-<!--              </router-link>-->
-<!--            </div>-->
-<!--            <div class="property-actions" v-if="canDelete(property)">-->
-<!--              <button-->
-
-<!--                  @click="deleteProperty(property.id)"-->
-<!--                  class="btn btn-sm btn-outline-danger"-->
-<!--              >-->
-<!--                🗑 Delete-->
-<!--              </button>-->
-<!--            </div>-->
+            <!-- Render all photos as thumbnails -->
+            <div class="mt-2" v-if="property.photos && property.photos.length">
+              <h6 class="text-white">Photos:</h6>
+              <div class="d-flex flex-wrap">
+                <img
+                    v-for="photo in property.photos"
+                    :key="photo.id"
+                    :src="photo.url"
+                    :alt="photo.filename"
+                    class="border rounded me-2 mb-2"
+                    width="60"
+                    height="60"
+                />
+              </div>
+            </div>
 
             <div class="property-actions mt-3 d-flex align-items-center"
                  v-if="canEdit(property) || canDelete(property)">
@@ -51,7 +48,7 @@
                   :to="`/properties/${property.id}/edit`"
                   class="btn btn-sm btn-outline-light mr-2"
               >
-              ✏️ Edit
+                ✏️ Edit
               </router-link>
 
               <button
@@ -62,7 +59,6 @@
                 🗑 Delete
               </button>
             </div>
-
 
           </div>
         </li>
@@ -100,13 +96,34 @@ export default {
         const response = await axios.get(
             `http://localhost:8080/api/users/${this.userId}/properties`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
             }
         );
-        // backend επιστρέφει array από PropertyDto με ownerName και ownerId
+
         this.properties = response.data;
+
+        // Now fetch photos for each property
+        await Promise.all(
+            this.properties.map(async property => {
+              try {
+                const photosRes = await axios.get(
+                    `http://localhost:8080/api/properties/${property.id}/photos`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                // For each photo, optionally fetch actual image data if backend requires it
+                property.photos = photosRes.data.map(photo => ({
+                  ...photo,
+                  // Assuming `url` already works, otherwise fetch blob like:
+                  // url: await this.fetchPhotoBlob(photo.id)
+                }));
+              } catch (err) {
+                console.error(`Error fetching photos for property ${property.id}:`, err);
+                property.photos = [];
+              }
+            })
+        );
+
       } catch (err) {
         console.error("Error fetching properties:", err);
         this.error = true;
@@ -114,6 +131,25 @@ export default {
         this.loading = false;
       }
     },
+
+    // Optional: fetch photo blob if needed
+    async fetchPhotoBlob(photoId) {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await axios.get(
+            `http://localhost:8080/api/properties/photos/${photoId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              responseType: "blob"
+            }
+        );
+        return URL.createObjectURL(res.data);
+      } catch (err) {
+        console.error(`Error fetching photo blob ${photoId}:`, err);
+        return '/default-property.jpg';
+      }
+    },
+
     async deleteProperty(propertyId) {
       if (!confirm("Are you sure you want to delete this property?")) return;
 
@@ -123,7 +159,6 @@ export default {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Remove from local list
         this.properties = this.properties.filter(p => p.id !== propertyId);
 
         alert(`Property ${propertyId} deleted 🗑`);
@@ -132,18 +167,12 @@ export default {
         alert(`Failed to delete property ${propertyId}`);
       }
     },
+
     canEdit(property) {
-      return (
-          (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER")
-          // && property.ownerId === this.userId
-      );
+      return (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER");
     },
     canDelete(property) {
-      // allow delete if ADMIN or the property belongs to the logged in user
-      return (
-          (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER")
-          // && property.ownerId === this.userId
-      );
+      return (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER");
     },
   },
 

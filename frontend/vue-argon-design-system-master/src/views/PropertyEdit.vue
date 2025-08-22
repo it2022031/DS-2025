@@ -6,7 +6,7 @@
       <div v-if="loading">Loading...</div>
       <div v-else-if="error" class="text-danger">Failed to load property.</div>
       <div v-else-if="property">
-        <!-- Προβολή φόρμας μόνο αν υπάρχει property -->
+        <!-- Property Edit Form -->
         <form @submit.prevent="saveProperty">
           <div class="mb-3">
             <label class="form-label">Name</label>
@@ -46,34 +46,19 @@
               <label class="form-label">Price Per Day</label>
               <input v-model.number="property.price" type="number" class="form-control" min="0" />
             </div>
-<!--            <div class="col-md-4">-->
-<!--              <label class="form-label">Status</label>-->
-<!--              <select v-model="property.approvalStatus" class="form-select">-->
-<!--                <option value="PENDING">Pending</option>-->
-<!--                <option value="APPROVED">Approved</option>-->
-<!--                <option value="REJECTED">Rejected</option>-->
-<!--              </select>-->
-<!--            </div>-->
             <div class="col-md-4">
               <label class="form-label">Status</label>
 
-              <!-- If ADMIN: show editable select -->
-              <select
-                  v-if="userRole === 'ADMIN'"
-                  v-model="property.approvalStatus"
-                  class="form-select"
-              >
+              <select v-if="userRole === 'ADMIN'" v-model="property.approvalStatus" class="form-select">
                 <option value="PENDING">Pending</option>
                 <option value="APPROVED">Approved</option>
                 <option value="REJECTED">Rejected</option>
               </select>
 
-              <!-- If not ADMIN: show read-only status text -->
               <div v-else class="form-control-plaintext">
                 {{ property.approvalStatus }}
               </div>
             </div>
-
           </div>
 
           <div class="mt-4 d-flex justify-content-end">
@@ -81,6 +66,26 @@
             <button type="submit" class="btn btn-primary">Save Changes</button>
           </div>
         </form>
+
+        <!-- Photo Upload Section -->
+        <div class="mt-4">
+          <label class="form-label">Upload Property Photos</label>
+          <input type="file" multiple @change="handlePhotoChange" class="form-control mb-2" />
+          <button class="btn btn-secondary" @click="uploadPhotos" :disabled="!selectedPhotos.length">
+            Upload Photos
+          </button>
+
+          <!-- Preview selected images -->
+          <div class="mt-3" v-if="previewPhotos.length">
+            <h6>Selected Photos:</h6>
+            <div class="d-flex flex-wrap">
+              <div v-for="(src, index) in previewPhotos" :key="index" class="me-2 mb-2">
+                <img :src="src" alt="preview" width="100" height="100" class="border rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -93,11 +98,11 @@ export default {
   name: 'PropertyEdit',
   data() {
     return {
-      property: {
-        approvalStatus: ""
-      },
+      property: { approvalStatus: "" },
       loading: false,
       error: false,
+      selectedPhotos: [], // raw File objects
+      previewPhotos: []   // preview URLs using FileReader
     };
   },
   computed: {
@@ -111,12 +116,10 @@ export default {
   async mounted() {
     this.loading = true;
     const id = this.$route.params.id;
-    const token = localStorage.getItem('token');  // Παίρνουμε το token
+    const token = localStorage.getItem('token');
     try {
       const response = await axios.get(`http://localhost:8080/api/properties/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`  // Προσθέτουμε το header
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
       this.property = response.data;
     } catch (err) {
@@ -127,36 +130,13 @@ export default {
     }
   },
   methods: {
-    // async saveProperty() {
-    //   if (!this.property || !this.property.id) return;
-    //   const token = localStorage.getItem('token');  // Παίρνουμε το token ξανά
-    //   try {
-    //     await axios.patch(
-    //         `http://localhost:8080/api/properties/${this.property.id}`,
-    //         this.property,
-    //         {
-    //           headers: {
-    //             Authorization: `Bearer ${token}`
-    //           }
-    //         }
-    //     );
-    //     this.$router.push('/list-properties');
-    //   } catch (err) {
-    //     console.error('Error saving property:', err);
-    //     alert('Failed to save changes.');
-    //   }
-    // }
-
     async saveProperty() {
-
       const token = localStorage.getItem("token");
 
-      // Construct payload with only editable fields
       const payload = {
         name: this.property.name,
         price: this.property.price,
         description: this.property.description,
-        // add more fields that are actually editable
         city: this.property.city,
         country: this.property.country,
         street: this.property.street,
@@ -164,19 +144,64 @@ export default {
         squareMeters: this.property.squareMeters
       };
 
-      axios.patch(`http://localhost:8080/api/properties/${this.property.id}`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-          .then(response => {
-            console.log("Property updated:", response.data);
-          })
-          .catch(error => {
-            console.error("Error saving property");
-          });
+      try {
+        const response = await axios.patch(
+            `http://localhost:8080/api/properties/${this.property.id}`,
+            payload,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        console.log("Property updated:", response.data);
+        alert("Property updated successfully!");
+      } catch (err) {
+        console.error("Error saving property:", err);
+        alert("Failed to save changes.");
+      }
+    },
 
-    }
+    handlePhotoChange(event) {
+      this.selectedPhotos = Array.from(event.target.files);
+      this.previewPhotos = [];
+
+      // Generate previews using FileReader (like avatar)
+      this.selectedPhotos.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          this.previewPhotos.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    },
+
+    async uploadPhotos() {
+      if (!this.selectedPhotos.length) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) return this.$router.push("/login");
+
+      const formData = new FormData();
+      // Use "file" field name for backend
+      this.selectedPhotos.forEach(file => formData.append("file", file));
+
+      try {
+        const response = await axios.post(
+            `http://localhost:8080/api/properties/${this.property.id}/photos`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
+              }
+            }
+        );
+        console.log("Photos uploaded successfully:", response.data);
+        alert("✅ Photos uploaded successfully!");
+        this.selectedPhotos = [];
+        this.previewPhotos = [];
+      } catch (err) {
+        console.error("❌ Error uploading photos:", err);
+        alert("Failed to upload photos.");
+      }
+    },
   }
 };
 </script>
@@ -184,5 +209,8 @@ export default {
 <style scoped>
 .section {
   min-height: 100vh;
+}
+img {
+  object-fit: cover;
 }
 </style>
