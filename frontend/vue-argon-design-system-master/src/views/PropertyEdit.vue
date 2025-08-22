@@ -86,6 +86,21 @@
           </div>
         </div>
 
+        <!-- Existing Photos Section -->
+        <div class="mt-4" v-if="photos.length">
+          <h6>Existing Photos:</h6>
+          <div class="d-flex flex-wrap">
+            <div v-for="photo in photos" :key="photo.id" class="me-2 mb-2 position-relative">
+              <img :src="photo.url" :alt="photo.filename" width="100" height="100" class="border rounded" />
+              <button @click="deletePhoto(photo.id)"
+                      class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                      style="font-size: 0.7rem;">
+                🗑
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -101,8 +116,9 @@ export default {
       property: { approvalStatus: "" },
       loading: false,
       error: false,
-      selectedPhotos: [], // raw File objects
-      previewPhotos: []   // preview URLs using FileReader
+      selectedPhotos: [],
+      previewPhotos: [],
+      photos: [] // array for existing photos
     };
   },
   computed: {
@@ -122,6 +138,7 @@ export default {
         headers: { Authorization: `Bearer ${token}` }
       });
       this.property = response.data;
+      await this.fetchPhotos(); // fetch existing photos
     } catch (err) {
       console.error('Error loading property:', err.response ? err.response.status : err.message);
       this.error = true;
@@ -132,7 +149,6 @@ export default {
   methods: {
     async saveProperty() {
       const token = localStorage.getItem("token");
-
       const payload = {
         name: this.property.name,
         price: this.property.price,
@@ -143,7 +159,6 @@ export default {
         postalCode: this.property.postalCode,
         squareMeters: this.property.squareMeters
       };
-
       try {
         const response = await axios.patch(
             `http://localhost:8080/api/properties/${this.property.id}`,
@@ -161,29 +176,22 @@ export default {
     handlePhotoChange(event) {
       this.selectedPhotos = Array.from(event.target.files);
       this.previewPhotos = [];
-
-      // Generate previews using FileReader (like avatar)
       this.selectedPhotos.forEach(file => {
         const reader = new FileReader();
-        reader.onload = e => {
-          this.previewPhotos.push(e.target.result);
-        };
+        reader.onload = e => this.previewPhotos.push(e.target.result);
         reader.readAsDataURL(file);
       });
     },
 
     async uploadPhotos() {
       if (!this.selectedPhotos.length) return;
-
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
-
       const formData = new FormData();
-      // Use "file" field name for backend
       this.selectedPhotos.forEach(file => formData.append("file", file));
 
       try {
-        const response = await axios.post(
+        await axios.post(
             `http://localhost:8080/api/properties/${this.property.id}/photos`,
             formData,
             {
@@ -193,15 +201,50 @@ export default {
               }
             }
         );
-        console.log("Photos uploaded successfully:", response.data);
-        alert("✅ Photos uploaded successfully!");
         this.selectedPhotos = [];
         this.previewPhotos = [];
+        alert("✅ Photos uploaded successfully!");
+        await this.fetchPhotos(); // refresh existing photos
       } catch (err) {
         console.error("❌ Error uploading photos:", err);
         alert("Failed to upload photos.");
       }
     },
+
+    async fetchPhotos() {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(
+            `http://localhost:8080/api/properties/${this.property.id}/photos`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // Map each photo to its direct URL endpoint
+        this.photos = response.data.map(file => ({
+          ...file,
+          url: `http://localhost:8080/api/properties/photos/${file.id}`
+        }));
+      } catch (err) {
+        console.error("Error fetching photos:", err);
+        this.photos = [];
+      }
+    },
+
+    async deletePhoto(photoId) {
+      if (!confirm("Are you sure you want to delete this photo?")) return;
+      const token = localStorage.getItem("token");
+      try {
+        await axios.delete(
+            `http://localhost:8080/api/properties/photos/${photoId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        alert("Photo deleted ✅");
+        await this.fetchPhotos(); // refresh photos after delete
+      } catch (err) {
+        console.error("Error deleting photo:", err);
+        alert("Failed to delete photo.");
+      }
+    }
   }
 };
 </script>
@@ -210,7 +253,26 @@ export default {
 .section {
   min-height: 100vh;
 }
+
 img {
   object-fit: cover;
 }
+
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.top-0 { top: 0; }
+.end-0 { right: 0; }
+
+.border { border: 1px solid #ccc; }
+.rounded { border-radius: 4px; }
+.me-2 { margin-right: 0.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+
+.btn-sm { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
 </style>
