@@ -134,14 +134,14 @@ export default {
     },
     canEdit(property) {
       return (
-          (this.userRole === "ADMIN" || this.userRole === "USER")
+          (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER")
           // && property.ownerId === this.userId
       );
     },
     canDelete(property) {
       // allow delete if ADMIN or the property belongs to the logged in user
       return (
-          (this.userRole === "ADMIN" || this.userRole === "USER")
+          (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER")
           // && property.ownerId === this.userId
       );
     },

@@ -25,7 +25,7 @@
         </li>
 
         <!-- Ενοικίαση: μόνο logged in -->
-        <li v-if="isLoggedIn && hasRole('RENTER', 'ADMIN')" class="nav-item">
+        <li v-if="isLoggedIn && (hasRole('RENTER') || hasRole('ADMIN'))" class="nav-item">
           <router-link to="/approved-properties" class="nav-link">Ενοικίαση</router-link>
         </li>
 
@@ -39,7 +39,7 @@
         </li>
 
         <!-- Λίστα Ακινήτων: OWNER ή ADMIN -->
-        <li v-if="isLoggedIn && hasRole('USER','ADMIN')" class="nav-item">
+        <li v-if="isLoggedIn && hasRole('USER', 'RENTER', 'ADMIN')" class="nav-item">
           <router-link to="/list-properties" class="nav-link">Λίστα Ακινήτων</router-link>
         </li>
 
@@ -51,6 +51,11 @@
         <!-- Λίστα Ενοικιάσεων: μόνο logged in -->
         <li v-if="isLoggedIn && hasRole('ADMIN', 'USER')" class="nav-item">
           <router-link to="/rentals" class="nav-link">Λίστα Ενοικιάσεων</router-link>
+        </li>
+
+        <!-- Λίστα ΚΡΑΤΗΣΕΩΝ: μόνο logged in -->
+        <li v-if="isLoggedIn && hasRole('ADMIN', 'RENTER')" class="nav-item">
+          <router-link to="/list-bookings" class="nav-link">Λίστα Κρατήσεων</router-link>
         </li>
       </ul>
 

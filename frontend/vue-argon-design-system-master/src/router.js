@@ -19,6 +19,8 @@ import PropertyEdit from "@/views/PropertyEdit.vue";
 import RequestRenter from "@/views/RequestRenter.vue";
 import AllProperties from "@/views/AllProperties.vue";
 import PropertyDetails from "@/views/PropertyDetails.vue";
+import ListBookings from "@/views/ListBookings.vue";
+
 
 Vue.use(Router);
 
@@ -171,6 +173,15 @@ export default new Router({
               footer: AppFooter
           },
           props: true, // this allows you to receive "id" as a prop in PropertyDetails
-      }
+      },
+      {
+          path: '/list-bookings',
+          name: 'ListBookings',
+          components: {
+              header: AppHeader,
+              default: ListBookings,
+              footer: AppFooter
+          }
+      },
   ]
 });
