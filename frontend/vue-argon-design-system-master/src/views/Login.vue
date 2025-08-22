@@ -63,7 +63,7 @@
 
             <template v-else>
               <div class="col-12 text-center">
-                <button class="btn btn-danger" @click="logout">Logout</button>
+                <button class="btn btn-primary my-4" @click="handleSignIn">LogIn</button>
               </div>
             </template>
           </div>
