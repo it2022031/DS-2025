@@ -21,6 +21,8 @@ import AllProperties from "@/views/AllProperties.vue";
 import PropertyDetails from "@/views/PropertyDetails.vue";
 import ListBookings from "@/views/ListBookings.vue";
 import ApproveRejectProperties from "@/views/ApproveRejectProperties.vue";
+import ApproveRejectRenters from "@/views/ApproveRejectRenters.vue";
+
 
 Vue.use(Router);
 
@@ -189,6 +191,15 @@ export default new Router({
           components: {
               header: AppHeader,
               default: ApproveRejectProperties,
+              footer: AppFooter
+          }
+      },
+      {
+          path: '/approve-reject-renters',
+          name: 'ApproveRejectRenters',
+          components: {
+              header: AppHeader,
+              default: ApproveRejectRenters,
               footer: AppFooter
           }
       },

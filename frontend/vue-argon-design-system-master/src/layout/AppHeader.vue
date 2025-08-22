@@ -62,6 +62,11 @@
         <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
           <router-link to="/approve-reject-properties" class="nav-link">Λίστα Pending Properties</router-link>
         </li>
+
+        <!-- Λίστα ΚΡΑΤΗΣΕΩΝ: μόνο logged in -->
+        <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
+          <router-link to="/approve-reject-renters" class="nav-link">Λίστα Approve To Be Renters</router-link>
+        </li>
       </ul>
 
 
