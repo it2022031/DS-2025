@@ -22,7 +22,7 @@ import PropertyDetails from "@/views/PropertyDetails.vue";
 import ListBookings from "@/views/ListBookings.vue";
 import ApproveRejectProperties from "@/views/ApproveRejectProperties.vue";
 import ApproveRejectRenters from "@/views/ApproveRejectRenters.vue";
-
+import DeleteReviewsAdmin from "@/views/components/DeleteReviewsAdmin.vue";
 
 Vue.use(Router);
 
@@ -200,6 +200,15 @@ export default new Router({
           components: {
               header: AppHeader,
               default: ApproveRejectRenters,
+              footer: AppFooter
+          }
+      },
+      {
+          path: '/delete-reviews-admin',
+          name: 'DeleteReviewsAdmin',
+          components: {
+              header: AppHeader,
+              default: DeleteReviewsAdmin,
               footer: AppFooter
           }
       },

@@ -67,6 +67,11 @@
         <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
           <router-link to="/approve-reject-renters" class="nav-link">Λίστα Approve To Be Renters</router-link>
         </li>
+
+        <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
+          <router-link to="/delete-reviews-admin" class="nav-link">See All Reviews</router-link>
+        </li>
+
       </ul>
 
 
