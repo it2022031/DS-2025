@@ -8,6 +8,7 @@ import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Security.Role;
+import com.example.demo.dto.UpdateUserRolesRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -269,5 +270,40 @@ public class UserService {
         userRepository.delete(toDelete); // ενεργοποιεί cascade/orphanRemoval προς properties/rentals
     }
 
+    @Transactional
+    public User updateUserRoles(Long targetUserId, UpdateUserRolesRequest req) {
+        User target = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+        Set<Role> roles = new HashSet<>(target.getRoles() == null
+                ? Collections.emptySet()
+                : target.getRoles());
+
+        if (req.set() != null && !req.set().isEmpty()) {
+            roles = toRoleSet(req.set());
+        } else {
+            if (req.add() != null && !req.add().isEmpty()) {
+                roles.addAll(toRoleSet(req.add()));
+            }
+            if (req.remove() != null && !req.remove().isEmpty()) {
+                roles.removeAll(toRoleSet(req.remove()));
+            }
+        }
+
+        target.setRoles(roles);
+        return userRepository.save(target);
+    }
+
+    private Set<Role> toRoleSet(List<String> names) {
+        Set<Role> out = new HashSet<>();
+        for (String n : names) {
+            try {
+                out.add(Role.valueOf(n.trim().toUpperCase(Locale.ROOT)));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid role: " + n);
+            }
+        }
+        return out;
+    }
 
 }

@@ -8,6 +8,7 @@ import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Security.Role;
 import com.example.demo.Services.UserService;
 import com.example.demo.dto.RenterRequestDto;
+import com.example.demo.dto.UpdateUserRolesRequest;
 import com.example.demo.dto.UserResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -266,5 +267,30 @@ public class UserController {
         return ResponseEntity.ok()
                 .header("Content-Type", "image/jpeg") // ή χρησιμοποίησε αποθηκευμένο contentType
                 .body(img);
+    }
+
+    @PatchMapping("/{id}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUserRoles(@PathVariable Long id,
+                                             @RequestBody UpdateUserRolesRequest req,
+                                             Authentication auth) {
+        // δεν επιτρέπουμε σε admin να αλλάξει τους δικούς του ρόλους
+        String callerUsername = ((UserDetails) auth.getPrincipal()).getUsername();
+        User caller = userRepository.findByUsername(callerUsername)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+        if (caller.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Admins cannot modify their own roles"));
+        }
+
+        try {
+            User updated = userService.updateUserRoles(id, req);
+            return ResponseEntity.ok(UserResponseDto.fromEntity(updated));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
     }
 }

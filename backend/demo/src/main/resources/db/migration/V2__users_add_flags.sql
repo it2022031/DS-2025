@@ -100,3 +100,7 @@ COMMIT;
 
 -- Δες τι έχει τώρα
 SELECT role FROM user_roles WHERE user_id = 5;
+
+SELECT ur.user_id, ur.role
+FROM user_roles ur
+WHERE ur.user_id = 2;
