@@ -1,7 +1,7 @@
 <template>
   <section class="list-rentals section bg-secondary py-5">
     <div class="container">
-      <h2 class="text-center text-white mb-4">📖 Rentals List</h2>
+      <h2 class="text-center mb-4" style="color: #343a40;">📖 Rentals List</h2>
 
       <div v-if="loading" class="text-center text-white">Loading rentals...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load rentals.</div>

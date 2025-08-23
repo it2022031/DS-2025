@@ -1,7 +1,7 @@
 <template>
   <section class="list-properties section bg-secondary py-5">
     <div class="container d-flex flex-column">
-      <h2 class="text-center text-white mb-4">🏠 Find Your Property</h2>
+      <h2 class="text-center mb-4" style="color: #343a40;">🏠 Find Your Property</h2>
 
       <!-- Search bar -->
       <div class="search-bar mb-4 text-center">
