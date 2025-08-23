@@ -35,3 +35,68 @@ ALTER TABLE reviews
         FOREIGN KEY (rental_id) REFERENCES rentals(id) ON DELETE SET NULL;
 
 CREATE INDEX idx_reviews_rental_id ON reviews(rental_id);
+
+-- test gia review pseftiko parenlthodikou rental
+
+SELECT id, name FROM properties;
+SELECT id, username FROM users;
+
+INSERT INTO rentals
+(property_id, user_id, start_date, end_date, payment_amount, approval_status)
+VALUES
+    (1, 2, '2024-01-10', '2024-01-15', 500.00, 'APPROVED');
+-- allagi idi iparxon rental
+UPDATE rentals
+SET start_date = '2024-01-10',
+    end_date   = '2024-01-15',
+    approval_status = 'APPROVED'
+WHERE id = 1;
+
+-- allagi rolon enos iparxoun user
+
+-- Όλοι οι ρόλοι ανά χρήστη
+SELECT u.id, u.username, array_remove(array_agg(r.role), NULL) AS roles
+FROM users u
+         LEFT JOIN user_roles r ON r.user_id = u.id
+GROUP BY u.id, u.username
+ORDER BY u.id;
+
+-- Οι ρόλοι ενός συγκεκριμένου χρήστη (π.χ. user_id = 5)
+SELECT role FROM user_roles WHERE user_id = 5;
+
+-- (Μία φορά) φτιάξε unique index αν δεν υπάρχει:
+CREATE UNIQUE INDEX IF NOT EXISTS ux_user_roles_user_role
+    ON user_roles(user_id, role);
+
+-- Πρόσθεσε ρόλο (π.χ. ADMIN) στον user 5
+INSERT INTO user_roles(user_id, role)
+VALUES (5, 'ADMIN')
+ON CONFLICT (user_id, role) DO NOTHING;  -- δεν θα διπλο-εισάγει
+
+-- Αφαίρεσε τον ρόλο RENTER από τον user 5
+DELETE FROM user_roles
+WHERE user_id = 5 AND role = 'RENTER';
+
+BEGIN;
+
+-- 1) Καθάρισε τους τωρινούς ρόλους
+DELETE FROM user_roles WHERE user_id = 5;
+
+-- 2) Βάλε τους νέους (π.χ. μόνο ADMIN και RENTER)
+INSERT INTO user_roles(user_id, role) VALUES
+                                          (5, 'ADMIN'),
+                                          (5, 'RENTER');
+
+COMMIT;
+
+-- kanton admin
+INSERT INTO user_roles(user_id, role) VALUES (5, 'ADMIN')
+ON CONFLICT (user_id, role) DO NOTHING;
+-- Κάν’ τον σκέτο USER
+BEGIN;
+DELETE FROM user_roles WHERE user_id = 5;
+INSERT INTO user_roles(user_id, role) VALUES (5, 'USER');
+COMMIT;
+
+-- Δες τι έχει τώρα
+SELECT role FROM user_roles WHERE user_id = 5;
