@@ -1,7 +1,7 @@
 <template>
   <section class="list-users section bg-secondary py-5">
     <div class="container">
-      <h2 class="text-center text-white mb-4">👥 Renter Requests</h2>
+      <h2 class="text-center mb-4" style="color: #343a40;">👥 Renter Requests</h2>
 
       <div v-if="loading" class="text-center text-white">Loading renter requests...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load requests.</div>
