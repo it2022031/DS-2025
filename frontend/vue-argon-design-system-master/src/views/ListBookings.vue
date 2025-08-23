@@ -1,83 +1,3 @@
-<!--<template>-->
-<!--  <section class="list-rentals section bg-secondary py-5">-->
-<!--    <div class="container">-->
-<!--      <h2 class="text-center text-white mb-4">📖 Rentals List</h2>-->
-
-<!--      <div v-if="loading" class="text-center text-white">Loading rentals...</div>-->
-<!--      <div v-else-if="error" class="text-center text-danger">Failed to load rentals.</div>-->
-<!--      <div v-else-if="rentals.length === 0" class="text-center text-white">No rentals found.</div>-->
-
-<!--      <ul v-else class="rental-list">-->
-<!--        <li v-for="rental in rentals" :key="rental.id" class="rental-card">-->
-<!--          <div class="rental-info">-->
-<!--            <h3>Booking ID: {{ rental.id }}</h3>-->
-<!--&lt;!&ndash;            <p><strong>Property's Name:</strong> {{  }}</p>&ndash;&gt;-->
-<!--&lt;!&ndash;            <p><strong>Owner's Name:</strong> {{ }}</p>&ndash;&gt;-->
-<!--            <p><strong>Start Date:</strong> {{ formatDate(rental.startDate) }}</p>-->
-<!--            <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>-->
-<!--            <p><strong>Approval Status (by Owner):</strong>-->
-<!--              <span :class="{ approved: rental.status, pending: !rental.status }">-->
-<!--                {{ rental.status ? 'Approved' : 'Pending' }}-->
-<!--              </span>-->
-<!--            </p>-->
-<!--          </div>-->
-
-<!--        </li>-->
-<!--      </ul>-->
-
-<!--&lt;!&ndash;      <div class="text-center mt-4">&ndash;&gt;-->
-<!--&lt;!&ndash;        <button class="btn btn-light" @click="$router.back()">← Back</button>&ndash;&gt;-->
-<!--&lt;!&ndash;      </div>&ndash;&gt;-->
-<!--    </div>-->
-<!--  </section>-->
-<!--</template>-->
-
-
-<!--<script>-->
-<!--import axios from 'axios';-->
-
-<!--export default {-->
-<!--  name: 'ListRentals',-->
-<!--  data() {-->
-<!--    return {-->
-<!--      rentals: [],-->
-<!--      loading: false,-->
-<!--      error: false,-->
-<!--      baseURL: 'http://localhost:8080',-->
-<!--      userId: localStorage.getItem('userId') // ✅ read directly here-->
-<!--    };-->
-<!--  },-->
-<!--  methods: {-->
-<!--    formatDate(dateStr) {-->
-<!--      if (!dateStr) return 'N/A';-->
-<!--      const options = { year: 'numeric', month: 'short', day: 'numeric' };-->
-<!--      return new Date(dateStr).toLocaleDateString(undefined, options);-->
-<!--    },-->
-<!--    async fetchRentals() {-->
-<!--      this.loading = true;-->
-<!--      this.error = false;-->
-<!--      try {-->
-<!--        const token = localStorage.getItem('token');-->
-<!--        const response = await axios.get(-->
-<!--            `${this.baseURL}/api/users/${this.userId}/rentals`,-->
-<!--            { headers: { Authorization: `Bearer ${token}` } }-->
-<!--        );-->
-<!--        this.rentals = response.data;-->
-<!--      } catch (err) {-->
-<!--        console.error('Error fetching rentals:', err);-->
-<!--        this.error = true;-->
-<!--      } finally {-->
-<!--        this.loading = false;-->
-<!--      }-->
-<!--    }-->
-<!--  },-->
-<!--  async mounted() {-->
-<!--    await this.fetchRentals();-->
-<!--  }-->
-<!--};-->
-<!--</script>-->
-
-
 <template>
   <section class="list-rentals section bg-secondary py-5">
     <div class="container">
@@ -88,21 +8,91 @@
       <div v-else-if="rentals.length === 0" class="text-center text-white">No rentals found.</div>
 
       <ul v-else class="rental-list">
-        <li v-for="rental in rentals" :key="rental.id" class="rental-card">
+        <li v-for="rental in rentals" :key="rental.rentalId" class="rental-card">
           <div class="rental-info">
             <h3>Booking ID: {{ rental.rentalId }}</h3>
-            <p><strong>Property's Name:</strong> {{ rental.propertyName}}</p>
-            <p><strong>Owner's Name:</strong> {{ rental.ownerName}}</p>
+            <p><strong>Property's Name:</strong> {{ rental.propertyName }}</p>
+            <p><strong>Owner's Name:</strong> {{ rental.ownerName }}</p>
             <p><strong>Check-In Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>Check-Out Date:</strong> {{ formatDate(rental.endDate) }}</p>
-            <p><strong>Total Price:</strong> {{ rental.totalPrice}}<strong> €</strong></p>
+            <p><strong>Total Price:</strong> {{ rental.totalPrice }}<strong> €</strong></p>
             <p>
               <strong>Approval Status (by Owner):</strong>
               <span :class="statusClass(rental.status)">
-    {{ rental.status }}
-  </span>
+                {{ rental.status }}
+              </span>
             </p>
+          </div>
 
+          <!-- ✅ Review form only if rental eligible AND no review exists -->
+          <div v-if="canLeaveReview(rental) && !submittedReviews[rental.rentalId]" class="review-section mt-3">
+            <h4 class="mb-2">Leave a Review</h4>
+
+            <textarea
+                v-model="reviews[rental.rentalId].content"
+                placeholder="Write your review here..."
+                rows="3"
+                class="form-control mb-2"
+            ></textarea>
+
+            <select v-model="reviews[rental.rentalId].rating" class="form-control mb-2">
+              <option disabled value="">Select rating</option>
+              <option v-for="n in 5" :key="n" :value="n">{{ n }} ⭐</option>
+            </select>
+
+            <button
+                class="btn btn-success"
+                @click="submitReview(rental)"
+                :disabled="submitting[rental.rentalId]"
+            >
+              {{ submitting[rental.rentalId] ? 'Submitting...' : 'Submit Review' }}
+            </button>
+
+            <p v-if="success[rental.rentalId]" class="text-success mt-2">
+              ✅ Review submitted successfully!
+            </p>
+            <p v-if="reviewError[rental.rentalId]" class="text-danger mt-2">
+              ❌ Failed to submit review. Try again.
+            </p>
+          </div>
+
+          <!-- ✅ Show submitted review -->
+          <div v-if="submittedReviews[rental.rentalId]" class="submitted-review mt-3">
+            <h4 class="mb-2">Your Review</h4>
+
+            <!-- Edit mode -->
+            <div v-if="editing[rental.rentalId]">
+              <textarea
+                  v-model="editReviews[rental.rentalId].content"
+                  rows="3"
+                  class="form-control mb-2"
+              ></textarea>
+
+              <select v-model="editReviews[rental.rentalId].rating" class="form-control mb-2">
+                <option disabled value="">Select rating</option>
+                <option v-for="n in 5" :key="n" :value="n">{{ n }} ⭐</option>
+              </select>
+
+              <button
+                  class="btn btn-success mr-2"
+                  @click="updateReview(rental)"
+                  :disabled="submittingEdit[rental.rentalId]"
+              >
+                {{ submittingEdit[rental.rentalId] ? 'Saving...' : 'Save Changes' }}
+              </button>
+              <button class="btn btn-light" @click="cancelEdit(rental)">Cancel</button>
+            </div>
+
+            <!-- View mode -->
+            <div v-else>
+              <p><strong>Rating:</strong> {{ submittedReviews[rental.rentalId].rating }} ⭐</p>
+              <p><strong>Content:</strong> {{ submittedReviews[rental.rentalId].content }}</p>
+              <p class="text-muted">
+                <em>Submitted at: {{ formatDateTime(submittedReviews[rental.rentalId].createdAt) }}</em>
+              </p>
+
+              <button class="btn btn-light" @click="startEdit(rental)">✏️ Edit Review</button>
+            </div>
           </div>
         </li>
       </ul>
@@ -121,7 +111,17 @@ export default {
       loading: false,
       error: false,
       baseURL: 'http://localhost:8080',
-      userId: localStorage.getItem('userId')
+      userId: localStorage.getItem('userId'),
+
+      reviews: {},            // form state for new reviews
+      submittedReviews: {},   // saved reviews per rental
+      editReviews: {},        // form state for editing
+      editing: {},            // track if rental is in edit mode
+
+      submitting: {},         // submitting new review
+      submittingEdit: {},     // submitting edit
+      success: {},
+      reviewError: {}
     };
   },
   methods: {
@@ -130,35 +130,126 @@ export default {
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
+    formatDateTime(dateStr) {
+      if (!dateStr) return 'N/A';
+      const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return new Date(dateStr).toLocaleString(undefined, options);
+    },
     statusClass(status) {
-      switch(status.toLowerCase()) {
+      switch (status.toLowerCase()) {
         case 'approved': return 'approved';
         case 'pending': return 'pending';
         case 'rejected': return 'rejected';
         default: return '';
       }
     },
+    canLeaveReview(rental) {
+      return (
+          rental.status &&
+          rental.status.toLowerCase() === 'approved' &&
+          new Date(rental.endDate) < new Date()
+      );
+    },
     async fetchRentals() {
       this.loading = true;
       this.error = false;
       try {
         const token = localStorage.getItem('token');
-
         const response = await axios.get(
             `${this.baseURL}/api/rentals/by-renter/${this.userId}`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        this.rentals = response.data; // assume each item has propertyName and ownerName
+        this.rentals = response.data;
+
+        // initialize states per rental
+        this.rentals.forEach(rental => {
+          this.$set(this.reviews, rental.rentalId, { content: '', rating: '' });
+          this.$set(this.submitting, rental.rentalId, false);
+          this.$set(this.success, rental.rentalId, false);
+          this.$set(this.reviewError, rental.rentalId, false);
+          this.$set(this.submittedReviews, rental.rentalId, null);
+          this.$set(this.editing, rental.rentalId, false);
+          this.$set(this.editReviews, rental.rentalId, { content: '', rating: '' });
+          this.$set(this.submittingEdit, rental.rentalId, false);
+        });
       } catch (err) {
         console.error('Error fetching rentals:', err);
         this.error = true;
       } finally {
         this.loading = false;
       }
+    },
+    async submitReview(rental) {
+      const { content, rating } = this.reviews[rental.rentalId];
+      if (!content || !rating) {
+        alert('Please write a review and select a rating.');
+        return;
+      }
+
+      this.submitting[rental.rentalId] = true;
+      this.success[rental.rentalId] = false;
+      this.reviewError[rental.rentalId] = false;
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(
+            `${this.baseURL}/api/properties/${rental.propertyId}/reviews`,
+            { content, rating },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // ✅ Save locally and hide form
+        this.submittedReviews[rental.rentalId] = response.data;
+        this.success[rental.rentalId] = true;
+        this.reviews[rental.rentalId] = { content: '', rating: '' };
+      } catch (err) {
+        console.error('Error submitting review:', err);
+        this.reviewError[rental.rentalId] = true;
+      } finally {
+        this.submitting[rental.rentalId] = false;
+      }
+    },
+    startEdit(rental) {
+      const review = this.submittedReviews[rental.rentalId];
+      this.editReviews[rental.rentalId] = {
+        content: review.content,
+        rating: review.rating
+      };
+      this.editing[rental.rentalId] = true;
+    },
+    cancelEdit(rental) {
+      this.editing[rental.rentalId] = false;
+    },
+    async updateReview(rental) {
+      const { content, rating } = this.editReviews[rental.rentalId];
+      if (!content || !rating) {
+        alert('Please write a review and select a rating.');
+        return;
+      }
+
+      this.submittingEdit[rental.rentalId] = true;
+
+      try {
+        const token = localStorage.getItem('token');
+        const reviewId = this.submittedReviews[rental.rentalId].id;
+
+        const response = await axios.patch(
+            `${this.baseURL}/api/properties/reviews/${reviewId}`,
+            { content, rating },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // ✅ Update locally
+        this.submittedReviews[rental.rentalId] = response.data;
+        this.editing[rental.rentalId] = false;
+      } catch (err) {
+        console.error('Error updating review:', err);
+        alert('Failed to update review. Try again.');
+      } finally {
+        this.submittingEdit[rental.rentalId] = false;
+      }
     }
-
-
   },
   async mounted() {
     await this.fetchRentals();
@@ -206,6 +297,31 @@ export default {
   font-size: 16px;
 }
 
+.review-section,
+.submitted-review {
+  margin-top: 15px;
+  padding: 15px;
+  border-top: 1px solid #eee;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+textarea.form-control,
+select.form-control {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+textarea.form-control:focus,
+select.form-control:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+}
+
 .approved {
   color: #28a745;
   font-weight: bold;
@@ -221,59 +337,10 @@ export default {
   font-weight: bold;
 }
 
-.rental-actions {
-  display: flex;
-  justify-content: flex-start;
+.text-success {
+  color: #28a745 !important;
 }
-
-.text-center {
-  text-align: center;
-}
-
-.text-white {
-  color: white;
-}
-
 .text-danger {
-  color: #dc3545;
-}
-
-.bg-secondary {
-  background-color: #343a40;
-}
-
-.py-5 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-.btn {
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 0.3rem;
-  font-size: 1rem;
-}
-
-.btn-light {
-  background-color: #f8f9fa;
-  border: 1px solid #ced4da;
-  color: #212529;
-  transition: background-color 0.2s ease;
-}
-
-.btn-light:hover {
-  background-color: #e2e6ea;
-}
-
-.btn-success {
-  background-color: #28a745;
-  border: none;
-  color: white;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  border: none;
-  color: white;
+  color: #dc3545 !important;
 }
 </style>
