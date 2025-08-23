@@ -1,29 +1,46 @@
 package com.example.demo.dto;
 
 import com.example.demo.Entities.Rental;
+import com.example.demo.Entities.Property;
+import com.example.demo.Entities.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
-/**
- * DTO for transferring Rental data to clients
- */
 public record RentalDto(
         Long id,
         String startDate,
         String endDate,
-        BigDecimal paymentAmount,   // BigDecimal για ακρίβεια
+        BigDecimal paymentAmount,   // υπάρχον
+        @JsonProperty("TotalPrice")
+        BigDecimal totalPrice,     // νέο – ίσο με paymentAmount
         String approvalStatus,
         Long propertyId,
-        Long userId
+        String propertyName,        // νέο
+        Long userId,
+        String renterFirstName,     // νέο
+        String renterLastName,      // νέο
+        String renterUserName       // νέο
 ) {
     public static RentalDto fromEntity(Rental r) {
+        Property p = r.getProperty();
+        User u = r.getUser();
+
+        BigDecimal amount = r.getPaymentAmount();
+
         return new RentalDto(
                 r.getId(),
                 r.getStartDate() != null ? r.getStartDate().toString() : null,
                 r.getEndDate()   != null ? r.getEndDate().toString()   : null,
-                r.getPaymentAmount(), // υποθέτουμε BigDecimal στο entity
+                amount,                         // paymentAmount
+                amount,                         // totalPrice = paymentAmount
                 r.getApprovalStatus() != null ? r.getApprovalStatus().name() : null,
-                r.getProperty() != null ? r.getProperty().getId() : null,
-                r.getUser()     != null ? r.getUser().getId()     : null
+                p != null ? p.getId() : null,   // propertyId
+                p != null ? p.getName() : null, // propertyName
+                u != null ? u.getId() : null,   // userId (renter)
+                u != null ? u.getFirstName() : null,
+                u != null ? u.getLastName() : null,
+                u != null ? u.getUsername() : null
         );
     }
 }
