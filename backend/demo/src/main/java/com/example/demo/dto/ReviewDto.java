@@ -6,20 +6,36 @@ public record ReviewDto(
         Long id,
         String content,
         int rating,
-        String createdAt,   // ως ISO-8601 string
+        String createdAt,   // ISO-8601
         Long propertyId,
-        Long renterId ,
+        Long renterId,
         Long rentalId
 ) {
     public static ReviewDto fromEntity(Review r) {
+        Long propId = null;
+        if (r.getProperty() != null) {
+            propId = r.getProperty().getId();
+        } else if (r.getRental() != null && r.getRental().getProperty() != null) {
+            propId = r.getRental().getProperty().getId();
+        }
+
+        Long renterId = null;
+        if (r.getUser() != null) {
+            renterId = r.getUser().getId();
+        } else if (r.getRental() != null && r.getRental().getUser() != null) {
+            renterId = r.getRental().getUser().getId();
+        }
+
+        Long rentalId = (r.getRental() != null) ? r.getRental().getId() : null;
+
         return new ReviewDto(
                 r.getId(),
                 r.getContent(),
                 r.getRating(),
                 r.getCreatedAt() != null ? r.getCreatedAt().toString() : null,
-                r.getRental()!=null ? r.getRental().getId() : null,
-                (r.getProperty() != null ? r.getProperty().getId() : null),
-                (r.getUser() != null ? r.getUser().getId() : null)
+                propId,
+                renterId,
+                rentalId
         );
     }
 }
