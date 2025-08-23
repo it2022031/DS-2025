@@ -93,8 +93,8 @@
             <h3>Booking ID: {{ rental.rentalId }}</h3>
             <p><strong>Property's Name:</strong> {{ rental.propertyName}}</p>
             <p><strong>Owner's Name:</strong> {{ rental.ownerName}}</p>
-            <p><strong>Start Date:</strong> {{ formatDate(rental.startDate) }}</p>
-            <p><strong>End Date:</strong> {{ formatDate(rental.endDate) }}</p>
+            <p><strong>Check-In Date:</strong> {{ formatDate(rental.startDate) }}</p>
+            <p><strong>Check-Out Date:</strong> {{ formatDate(rental.endDate) }}</p>
             <p><strong>Total Price:</strong> {{ rental.totalPrice}}<strong> €</strong></p>
             <p>
               <strong>Approval Status (by Owner):</strong>

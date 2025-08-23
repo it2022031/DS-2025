@@ -11,10 +11,11 @@
         <li v-for="rental in rentals" :key="rental.id" class="rental-card">
           <div class="rental-info">
             <h3>Rental ID: {{ rental.id }}</h3>
-            <p><strong>Property ID:</strong> {{ rental.propertyId }}</p>
-            <p><strong>Renter ID:</strong> {{ rental.userId }}</p>
+            <p><strong>Property's Name:</strong> {{ rental.propertyName }}</p>
+            <p><strong>Renter's Name:</strong> {{ rental.renterFirstName }} {{rental.renterLastName}}</p>
             <p><strong>Check-In Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>Check-Out Date:</strong> {{ formatDate(rental.endDate) }}</p>
+            <p><strong>Total Price:</strong> {{ rental.TotalPrice}} <strong> €</strong></p>
             <p><strong>Approval Status (by You):</strong>
               <span :class="{
                 approved: rental.approvalStatus === 'APPROVED',
