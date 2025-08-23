@@ -5,9 +5,10 @@ import com.example.demo.Repositories.PropertyRepository;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Repositories.ReviewRepository;
 import com.example.demo.Repositories.UserRepository;
-import jakarta.transaction.Transactional;
+import com.example.demo.dto.ReviewDto;
+//import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -139,5 +140,11 @@ public class ReviewService {
 
     public List<Review> getReviewsByUser(Long userId) {
         return reviewRepository.findByUserId(userId);
+    }
+    @Transactional(readOnly = true)
+    public List<ReviewDto> getAllReviews() {
+        return reviewRepository.findAll().stream()
+                .map(ReviewDto::fromEntity)
+                .toList();
     }
 }

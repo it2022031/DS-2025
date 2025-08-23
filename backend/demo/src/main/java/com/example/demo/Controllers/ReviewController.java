@@ -10,6 +10,7 @@ import com.example.demo.Repositories.UserRepository;
 import com.example.demo.dto.ReviewDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,12 @@ public class ReviewController {
         this.rentalRepository = rentalRepository;
     }
 
+    @GetMapping("/reviews/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReviewDto>> getAllReviews() {
+        List<ReviewDto> all = reviewService.getAllReviews();
+        return ResponseEntity.ok(all);
+    }
     // GET: reviews για συγκεκριμένο property
     @GetMapping("/{id}/reviews")
     public ResponseEntity<List<ReviewDto>> getReviewsForProperty(@PathVariable Long id) {
