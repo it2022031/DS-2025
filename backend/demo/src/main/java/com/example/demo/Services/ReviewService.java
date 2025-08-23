@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ReviewService {
@@ -129,6 +130,12 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
+    @Transactional
+    public void adminDeleteReview(Long reviewId) {
+        Review r = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NoSuchElementException("Review not found"));
+        reviewRepository.delete(r);
+    }
 
     public List<Review> getReviewsByUser(Long userId) {
         return reviewRepository.findByUserId(userId);

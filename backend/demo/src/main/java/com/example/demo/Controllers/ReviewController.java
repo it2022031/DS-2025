@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/properties")
@@ -121,20 +122,33 @@ public class ReviewController {
     public ResponseEntity<?> deleteReview(@PathVariable Long reviewId,
                                           Authentication authentication) {
         if (authentication == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
         try {
-            reviewService.deleteReview(reviewId, user.getId());
+            if (isAdmin) {
+                // admin μπορεί να διαγράφει οποιοδήποτε review
+                reviewService.adminDeleteReview(reviewId);
+            } else {
+                // αλλιώς διαγράφει μόνο το δικό του
+                reviewService.deleteReview(reviewId, user.getId());
+            }
             return ResponseEntity.noContent().build();
         } catch (SecurityException e) {
-            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (NoSuchElementException | jakarta.persistence.EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Review not found"));
         }
     }
+
     // GET: όλα τα reviews ενός χρήστη
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<ReviewDto>> getReviewsByUser(@PathVariable Long userId) {
