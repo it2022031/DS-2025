@@ -3,12 +3,31 @@
     <div class="container">
       <h2 class="text-center mb-4" style="color: #343a40;">🏠 Properties List</h2>
 
+      <!-- 🔍 Search + Filter -->
+      <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
+        <!-- Search bar -->
+        <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search by property name..."
+            class="form-control search-input"
+        />
+
+        <!-- Dropdown filter -->
+        <select v-model="selectedStatus" class="form-control filter-select">
+          <option value="ALL">All</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
-      <div v-else-if="properties.length === 0" class="text-center text-white">No properties found.</div>
+      <div v-else-if="filteredProperties.length === 0" class="text-center text-white">No properties found.</div>
 
       <ul v-else class="property-list">
-        <li v-for="property in properties" :key="property.id" class="property-card">
+        <li v-for="property in filteredProperties" :key="property.id" class="property-card">
           <!-- Display first photo or placeholder -->
           <img
               :src="property.photos && property.photos.length ? property.photos[0].url : '/default-property.jpg'"
@@ -29,7 +48,6 @@
               </span>
             </p>
 
-
             <!-- Render all photos as thumbnails -->
             <div class="mt-2" v-if="property.photos && property.photos.length">
               <h6 class="text-white">Photos:</h6>
@@ -46,8 +64,10 @@
               </div>
             </div>
 
-            <div class="property-actions mt-3 d-flex align-items-center"
-                 v-if="canEdit(property) || canDelete(property)">
+            <div
+                class="property-actions mt-3 d-flex align-items-center"
+                v-if="canEdit(property) || canDelete(property)"
+            >
               <router-link
                   v-if="canEdit(property)"
                   :to="`/properties/${property.id}/edit`"
@@ -64,7 +84,6 @@
                 🗑 Delete
               </button>
             </div>
-
           </div>
         </li>
       </ul>
@@ -73,7 +92,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   name: "ListProperties",
@@ -82,24 +101,39 @@ export default {
       properties: [],
       loading: false,
       error: false,
+      searchQuery: "",       // 🔍 new
+      selectedStatus: "ALL", // ⬇️ new
     };
   },
   computed: {
     userRole() {
-      return (localStorage.getItem('userRole') || '').toUpperCase();
+      return (localStorage.getItem("userRole") || "").toUpperCase();
     },
     userId() {
-      return Number(localStorage.getItem('userId'));
+      return Number(localStorage.getItem("userId"));
+    },
+    filteredProperties() {
+      return this.properties.filter((p) => {
+        const matchesSearch =
+            p.name && p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesStatus =
+            this.selectedStatus === "ALL" || p.approvalStatus === this.selectedStatus;
+        return matchesSearch && matchesStatus;
+      });
     },
   },
   methods: {
     statusClass(status) {
-      if (!status) return '';
-      switch(status.toLowerCase()) {
-        case 'approved': return 'approved';
-        case 'pending': return 'pending';
-        case 'rejected': return 'rejected';
-        default: return '';
+      if (!status) return "";
+      switch (status.toLowerCase()) {
+        case "approved":
+          return "approved";
+        case "pending":
+          return "pending";
+        case "rejected":
+          return "rejected";
+        default:
+          return "";
       }
     },
     async fetchProperties() {
@@ -116,20 +150,16 @@ export default {
 
         this.properties = response.data;
 
-        // Now fetch photos for each property
+        // fetch photos for each property
         await Promise.all(
-            this.properties.map(async property => {
+            this.properties.map(async (property) => {
               try {
                 const photosRes = await axios.get(
                     `http://localhost:8080/api/properties/${property.id}/photos`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
-
-                // For each photo, optionally fetch actual image data if backend requires it
-                property.photos = photosRes.data.map(photo => ({
+                property.photos = photosRes.data.map((photo) => ({
                   ...photo,
-                  // Assuming `url` already works, otherwise fetch blob like:
-                  // url: await this.fetchPhotoBlob(photo.id)
                 }));
               } catch (err) {
                 console.error(`Error fetching photos for property ${property.id}:`, err);
@@ -137,30 +167,11 @@ export default {
               }
             })
         );
-
       } catch (err) {
         console.error("Error fetching properties:", err);
         this.error = true;
       } finally {
         this.loading = false;
-      }
-    },
-
-    // Optional: fetch photo blob if needed
-    async fetchPhotoBlob(photoId) {
-      const token = localStorage.getItem("token");
-      try {
-        const res = await axios.get(
-            `http://localhost:8080/api/properties/photos/${photoId}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              responseType: "blob"
-            }
-        );
-        return URL.createObjectURL(res.data);
-      } catch (err) {
-        console.error(`Error fetching photo blob ${photoId}:`, err);
-        return '/default-property.jpg';
       }
     },
 
@@ -170,10 +181,10 @@ export default {
       try {
         const token = localStorage.getItem("token");
         await axios.delete(`http://localhost:8080/api/properties/${propertyId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        this.properties = this.properties.filter(p => p.id !== propertyId);
+        this.properties = this.properties.filter((p) => p.id !== propertyId);
 
         alert(`Property ${propertyId} deleted 🗑`);
       } catch (err) {
@@ -183,10 +194,18 @@ export default {
     },
 
     canEdit(property) {
-      return (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER");
+      return (
+          this.userRole === "ADMIN" ||
+          this.userRole === "USER" ||
+          this.userRole === "RENTER"
+      );
     },
     canDelete(property) {
-      return (this.userRole === "ADMIN" || this.userRole === "USER" || this.userRole === "RENTER");
+      return (
+          this.userRole === "ADMIN" ||
+          this.userRole === "USER" ||
+          this.userRole === "RENTER"
+      );
     },
   },
 
@@ -195,7 +214,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .section {
@@ -207,6 +225,25 @@ export default {
   padding: 0;
   margin: 0 auto;
   max-width: 900px;
+}
+
+.filters {
+  max-width: 900px;
+  margin: 0 auto 20px auto;
+}
+
+.search-input {
+  width: 250px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.filter-select {
+  width: 180px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
 .property-card {
@@ -251,52 +288,11 @@ export default {
   font-size: 16px;
 }
 
-.property-info .btn {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-white {
-  color: white;
-}
-
-.text-danger {
-  color: #dc3545;
-}
-
-.bg-secondary {
-  background-color: #343a40;
-}
-
-.py-5 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-/* Remove or override the absolute positioning */
-.property-info .btn {
-  position: static;   /* or remove this whole rule from your CSS */
-  bottom: auto;
-  right: auto;
-}
-
-/* Layout + spacing (Bootstrap 4 friendly) */
 .property-actions {
   display: flex;
-  align-items: center;
-}
-
-
-.property-actions {
-  display: flex;
-  gap: 8px;              /* adds spacing between buttons */
-  justify-content: flex-start;  /* keeps them aligned to the left */
-  margin-top: 12px;      /* optional spacing from above */
+  gap: 8px;
+  justify-content: flex-start;
+  margin-top: 12px;
 }
 
 .approved {
@@ -313,6 +309,4 @@ export default {
   color: #dc3545;
   font-weight: bold;
 }
-
-
 </style>

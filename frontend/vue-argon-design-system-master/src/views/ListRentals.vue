@@ -3,12 +3,31 @@
     <div class="container">
       <h2 class="text-center mb-4" style="color: #343a40;">📖 Rentals List</h2>
 
+      <!-- 🔍 Search + Filter -->
+      <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
+        <!-- Search bar -->
+        <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search by property name..."
+            class="form-control search-input"
+        />
+
+        <!-- Dropdown filter -->
+        <select v-model="selectedStatus" class="form-control filter-select">
+          <option value="ALL">All</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+
       <div v-if="loading" class="text-center text-white">Loading rentals...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load rentals.</div>
-      <div v-else-if="rentals.length === 0" class="text-center text-white">No rentals found.</div>
+      <div v-else-if="filteredRentals.length === 0" class="text-center text-white">No rentals found.</div>
 
       <ul v-else class="rental-list">
-        <li v-for="rental in rentals" :key="rental.id" class="rental-card">
+        <li v-for="rental in filteredRentals" :key="rental.id" class="rental-card">
           <div class="rental-info">
             <h3>Rental ID: {{ rental.id }}</h3>
             <p><strong>Property's Name:</strong> {{ rental.propertyName }}</p>
@@ -16,7 +35,8 @@
             <p><strong>Check-In Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>Check-Out Date:</strong> {{ formatDate(rental.endDate) }}</p>
             <p><strong>Total Price:</strong> {{ rental.TotalPrice}} <strong> €</strong></p>
-            <p><strong>Approval Status (by You):</strong>
+            <p>
+              <strong>Approval Status (by You):</strong>
               <span :class="{
                 approved: rental.approvalStatus === 'APPROVED',
                 pending: rental.approvalStatus === 'PENDING',
@@ -40,10 +60,6 @@
           </div>
         </li>
       </ul>
-
-<!--      <div class="text-center mt-4">-->
-<!--        <button class="btn btn-light" @click="$router.back()">← Back</button>-->
-<!--      </div>-->
     </div>
   </section>
 </template>
@@ -58,8 +74,22 @@ export default {
       rentals: [],
       loading: false,
       error: false,
-      baseURL: 'http://localhost:8080'
+      baseURL: 'http://localhost:8080',
+      searchQuery: "",       // 🔍 new
+      selectedStatus: "ALL", // ⬇️ new
     };
+  },
+  computed: {
+    filteredRentals() {
+      return this.rentals.filter((r) => {
+        const matchesSearch =
+            r.propertyName &&
+            r.propertyName.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesStatus =
+            this.selectedStatus === "ALL" || r.approvalStatus === this.selectedStatus;
+        return matchesSearch && matchesStatus;
+      });
+    },
   },
   methods: {
     formatDate(dateStr) {
@@ -76,7 +106,6 @@ export default {
         const response = await axios.get(`${this.baseURL}/api/rentals/owner`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        // ✅ Show ALL rentals
         this.rentals = response.data;
       } catch (err) {
         console.error('Error fetching rentals:', err);
@@ -131,6 +160,25 @@ export default {
   padding: 0;
   margin: 0 auto;
   max-width: 900px;
+}
+
+.filters {
+  max-width: 900px;
+  margin: 0 auto 20px auto;
+}
+
+.search-input {
+  width: 250px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.filter-select {
+  width: 180px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
 .rental-card {

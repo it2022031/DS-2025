@@ -3,14 +3,23 @@
     <div class="container">
       <h2 class="text-center mb-4" style="color: #343a40;">🏠 Properties List</h2>
 
-      <!-- 🔍 Search bar -->
-      <div class="search-bar mb-4 text-center">
+      <!-- 🔍 Search + Filter -->
+      <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
+        <!-- Search bar -->
         <input
             type="text"
             v-model="searchQuery"
             placeholder="Search by property name..."
             class="form-control search-input"
         />
+
+        <!-- Dropdown filter -->
+        <select v-model="selectedStatus" class="form-control filter-select">
+          <option value="ALL">All</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
       </div>
 
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
@@ -40,7 +49,6 @@
               </span>
             </p>
 
-
             <div class="property-actions mt-3 d-flex align-items-center" v-if="canModerate(property)">
               <button
                   v-if="property.approvalStatus === 'PENDING' || property.approvalStatus === 'REJECTED'"
@@ -66,7 +74,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   name: "ListProperties",
@@ -75,21 +83,26 @@ export default {
       properties: [],
       loading: false,
       error: false,
-      searchQuery: ""
+      searchQuery: "",
+      selectedStatus: "ALL", // <-- new state
     };
   },
   computed: {
     userRole() {
-      return (localStorage.getItem('userRole') || '').toUpperCase();
+      return (localStorage.getItem("userRole") || "").toUpperCase();
     },
     userId() {
-      return Number(localStorage.getItem('userId'));
+      return Number(localStorage.getItem("userId"));
     },
     filteredProperties() {
-      return this.properties.filter(p =>
-          p.name && p.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    }
+      return this.properties.filter((p) => {
+        const matchesSearch =
+            p.name && p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesStatus =
+            this.selectedStatus === "ALL" || p.approvalStatus === this.selectedStatus;
+        return matchesSearch && matchesStatus;
+      });
+    },
   },
   methods: {
     async fetchProperties() {
@@ -125,7 +138,6 @@ export default {
               }
             })
         );
-
       } catch (err) {
         console.error("Error fetching properties:", err);
         this.error = true;
@@ -181,7 +193,7 @@ export default {
 
     canModerate(property) {
       return this.userRole === "ADMIN";
-    }
+    },
   },
   mounted() {
     this.fetchProperties();
@@ -201,13 +213,20 @@ export default {
   max-width: 900px;
 }
 
-.search-bar {
-  max-width: 500px;
+.filters {
+  max-width: 900px;
   margin: 0 auto 20px auto;
 }
 
 .search-input {
-  width: 100%;
+  width: 250px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.filter-select {
+  width: 180px;
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
