@@ -8,7 +8,8 @@ public record ReviewDto(
         int rating,
         String createdAt,   // ως ISO-8601 string
         Long propertyId,
-        Long renterId
+        Long renterId ,
+        Long rentalId
 ) {
     public static ReviewDto fromEntity(Review r) {
         return new ReviewDto(
@@ -16,6 +17,7 @@ public record ReviewDto(
                 r.getContent(),
                 r.getRating(),
                 r.getCreatedAt() != null ? r.getCreatedAt().toString() : null,
+                r.getRental()!=null ? r.getRental().getId() : null,
                 (r.getProperty() != null ? r.getProperty().getId() : null),
                 (r.getUser() != null ? r.getUser().getId() : null)
         );

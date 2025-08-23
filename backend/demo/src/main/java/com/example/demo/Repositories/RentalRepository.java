@@ -86,4 +86,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     List<Rental> findAllByRenterIdWithPropertyOwner(@Param("renterId") Long renterId);
 
 
+    List<Rental> findTop1ByUserIdAndPropertyIdAndApprovalStatusAndEndDateBeforeOrderByEndDateDesc(
+            Long userId, Long propertyId, ApprovalStatus status, LocalDate before);
 }

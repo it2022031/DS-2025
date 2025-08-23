@@ -27,3 +27,11 @@ ALTER TABLE rentals
 
 ALTER TABLE rentals ADD COLUMN payment_amount numeric(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE rentals ALTER COLUMN payment_amount DROP DEFAULT;
+
+-- afto trexe giani xxaxaxa 2
+ALTER TABLE reviews ADD COLUMN rental_id BIGINT;
+ALTER TABLE reviews
+    ADD CONSTRAINT fk_reviews_rental
+        FOREIGN KEY (rental_id) REFERENCES rentals(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_reviews_rental_id ON reviews(rental_id);

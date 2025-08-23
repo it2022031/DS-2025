@@ -57,28 +57,33 @@ public class ReviewController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // --- βρες rentals για αυτό το property και τον συγκεκριμένο χρήστη
+        // Έλεγχος ότι έχει ολοκληρωμένο approved rental (όπως ήδη έχεις)
         List<Rental> rentals = rentalRepository.findByPropertyIdAndUserId(id, user.getId());
-
         LocalDate now = LocalDate.now();
-
         boolean hasValidRental = rentals.stream().anyMatch(r ->
                 r.getApprovalStatus() == ApprovalStatus.APPROVED &&
-                        r.getEndDate().isBefore(now)   // έχει λήξει
+                        r.getEndDate().isBefore(now)
         );
-
         if (!hasValidRental) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "You can only leave a review after completing an approved rental"));
         }
 
-        // --- προχώρα με το review
+        // Διάβασε πεδία
         String content = (String) body.get("content");
-        int rating = (int) body.getOrDefault("rating", 0);
+        Number ratingNum = (Number) body.getOrDefault("rating", 0);
+        int rating = ratingNum.intValue();
 
-        Review saved = reviewService.addReview(id, user.getId(), content, rating);
+        // Προαιρετικό rentalId
+        Long rentalId = null;
+        Object rid = body.get("rentalId");
+        if (rid instanceof Number n) rentalId = n.longValue();
+
+        Review saved = reviewService.addReview(id, user.getId(), content, rating, rentalId);
         return ResponseEntity.ok(saved);
     }
+
+
 
 
     @PatchMapping("/reviews/{reviewId}")

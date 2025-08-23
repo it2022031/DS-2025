@@ -50,7 +50,6 @@ public class Rental {
 
 
 
-
     public Long getId() {
         return id;
     }
@@ -106,5 +105,4 @@ public class Rental {
     public void setProperty(Property property) {
         this.property = property;
     }
-
 }

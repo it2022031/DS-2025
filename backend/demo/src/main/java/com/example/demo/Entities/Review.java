@@ -31,6 +31,12 @@ public class Review {
     @JsonBackReference(value = "property-reviews")
     private Property property;
 
+    // ΝΕΟ: δεσμός με ενοικίαση
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rental_id")                  // αρχικά nullable
+    private Rental rental;
+
+
     // Getters & Setters
     public Long getId() { return id; }
     public String getContent() { return content; }
@@ -42,4 +48,12 @@ public class Review {
     public void setUser(User user) { this.user = user; }
     public Property getProperty() { return property; }
     public void setProperty(Property property) { this.property = property; }
+
+    public Rental getRental() {
+        return rental;
+    }
+
+    public void setRental(Rental rental) {
+        this.rental = rental;
+    }
 }
