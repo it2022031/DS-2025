@@ -64,13 +64,17 @@
             <input type="text" v-model="selectedUser.passportNumber" class="form-control" :disabled="!editMode" />
           </div>
 
-          <!-- Roles -->
+
           <div class="form-group">
             <label>Ρόλοι</label>
+
+            <!-- USER always checked -->
             <div class="form-check">
               <input type="checkbox" checked disabled class="form-check-input" id="role-user" />
               <label class="form-check-label" for="role-user">USER</label>
             </div>
+
+            <!-- Other roles -->
             <div class="form-check">
               <input
                   type="checkbox"
@@ -82,6 +86,7 @@
               />
               <label class="form-check-label" for="role-renter">RENTER</label>
             </div>
+
             <div class="form-check">
               <input
                   type="checkbox"
@@ -94,6 +99,9 @@
               <label class="form-check-label" for="role-admin">ADMIN</label>
             </div>
           </div>
+
+
+
 
           <div v-if="!editMode">
             <button class="btn btn-primary" @click="editMode = true">✏️ Επεξεργασία</button>
@@ -160,9 +168,20 @@ export default {
         this.selectedUser = null;
         this.editMode = false;
       } else {
-        this.selectedUser = { ...user };
-        this.selectedUser.roles = user.roles ? [...new Set([...user.roles, "USER"])] : ["USER"];
-        this.originalUser = { ...this.selectedUser };
+        // Make a deep copy of the user
+        this.selectedUser = JSON.parse(JSON.stringify(user));
+
+        // Ensure roles is an array of strings
+        this.selectedUser.roles = Array.isArray(this.selectedUser.roles)
+            ? this.selectedUser.roles.map(r => r.toUpperCase()) // normalize
+            : [];
+
+        // Always include "USER"
+        if (!this.selectedUser.roles.includes("USER")) {
+          this.selectedUser.roles.push("USER");
+        }
+
+        this.originalUser = JSON.parse(JSON.stringify(this.selectedUser));
         this.editMode = false;
       }
     },
@@ -177,31 +196,51 @@ export default {
       if (!token) return this.$router.push("/login");
 
       this.saving = true;
-      const updates = {
+
+      const userId = this.selectedUser.id;
+
+      // Prepare data for roles
+      const roleUpdates = {
+        set: [...new Set(["USER", ...(this.selectedUser.roles.filter(r => r !== "USER"))])]
+      };
+
+
+
+      // Prepare data for user info
+      const userUpdates = {
         firstName: this.selectedUser.firstName,
         lastName: this.selectedUser.lastName,
         username: this.selectedUser.username,
         email: this.selectedUser.email,
         passportNumber: this.selectedUser.passportNumber,
-        afm: this.selectedUser.afm,
-        roles: [...new Set(["USER", ...(this.selectedUser.roles || [])])]
+        afm: this.selectedUser.afm
       };
 
-      axios.patch(`http://localhost:8080/api/users/${this.selectedUser.id}`, updates, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(() => {
+      try {
+        // 1️⃣ Update roles
+        await axios.patch(`http://localhost:8080/api/users/${userId}/roles`, roleUpdates, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // 2️⃣ Update user info
+        await axios.patch(`http://localhost:8080/api/users/${userId}`, userUpdates, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Refresh the users list
+        await this.fetchUsers();
+
         this.saveSuccess = true;
-        return this.fetchUsers();
-      }).then(() => {
         setTimeout(() => (this.saveSuccess = false), 3000);
         this.editMode = false;
         this.selectedUser = null;
-      }).catch(err => {
+
+      } catch (err) {
         console.error("Error updating profile:", err);
         alert("Σφάλμα κατά την ενημέρωση.");
-      }).finally(() => {
+      } finally {
         this.saving = false;
-      });
+      }
     },
 
     async deleteUser(userId) {
