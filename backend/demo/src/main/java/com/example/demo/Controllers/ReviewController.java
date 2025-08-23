@@ -7,6 +7,7 @@ import com.example.demo.Entities.User;
 import com.example.demo.Repositories.RentalRepository;
 import com.example.demo.Services.ReviewService;
 import com.example.demo.Repositories.UserRepository;
+import com.example.demo.dto.ReviewDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -31,10 +32,14 @@ public class ReviewController {
         this.rentalRepository = rentalRepository;
     }
 
-    // GET: reviews for a property
+    // GET: reviews για συγκεκριμένο property
     @GetMapping("/{id}/reviews")
-    public ResponseEntity<List<Review>> getReviewsForProperty(@PathVariable Long id) {
-        return ResponseEntity.ok(reviewService.getReviewsForProperty(id));
+    public ResponseEntity<List<ReviewDto>> getReviewsForProperty(@PathVariable Long id) {
+        List<ReviewDto> dto = reviewService.getReviewsForProperty(id)
+                .stream()
+                .map(ReviewDto::fromEntity)
+                .toList();
+        return ResponseEntity.ok(dto);
     }
 
     // POST: add review (must be logged in)
@@ -127,8 +132,11 @@ public class ReviewController {
     }
     // GET: όλα τα reviews ενός χρήστη
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Review>> getReviewsByUser(@PathVariable Long userId) {
-        List<Review> reviews = reviewService.getReviewsByUser(userId);
-        return ResponseEntity.ok(reviews);
+    public ResponseEntity<List<ReviewDto>> getReviewsByUser(@PathVariable Long userId) {
+        List<ReviewDto> dto = reviewService.getReviewsByUser(userId)
+                .stream()
+                .map(ReviewDto::fromEntity)
+                .toList();
+        return ResponseEntity.ok(dto);
     }
 }
