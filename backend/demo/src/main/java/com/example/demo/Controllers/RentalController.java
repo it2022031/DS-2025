@@ -99,7 +99,6 @@ public class RentalController {
                     .body(Map.of("error", "Unauthenticated"));
         }
 
-        // --- έλεγχος ρόλων ---
         boolean isAdmin  = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean isRenter = authentication.getAuthorities().stream()
@@ -109,7 +108,6 @@ public class RentalController {
                     .body(Map.of("error", "Only RENTERS or ADMIN can create rentals"));
         }
 
-        // --- έλεγχος required πεδίων (χωρίς paymentAmount πλέον) ---
         List<String> missing = new ArrayList<>();
         if (req.propertyId() == null) missing.add("propertyId");
         if (req.startDate()  == null) missing.add("startDate");
@@ -119,7 +117,6 @@ public class RentalController {
                     .body(Map.of("error", "Missing fields: " + String.join(", ", missing)));
         }
 
-        // --- φόρτωσε το Property και έλεγξε approval ---
         Property prop = propertyService.findByIdOptional(req.propertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
         if (prop.getApprovalStatus() != ApprovalStatus.APPROVED) {
@@ -127,7 +124,6 @@ public class RentalController {
                     .body(Map.of("error", "Cannot rent a property unless it is APPROVED"));
         }
 
-        // --- ποιος κάνει την αίτηση ---
         String callerUsername = ((UserDetails) authentication.getPrincipal()).getUsername();
         User caller = userRepository.findByUsername(callerUsername)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
@@ -143,12 +139,18 @@ public class RentalController {
             finalUserId = caller.getId();
         }
 
-        // --- δημιουργία ---
         try {
             LocalDate start = LocalDate.parse(req.startDate());
             LocalDate end   = LocalDate.parse(req.endDate());
 
-            // Καλούμε το service ΧΩΡΙΣ ποσό — το service θα υπολογίσει pricePerDay × days
+            // ✅ ΝΕΟΣ ΕΛΕΓΧΟΣ: startDate δεν μπορεί να είναι στο παρελθόν
+            LocalDate today = LocalDate.now();
+            if (start.isBefore(today)) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Start date cannot be in the past"));
+            }
+
+            // (Το service ήδη ελέγχει ότι end > start κτλ.)
             Rental created = rentalService.createRental(
                     req.propertyId(),
                     finalUserId,

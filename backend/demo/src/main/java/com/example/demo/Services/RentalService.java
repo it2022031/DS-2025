@@ -118,11 +118,14 @@ public class RentalService {
                                Long userId,
                                LocalDate startDate,
                                LocalDate endDate) {
-
         if (startDate == null || endDate == null) {
             throw new IllegalArgumentException("startDate and endDate are required");
         }
-        if (!endDate.isAfter(startDate)) { // exclusive end (διανυκτερεύσεις)
+        // ✅ ίδιος έλεγχος κι εδώ για σιγουριά
+        if (startDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date cannot be in the past");
+        }
+        if (!endDate.isAfter(startDate)) {
             throw new IllegalArgumentException("endDate must be after startDate");
         }
 
