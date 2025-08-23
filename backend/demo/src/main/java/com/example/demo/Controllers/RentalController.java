@@ -286,4 +286,13 @@ public class RentalController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/maintenance/reject-expired-pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> rejectExpiredPendingManually() {
+        int changed = rentalService.rejectExpiredPendingRentalsToday();
+        return ResponseEntity.ok(Map.of(
+                "updated", changed,
+                "message", "Rejected all pending rentals that start in the past."
+        ));
+    }
 }

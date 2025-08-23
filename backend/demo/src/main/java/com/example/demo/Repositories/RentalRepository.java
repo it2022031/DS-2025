@@ -2,7 +2,9 @@ package com.example.demo.Repositories;
 
 import com.example.demo.Entities.ApprovalStatus;
 import com.example.demo.Entities.Rental;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -88,4 +90,23 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     List<Rental> findTop1ByUserIdAndPropertyIdAndApprovalStatusAndEndDateBeforeOrderByEndDateDesc(
             Long userId, Long propertyId, ApprovalStatus status, LocalDate before);
+
+    @Modifying
+    @Transactional
+    @Query("""
+       update Rental r
+          set r.approvalStatus = 'REJECTED'
+        where r.approvalStatus = 'PENDING'
+          and r.startDate < :today
+       """)
+    int rejectExpiredPending(@Param("today") LocalDate today);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Rental r
+           set r.approvalStatus = 'REJECTED'
+         where r.approvalStatus = 'PENDING'
+           and r.startDate < :today
+    """)
+    int bulkRejectExpiredPending(@Param("today") LocalDate today);
 }

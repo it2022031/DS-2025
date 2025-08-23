@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -210,5 +211,13 @@ public class RentalService {
                 .toList();
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public int rejectExpiredPendingRentals(LocalDate today) {
+        return rentalRepository.rejectExpiredPending(today);
+    }
+
+    public int rejectExpiredPendingRentalsToday() {
+        return rejectExpiredPendingRentals(LocalDate.now());
+    }
 
 }
