@@ -3,14 +3,24 @@
     <div class="container">
       <h2 class="text-center mb-4" style="color: #343a40;">Users List</h2>
 
+      <!-- 🔍 Search bar -->
+      <div class="search-bar mb-4 text-center">
+        <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search by username..."
+            class="form-control search-input"
+        />
+      </div>
+
       <div v-if="loading" class="text-center text-white">Loading users...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load users.</div>
-      <div v-else-if="users.length === 0" class="text-center text-white">No users found.</div>
+      <div v-else-if="filteredUsers.length === 0" class="text-center text-white">No users found.</div>
 
       <div v-else>
         <ul class="user-list">
           <li
-              v-for="user in users"
+              v-for="user in filteredUsers"
               :key="user.id"
               class="user-card clickable"
               @click="toggleUserSelection(user)"
@@ -54,6 +64,37 @@
             <input type="text" v-model="selectedUser.passportNumber" class="form-control" :disabled="!editMode" />
           </div>
 
+          <!-- Roles -->
+          <div class="form-group">
+            <label>Ρόλοι</label>
+            <div class="form-check">
+              <input type="checkbox" checked disabled class="form-check-input" id="role-user" />
+              <label class="form-check-label" for="role-user">USER</label>
+            </div>
+            <div class="form-check">
+              <input
+                  type="checkbox"
+                  value="RENTER"
+                  v-model="selectedUser.roles"
+                  class="form-check-input"
+                  id="role-renter"
+                  :disabled="!editMode"
+              />
+              <label class="form-check-label" for="role-renter">RENTER</label>
+            </div>
+            <div class="form-check">
+              <input
+                  type="checkbox"
+                  value="ADMIN"
+                  v-model="selectedUser.roles"
+                  class="form-check-input"
+                  id="role-admin"
+                  :disabled="!editMode"
+              />
+              <label class="form-check-label" for="role-admin">ADMIN</label>
+            </div>
+          </div>
+
           <div v-if="!editMode">
             <button class="btn btn-primary" @click="editMode = true">✏️ Επεξεργασία</button>
             <button class="btn btn-danger ml-2" @click="deleteUser(selectedUser.id)">🗑️ Διαγραφή</button>
@@ -84,8 +125,16 @@ export default {
       originalUser: null,
       editMode: false,
       saving: false,
-      saveSuccess: false
+      saveSuccess: false,
+      searchQuery: ""
     };
+  },
+  computed: {
+    filteredUsers() {
+      return this.users.filter(u =>
+          u.username && u.username.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    }
   },
   methods: {
     async fetchUsers() {
@@ -112,7 +161,8 @@ export default {
         this.editMode = false;
       } else {
         this.selectedUser = { ...user };
-        this.originalUser = { ...user };
+        this.selectedUser.roles = user.roles ? [...new Set([...user.roles, "USER"])] : ["USER"];
+        this.originalUser = { ...this.selectedUser };
         this.editMode = false;
       }
     },
@@ -134,6 +184,7 @@ export default {
         email: this.selectedUser.email,
         passportNumber: this.selectedUser.passportNumber,
         afm: this.selectedUser.afm,
+        roles: [...new Set(["USER", ...(this.selectedUser.roles || [])])]
       };
 
       axios.patch(`http://localhost:8080/api/users/${this.selectedUser.id}`, updates, {
@@ -182,6 +233,18 @@ export default {
 <style scoped>
 .section {
   min-height: 100vh;
+}
+
+.search-bar {
+  max-width: 400px;
+  margin: 0 auto 20px auto;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
 .user-list {

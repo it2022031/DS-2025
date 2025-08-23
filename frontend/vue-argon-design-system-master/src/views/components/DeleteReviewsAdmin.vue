@@ -10,12 +10,11 @@
       <ul v-else class="review-list">
         <li v-for="review in reviews" :key="review.id" class="review-card">
           <div class="review-info">
-            <p><strong>ID:</strong> {{ review.id }}</p>
+            <p><strong>Review ID:</strong> {{ review.id }}</p>
+            <p><strong>Renter ID:</strong> {{ review.renterId }}</p>
             <p><strong>Content:</strong> {{ review.content }}</p>
             <p><strong>Rating:</strong> {{ review.rating }} ⭐</p>
-            <p><strong>Property ID:</strong> {{ review.propertyId }}</p>
-            <p><strong>Renter ID:</strong> {{ review.renterId }}</p>
-            <p><strong>Rental ID:</strong> {{ review.rentalId }}</p>
+<!--            <p><strong>Property ID:</strong> {{ review.propertyId }}</p>-->
             <p><strong>Created At:</strong> {{ formatDateTime(review.createdAt) }}</p>
 
             <div class="review-actions mt-2" v-if="isAdmin">
