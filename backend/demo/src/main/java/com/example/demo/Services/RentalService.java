@@ -10,6 +10,7 @@ import com.example.demo.Repositories.UserRepository;
 import com.example.demo.dto.RentalSummaryDto;
 //import jakarta.transaction.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -219,5 +220,7 @@ public class RentalService {
     public int rejectExpiredPendingRentalsToday() {
         return rejectExpiredPendingRentals(LocalDate.now());
     }
+
+
 
 }

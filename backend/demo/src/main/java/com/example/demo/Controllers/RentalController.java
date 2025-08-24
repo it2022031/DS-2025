@@ -50,9 +50,15 @@ public class RentalController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Only admins can list all rentals"));
         }
-        List<Map<String, Object>> rentals = rentalService.getAllRentalData();
-        return ResponseEntity.ok(rentals);
+
+        List<RentalDto> dto = rentalService.findAll()
+                .stream()
+                .map(RentalDto::fromEntity)
+                .toList();
+
+        return ResponseEntity.ok(dto);
     }
+
 
     @GetMapping("/by-renter/{renterId}")
     public ResponseEntity<?> getRentalsByRenter(
