@@ -1,10 +1,6 @@
+// babel.config.js
 module.exports = {
-  presets: [
-    [
-      "@vue/app",
-      {
-        "polyfills": ["es7.object.entries", "es6.promise"]
-      }
+    presets: [
+        ['@vue/cli-plugin-babel/preset', { useBuiltIns: 'usage', corejs: 3 }]
     ]
-  ]
 };
