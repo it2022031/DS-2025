@@ -61,6 +61,15 @@
             </div>
           </div>
 
+          <div class="mt-3">
+            <label class="form-label">Profile (Cover) Photo</label>
+            <div class="form-control-plaintext" v-if="coverId">
+              Displaying photo <strong>#{{ coverId }}</strong> as the property’s cover
+              <small class="text-muted">(if no explicit cover from backend, it’s the first photo)</small>
+            </div>
+            <div class="text-muted" v-else>Not set yet</div>
+          </div>
+
           <div class="mt-4 d-flex justify-content-end">
             <router-link to="/list-properties" class="btn btn-link me-3">Cancel</router-link>
             <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -70,7 +79,7 @@
         <!-- Photo Upload Section -->
         <div class="mt-4">
           <label class="form-label">Upload Property Photos</label>
-          <input type="file" multiple @change="handlePhotoChange" class="form-control mb-2" />
+          <input type="file" multiple accept="image/*" @change="handlePhotoChange" class="form-control mb-2" />
           <button class="btn btn-secondary" @click="uploadPhotos" :disabled="!selectedPhotos.length">
             Upload Photos
           </button>
@@ -90,13 +99,50 @@
         <div class="mt-4" v-if="photos.length">
           <h6>Existing Photos:</h6>
           <div class="d-flex flex-wrap">
-            <div v-for="photo in photos" :key="photo.id" class="me-2 mb-2 position-relative">
-              <img :src="photo.url" :alt="photo.filename" width="100" height="100" class="border rounded" />
-              <button @click="deletePhoto(photo.id)"
-                      class="btn btn-sm btn-danger position-absolute top-0 end-0"
-                      style="font-size: 0.7rem;">
-                🗑
-              </button>
+            <div
+                v-for="(photo, idx) in photos"
+                :key="photo.id"
+                class="me-2 mb-2 photo-card position-relative"
+            >
+              <img
+                  :src="photo.url"
+                  :alt="photo.filename"
+                  width="100"
+                  height="100"
+                  class="border rounded"
+              />
+
+              <!-- Only visual badge; no API calls -->
+              <span v-if="photo.id === coverId || (!property.coverPhotoId && idx === 0)" class="cover-badge">
+                Cover
+              </span>
+
+              <!-- actions toolbar (only edit/delete) -->
+              <div class="photo-actions">
+                <button
+                    @click="triggerEditPhoto(photo.id)"
+                    class="btn btn-sm btn-warning"
+                    title="Replace photo"
+                >✏️</button>
+
+                <button
+                    @click="deletePhoto(photo.id)"
+                    class="btn btn-sm btn-danger"
+                    title="Delete photo"
+                >🗑</button>
+              </div>
+
+              <!-- loading overlay on replace -->
+              <div v-if="replacingId === photo.id" class="overlay">Updating…</div>
+
+              <!-- Hidden file input just for this photo -->
+              <input
+                  type="file"
+                  :ref="`editInput_${photo.id}`"
+                  accept="image/*"
+                  class="d-none"
+                  @change="handleEditPhotoChange($event, photo.id)"
+              />
             </div>
           </div>
         </div>
@@ -118,7 +164,8 @@ export default {
       error: false,
       selectedPhotos: [],
       previewPhotos: [],
-      photos: [] // array for existing photos
+      photos: [],
+      replacingId: null
     };
   },
   computed: {
@@ -127,6 +174,12 @@ export default {
     },
     userId() {
       return Number(localStorage.getItem("userId"));
+    },
+    // Visual-only cover id:
+    // - if backend provides property.coverPhotoId, use that
+    // - else: first photo in list (if exists)
+    coverId() {
+      return this.property.coverPhotoId || (this.photos[0] && this.photos[0].id) || null;
     }
   },
   async mounted() {
@@ -138,7 +191,8 @@ export default {
         headers: { Authorization: `Bearer ${token}` }
       });
       this.property = response.data;
-      await this.fetchPhotos(); // fetch existing photos
+
+      await this.fetchPhotos();
     } catch (err) {
       console.error('Error loading property:', err.response ? err.response.status : err.message);
       this.error = true;
@@ -158,6 +212,7 @@ export default {
         street: this.property.street,
         postalCode: this.property.postalCode,
         squareMeters: this.property.squareMeters
+        // δεν στέλνουμε coverPhotoId εδώ, αφού δεν το υποστηρίζεις στο backend
       };
       try {
         const response = await axios.patch(
@@ -165,7 +220,7 @@ export default {
             payload,
             { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log("Property updated:", response.data);
+        this.property = response.data;
         alert("Property updated successfully!");
       } catch (err) {
         console.error("Error saving property:", err);
@@ -204,7 +259,7 @@ export default {
         this.selectedPhotos = [];
         this.previewPhotos = [];
         alert("✅ Photos uploaded successfully!");
-        await this.fetchPhotos(); // refresh existing photos
+        await this.fetchPhotos();
       } catch (err) {
         console.error("❌ Error uploading photos:", err);
         alert("Failed to upload photos.");
@@ -218,10 +273,9 @@ export default {
             `http://localhost:8080/api/properties/${this.property.id}/photos`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        // Map each photo to its direct URL endpoint
         this.photos = response.data.map(file => ({
           ...file,
+          baseUrl: `http://localhost:8080/api/properties/photos/${file.id}`,
           url: `http://localhost:8080/api/properties/photos/${file.id}`
         }));
       } catch (err) {
@@ -239,10 +293,62 @@ export default {
             { headers: { Authorization: `Bearer ${token}` } }
         );
         alert("Photo deleted ✅");
-        await this.fetchPhotos(); // refresh photos after delete
+        await this.fetchPhotos();
       } catch (err) {
         console.error("Error deleting photo:", err);
         alert("Failed to delete photo.");
+      }
+    },
+
+    // Replace photo – instant refresh (no full fetch)
+    triggerEditPhoto(photoId) {
+      const ref = this.$refs[`editInput_${photoId}`];
+      const el = Array.isArray(ref) ? ref[0] : ref;
+      if (el) el.click();
+    },
+
+    async handleEditPhotoChange(event, photoId) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) return this.$router.push("/login");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      this.replacingId = photoId;
+      try {
+        await axios.patch(
+            `http://localhost:8080/api/properties/photos/${photoId}`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+              },
+            }
+        );
+
+        // refresh μόνο αυτής της εικόνας (cache bust)
+        const idx = this.photos.findIndex(p => p.id === photoId);
+        if (idx !== -1) {
+          const base = this.photos[idx].baseUrl || this.photos[idx].url;
+          this.$set(this.photos, idx, {
+            ...this.photos[idx],
+            baseUrl: base,
+            url: `${base}?t=${Date.now()}`
+          });
+        } else {
+          await this.fetchPhotos();
+        }
+
+        event.target.value = "";
+      } catch (err) {
+        console.error("❌ Error replacing photo:", err);
+        alert("Αποτυχία αντικατάστασης φωτογραφίας.");
+      } finally {
+        this.replacingId = null;
       }
     }
   }
@@ -250,22 +356,11 @@ export default {
 </script>
 
 <style scoped>
-.section {
-  min-height: 100vh;
-}
+.section { min-height: 100vh; }
+img { object-fit: cover; }
 
-img {
-  object-fit: cover;
-}
-
-.position-relative {
-  position: relative;
-}
-
-.position-absolute {
-  position: absolute;
-}
-
+.position-relative { position: relative; }
+.position-absolute { position: absolute; }
 .top-0 { top: 0; }
 .end-0 { right: 0; }
 
@@ -273,6 +368,39 @@ img {
 .rounded { border-radius: 4px; }
 .me-2 { margin-right: 0.5rem; }
 .mb-2 { margin-bottom: 0.5rem; }
-
 .btn-sm { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
+
+.photo-card { width: 100px; height: 100px; }
+.photo-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+/* Visual-only Cover badge (bottom-left) */
+.cover-badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;   /* 👈 από top σε bottom */
+  background: #198754; /* bootstrap success */
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+
+.d-none { display: none; }
 </style>
