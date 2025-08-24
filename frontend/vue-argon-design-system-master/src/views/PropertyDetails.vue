@@ -4,6 +4,7 @@
       <div v-if="loading" class="text-center">Loading property...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load property.</div>
       <div v-else-if="!property" class="text-center">Property not found.</div>
+
       <div v-else class="row">
         <!-- Images -->
         <div class="col-md-6">
@@ -27,7 +28,31 @@
           <p>{{ property.description }}</p>
           <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
           <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
-          <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
+
+          <!-- Address + Google Maps -->
+          <p class="mb-2">
+            <strong>Address:</strong>
+            <a
+                v-if="mapsUrl"
+                :href="mapsUrl"
+                target="_blank"
+                rel="noopener"
+                class="address-link"
+                :title="`Open in Google Maps: ${fullAddress}`"
+            >
+              {{ fullAddress }}
+            </a>
+            <span v-else>{{ fullAddress }}</span>
+          </p>
+          <button
+              v-if="mapsUrl"
+              type="button"
+              class="btn btn-outline-secondary btn-sm mb-3"
+              @click="openMaps"
+          >
+            📍 Open in Google Maps
+          </button>
+
           <p><strong>Price per day:</strong> {{ property.price }} €</p>
 
           <!-- Date range picker -->
@@ -122,8 +147,7 @@ export default {
       dateRange: null,
       checkinDate: "",
       checkoutDate: "",
-      // κρατάμε Y-M-D strings για να αποφύγουμε timezone bugs
-      occupiedRanges: [], // [{ startYMD:'2025-08-11', endYMD:'2025-08-12' }, ...]
+      occupiedRanges: [], // [{ startYMD:'YYYY-MM-DD', endYMD:'YYYY-MM-DD' }]
       // ui
       mainPhotoUrl: "/default-property.jpg",
       reviews: [],
@@ -131,8 +155,8 @@ export default {
       flatpickrConfig: {
         mode: "range",
         dateFormat: "Y-m-d",
-        minDate: "today",   // μπλοκάρει παρελθόν
-        disable: [],        // γεμίζει από occupiedRanges
+        minDate: "today",
+        disable: [],
         onChange: (selectedDates) => {
           if (selectedDates.length === 2) {
             this.checkinDate = this.formatYMD(selectedDates[0]);
@@ -159,6 +183,19 @@ export default {
     totalPrice() {
       const price = Number(this.property?.price || 0);
       return this.nights > 0 ? this.nights * price : 0;
+    },
+    fullAddress() {
+      if (!this.property) return "";
+      return [this.property.street, this.property.postalCode, this.property.city, this.property.country]
+          .filter(Boolean)
+          .join(", ");
+    },
+    mapsUrl() {
+      if (!this.fullAddress) return "";
+      // Google Maps - Search
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.fullAddress)}`;
+      // 👉 Αν προτιμάς κατευθείαν οδηγίες (Directions), χρησιμοποίησε αυτό:
+      // return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(this.fullAddress)}`;
     }
   },
   methods: {
@@ -177,7 +214,6 @@ export default {
       return `${y}-${m}-${d}`;
     },
     toStartUTC(ymd) {
-      // ymd: 'YYYY-MM-DD' -> Date at 00:00:00 UTC
       const [y, m, d] = ymd.split("-").map(n => parseInt(n, 10));
       return new Date(Date.UTC(y, m - 1, d));
     },
@@ -199,17 +235,17 @@ export default {
         );
         this.property = response.data;
 
-        // Occupied (κρατάμε strings)
+        // Occupied (strings)
         const datesRes = await axios.get(
             `${this.baseURL}/api/properties/${this.property.id}/closed-dates`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
         this.occupiedRanges = datesRes.data.map(d => ({
-          startYMD: d.startDate, // 'YYYY-MM-DD'
+          startYMD: d.startDate,
           endYMD: d.endDate
         }));
 
-        // Δίνουμε στο flatpickr απευθείας strings
+        // Flatpickr disable ranges
         this.flatpickrConfig = {
           ...this.flatpickrConfig,
           disable: this.occupiedRanges.map(p => ({ from: p.startYMD, to: p.endYMD }))
@@ -257,17 +293,16 @@ export default {
     isAvailable(propertyId, checkin, checkout) {
       if (!checkin || !checkout) return false;
 
-      // no past/invalid ranges
       const today = this.toStartUTC(this.todayYMD());
       const inDate = this.toStartUTC(checkin);
       const outDate = this.toStartUTC(checkout);
       if (inDate < today || outDate <= inDate) return false;
 
-      // Treat checkout as exclusive -> compare [in, out) με [start, end+1)
+      // [in, out) overlaps [start, end+1)
       return !this.occupiedRanges.some(r => {
         const start = this.toStartUTC(r.startYMD);
         const endExclusive = this.addDaysUTC(this.toStartUTC(r.endYMD), 1);
-        return inDate < endExclusive && outDate > start; // overlap?
+        return inDate < endExclusive && outDate > start;
       });
     },
 
@@ -312,6 +347,10 @@ export default {
     formatDate(dateStr) {
       const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(dateStr).toLocaleDateString("el-GR", options);
+    },
+
+    openMaps() {
+      if (this.mapsUrl) window.open(this.mapsUrl, "_blank", "noopener");
     }
   },
   created() {
@@ -337,4 +376,7 @@ img { max-height: 350px; object-fit: cover; }
   background: #fff; border: 1px solid #e9ecef;
   border-radius: 0.5rem; padding: 0.6rem 0.8rem;
 }
+
+.address-link { text-decoration: underline; }
+.address-link:hover { text-decoration: underline; opacity: 0.9; }
 </style>
