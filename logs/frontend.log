@@ -1,0 +1,508 @@
+ INFO  Starting development server...
+[3%] setup (watch run)
+[2K[1A[2K[G[3%] setup (watch run webpack-dev-middleware)
+[2K[1A[2K[G[3%] setup (watch run)
+[2K[1A[2K[G[4%] setup (normal module factory)
+[2K[1A[2K[G[4%] setup (normal module factory CaseSensitivePathsPlugin)
+[2K[1A[2K[G[4%] setup (normal module factory)
+[2K[1A[2K[G[5%] setup (context module factory)
+[2K[1A[2K[G[6%] setup (before compile)
+[2K[1A[2K[G[6%] setup (before compile ProgressPlugin)
+[2K[1A[2K[G[6%] setup (before compile)
+[2K[1A[2K[G[7%] setup (compile)
+[2K[1A[2K[G[7%] setup (compile ExternalsPlugin)
+[2K[1A[2K[G[7%] setup (compile)
+[2K[1A[2K[G[8%] setup (compilation)
+[2K[1A[2K[G[8%] setup (compilation HtmlWebpackPlugin)
+[2K[1A[2K[G[8%] setup (compilation CopyPlugin)
+[2K[1A[2K[G[8%] setup (compilation ArrayPushCallbackChunkFormatPlugin)
+[2K[1A[2K[G[8%] setup (compilation JsonpChunkLoadingPlugin)
+[2K[1A[2K[G[8%] setup (compilation StartupChunkDependenciesPlugin)
+[2K[1A[2K[G[8%] setup (compilation ImportScriptsChunkLoadingPlugin)
+[2K[1A[2K[G[8%] setup (compilation WorkerPlugin)
+[2K[1A[2K[G[8%] setup (compilation SplitChunksPlugin)
+[2K[1A[2K[G[8%] setup (compilation ResolverCachePlugin)
+[2K[1A[2K[G[8%] setup (compilation)
+[2K[1A[2K[G[9%] setup (compilation)
+[2K[1A[2K[G[9%] setup (compilation vue-loader-plugin)
+[2K[1A[2K[G[9%] setup (compilation DefinePlugin)
+[2K[1A[2K[G[9%] setup (compilation ProgressPlugin)
+[2K[1A[2K[G[9%] setup (compilation LimitChunkCountPlugin)
+[2K[1A[2K[G[9%] setup (compilation EntryPlugin)
+[2K[1A[2K[G[9%] setup (compilation ExternalsPlugin)
+[2K[1A[2K[G[9%] setup (compilation ChunkPrefetchPreloadPlugin)
+[2K[1A[2K[G[9%] setup (compilation ModuleInfoHeaderPlugin)
+[2K[1A[2K[G[9%] setup (compilation EvalSourceMapDevToolPlugin)
+[2K[1A[2K[G[9%] setup (compilation JavascriptModulesPlugin)
+[2K[1A[2K[G[9%] setup (compilation JsonModulesPlugin)
+[2K[1A[2K[G[9%] setup (compilation AssetModulesPlugin)
+[2K[1A[2K[G[9%] setup (compilation EntryPlugin)
+[2K[1A[2K[G[9%] setup (compilation RuntimePlugin)
+[2K[1A[2K[G[9%] setup (compilation InferAsyncModulesPlugin)
+[2K[1A[2K[G[9%] setup (compilation DataUriPlugin)
+[2K[1A[2K[G[9%] setup (compilation FileUriPlugin)
+[2K[1A[2K[G[9%] setup (compilation CompatibilityPlugin)
+[2K[1A[2K[G[9%] setup (compilation HarmonyModulesPlugin)
+[2K[1A[2K[G[9%] setup (compilation AMDPlugin)
+[2K[1A[2K[G[9%] setup (compilation RequireJsStuffPlugin)
+[2K[1A[2K[G[9%] setup (compilation CommonJsPlugin)
+[2K[1A[2K[G[9%] setup (compilation LoaderPlugin)
+[2K[1A[2K[G[9%] setup (compilation NodeStuffPlugin)
+[2K[1A[2K[G[9%] setup (compilation APIPlugin)
+[2K[1A[2K[G[9%] setup (compilation ExportsInfoApiPlugin)
+[2K[1A[2K[G[9%] setup (compilation WebpackIsIncludedPlugin)
+[2K[1A[2K[G[9%] setup (compilation ConstPlugin)
+[2K[1A[2K[G[9%] setup (compilation UseStrictPlugin)
+[2K[1A[2K[G[9%] setup (compilation RequireIncludePlugin)
+[2K[1A[2K[G[9%] setup (compilation RequireEnsurePlugin)
+[2K[1A[2K[G[9%] setup (compilation RequireContextPlugin)
+[2K[1A[2K[G[9%] setup (compilation ImportPlugin)
+[2K[1A[2K[G[9%] setup (compilation ImportMetaContextPlugin)
+[2K[1A[2K[G[9%] setup (compilation SystemPlugin)
+[2K[1A[2K[G[9%] setup (compilation ImportMetaPlugin)
+[2K[1A[2K[G[9%] setup (compilation URLPlugin)
+[2K[1A[2K[G[9%] setup (compilation DefaultStatsFactoryPlugin)
+[2K[1A[2K[G[9%] setup (compilation DefaultStatsPresetPlugin)
+[2K[1A[2K[G[9%] setup (compilation DefaultStatsPrinterPlugin)
+[2K[1A[2K[G[9%] setup (compilation JavascriptMetaInfoPlugin)
+[2K[1A[2K[G[9%] setup (compilation EnsureChunkConditionsPlugin)
+[2K[1A[2K[G[9%] setup (compilation RemoveEmptyChunksPlugin)
+[2K[1A[2K[G[9%] setup (compilation MergeDuplicateChunksPlugin)
+[2K[1A[2K[G[9%] setup (compilation SideEffectsFlagPlugin)
+[2K[1A[2K[G[9%] setup (compilation FlagDependencyExportsPlugin)
+[2K[1A[2K[G[9%] setup (compilation NamedModuleIdsPlugin)
+[2K[1A[2K[G[9%] setup (compilation NamedChunkIdsPlugin)
+[2K[1A[2K[G[9%] setup (compilation DefinePlugin)
+[2K[1A[2K[G[9%] setup (compilation TemplatedPathPlugin)
+[2K[1A[2K[G[9%] setup (compilation RecordIdsPlugin)
+[2K[1A[2K[G[9%] setup (compilation WarnCaseSensitiveModulesPlugin)
+[2K[1A[2K[G[9%] setup (compilation EntryPlugin)
+[2K[1A[2K[G[9%] setup (compilation ProvidePlugin)
+[2K[1A[2K[G[9%] setup (compilation HotModuleReplacementPlugin)
+[2K[1A[2K[G[9%] setup (compilation ProgressPlugin)
+[2K[1A[2K[G[9%] setup (compilation)
+[2K[1A[2K[G[10%] building 
+[2K[1A[2K[G[10%] building (0/0 modules)
+[2K[1A[2K[G[10%] building (import loader babel-loader/lib/index.js)
+[2K[1A[2K[G[10%] building (0/3 modules)
+[2K[1A[2K[G[24%] building (7/19 modules)
+[2K[1A[2K[G[24%] building (import loader @vue/vue-loader-v15/lib/index.js)
+[2K[1A[2K[G[24%] building (16/28 modules)
+[2K[1A[2K[G[24%] building (import loader @vue/vue-loader-v15/lib/loaders/pitcher.js)
+[2K[1A[2K[G[24%] building (19/72 modules)
+[2K[1A[2K[G[24%] building (import loader @vue/vue-loader-v15/lib/loaders/templateLoader.js)
+[2K[1A[2K[G[24%] building (19/72 modules)
+[2K[1A[2K[G[24%] building (20/122 modules)
+[2K[1A[2K[G[38%] building (42/242 modules)
+[2K[1A[2K[G[38%] building (import loader vue-style-loader/index.js)
+[2K[1A[2K[G[38%] building (import loader css-loader/dist/cjs.js)
+[2K[1A[2K[G[38%] building (import loader postcss-loader/dist/cjs.js)
+[2K[1A[2K[G[38%] building (48/278 modules)
+[2K[1A[2K[G[38%] building (import loader sass-loader/dist/cjs.js)
+[2K[1A[2K[G[38%] building (68/433 modules)
+[2K[1A[2K[G[38%] building (import loader @vue/vue-loader-v15/lib/loaders/stylePostLoader.js
+)
+[2K[1A[2K[1A[2K[G[38%] building (68/433 modules)
+[2K[1A[2K[G[51%] building (74/483 modules)
+[2K[1A[2K[G[51%] building (141/555 modules)
+DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+21 │ @import "bootstrap/functions";
+   │         ^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/argon.scss 21:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+22 │ @import "custom/functions";
+   │         ^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/argon.scss 22:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+24 │ @import "custom/variables";
+   │         ^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/argon.scss 24:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+25 │ @import "bootstrap/variables";
+   │         ^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/argon.scss 25:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+27 │ @import "bootstrap/mixins";
+   │         ^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/argon.scss 27:9  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use map.merge instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+28 │   $grays: map-merge((
+   │ ┌─────────^
+29 │ │   "100": $gray-100,
+30 │ │   "200": $gray-200,
+31 │ │   "300": $gray-300,
+32 │ │   "400": $gray-400,
+33 │ │   "500": $gray-500,
+34 │ │   "600": $gray-600,
+35 │ │   "700": $gray-700,
+36 │ │   "800": $gray-800,
+37 │ │   "900": $gray-900
+38 │ │ ), $grays);
+   │ └──────────^
+   ╵
+    src/assets/scss/custom/_variables.scss 28:9  @import
+    src/assets/scss/argon.scss 24:9              root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use map.merge instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+52 │   $colors: map-merge((
+   │ ┌──────────^
+53 │ │   "blue":       $blue,
+54 │ │   "indigo":     $indigo,
+55 │ │   "purple":     $purple,
+56 │ │   "pink":       $pink,
+57 │ │   "red":        $red,
+58 │ │   "orange":     $orange,
+59 │ │   "yellow":     $yellow,
+60 │ │   "green":      $green,
+61 │ │   "teal":       $teal,
+62 │ │   "cyan":       $cyan,
+63 │ │   "white":      $white,
+64 │ │   "gray":       $gray-600,
+65 │ │   "light":      $gray-400,
+66 │ │   "lighter":    $gray-200,
+67 │ │   "gray-dark":  $gray-800
+68 │ │ ), $colors);
+   │ └───────────^
+   ╵
+    src/assets/scss/custom/_variables.scss 52:10  @import
+    src/assets/scss/argon.scss 24:9               root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+79 │ $darker:        darken($gray-900, 15%) !default;
+   │                 ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/custom/_variables.scss 79:17  @import
+    src/assets/scss/argon.scss 24:9               root stylesheet
+
+DEPRECATION WARNING [color-functions]: darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -100%)
+color.adjust($color, $lightness: -15%)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+79 │ $darker:        darken($gray-900, 15%) !default;
+   │                 ^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/custom/_variables.scss 79:17  @import
+    src/assets/scss/argon.scss 24:9               root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use map.merge instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+92  │   $theme-colors: map-merge((
+    │ ┌────────────────^
+93  │ │   "default":      $default,
+94  │ │   "primary":      $primary,
+95  │ │   "secondary":    $secondary,
+96  │ │   "success":      $success,
+97  │ │   "info":         $info,
+98  │ │   "warning":      $warning,
+99  │ │   "danger":       $danger,
+100 │ │   "white":        $white,
+101 │ │   "neutral":      $white,
+102 │ │   "dark":         $dark,
+103 │ │   "darker":       $darker
+104 │ │ ), $theme-colors);
+    │ └─────────────────^
+    ╵
+    src/assets/scss/custom/_variables.scss 92:16  @import
+    src/assets/scss/argon.scss 24:9               root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use map.merge instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+107 │   $brand-colors: map-merge((
+    │ ┌────────────────^
+108 │ │   "facebook":     $facebook,
+109 │ │   "twitter":      $twitter,
+110 │ │   "google-plus":  $google-plus,
+111 │ │   "instagram":    $instagram,
+112 │ │   "pinterest":    $pinterest,
+113 │ │   "youtube":      $youtube,
+114 │ │   "slack":        $slack,
+115 │ │   "dribbble":     $dribbble,
+116 │ │   "github":       $github
+117 │ │ ), $brand-colors);
+    │ └─────────────────^
+    ╵
+    src/assets/scss/custom/_variables.scss 107:16  @import
+    src/assets/scss/argon.scss 24:9                root stylesheet
+
+DEPRECATION WARNING [color-functions]: darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -23.7577639752%)
+color.adjust($color, $lightness: -15%)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+220 │ $link-hover-color:          darken($link-color, 15%);
+    │                             ^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    src/assets/scss/custom/_variables.scss 220:29  @import
+    src/assets/scss/argon.scss 24:9                root stylesheet
+
+DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
+
+Recommendation: math.div($spacer, 2) or calc($spacer / 2)
+
+More info and automated migrator: https://sass-lang.com/d/slash-div
+
+    ╷
+338 │ $headings-margin-bottom:      ($spacer / 2);
+    │                                ^^^^^^^^^^^
+    ╵
+    src/assets/scss/custom/_variables.scss 338:32  @import
+    src/assets/scss/argon.scss 24:9                root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 8.7729357798%)
+color.adjust($color, $lightness: 7.5%)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+425 │ $table-dark-border-color:     lighten($gray-900, 7.5%);
+    │                               ^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    src/assets/scss/custom/_variables.scss 425:31  @import
+    src/assets/scss/argon.scss 24:9                root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 29.5366795367%)
+color.adjust($color, $lightness: 15%)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+578 │ $form-feedback-valid-bg:         lighten($success, 15%);
+    │                                  ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    src/assets/scss/custom/_variables.scss 578:34  @import
+    src/assets/scss/argon.scss 24:9                root stylesheet
+
+DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 39.2307692308%)
+color.adjust($color, $lightness: 15%)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+580 │ $form-feedback-invalid-bg:       lighten($warning, 15%);
+    │                                  ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    src/assets/scss/custom/_variables.scss 580:34  @import
+    src/assets/scss/argon.scss 24:9                root stylesheet
+
+DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
+
+Recommendation: math.div(($r * 299) + ($g * 587) + ($b * 114), 1000) or calc((($r * 299) + ($g * 587) + ($b * 114)) / 1000)
+
+More info and automated migrator: https://sass-lang.com/d/slash-div
+
+   ╷
+57 │   $yiq: (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/bootstrap/_functions.scss 57:9  color-yiq()
+    src/assets/scss/custom/_variables.scss 641:37   @import
+    src/assets/scss/argon.scss 24:9                 root stylesheet
+
+DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
+
+Recommendation: math.div($spacer, 2) or calc($spacer / 2)
+
+More info and automated migrator: https://sass-lang.com/d/slash-div
+
+    ╷
+640 │ $nav-divider-margin-y:              ($spacer / 2) !default;
+    │                                      ^^^^^^^^^^^
+    ╵
+    src/assets/scss/bootstrap/_variables.scss 640:38  @import
+    src/assets/scss/argon.scss 25:9                   root stylesheet
+
+DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
+
+Recommendation: math.div($nav-link-height - $navbar-brand-height, 2) or calc(($nav-link-height - $navbar-brand-height) / 2)
+
+More info and automated migrator: https://sass-lang.com/d/slash-div
+
+    ╷
+653 │ $navbar-brand-padding-y:            ($nav-link-height - $navbar-brand-height) / 2 !default;
+    │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    src/assets/scss/bootstrap/_variables.scss 653:37  @import
+    src/assets/scss/argon.scss 25:9                   root stylesheet
+
+DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
+
+Recommendation: math.div($grid-gutter-width, 2) or calc($grid-gutter-width / 2)
+
+More info and automated migrator: https://sass-lang.com/d/slash-div
+
+    ╷
+724 │ $card-group-margin:                 ($grid-gutter-width / 2) !default;
+    │                                      ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    src/assets/scss/bootstrap/_variables.scss 724:38  @import
+    src/assets/scss/argon.scss 25:9                   root stylesheet
+
+DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+   ┌──> src/assets/scss/bootstrap/_custom-forms.scss
+344│       appearance: none;
+   │       ^^^^^^^^^^^^^^^^ declaration
+   ╵
+   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
+10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
+11 │ │     transition: none;
+12 │ │   }
+   │ └─── nested rule
+   ╵
+    src/assets/scss/bootstrap/_custom-forms.scss 344:5  @import
+    src/assets/scss/argon.scss 45:9                     root stylesheet
+
+DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+   ┌──> src/assets/scss/bootstrap/_custom-forms.scss
+370│       appearance: none;
+   │       ^^^^^^^^^^^^^^^^ declaration
+   ╵
+   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
+10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
+11 │ │     transition: none;
+12 │ │   }
+   │ └─── nested rule
+   ╵
+    src/assets/scss/bootstrap/_custom-forms.scss 370:5  @import
+    src/assets/scss/argon.scss 45:9                     root stylesheet
+
+DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+   ┌──> src/assets/scss/bootstrap/_custom-forms.scss
+399│       appearance: none;
+   │       ^^^^^^^^^^^^^^^^ declaration
+   ╵
+   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
+10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
+11 │ │     transition: none;
+12 │ │   }
+   │ └─── nested rule
+   ╵
+    src/assets/scss/bootstrap/_custom-forms.scss 399:5  @import
+    src/assets/scss/argon.scss 45:9                     root stylesheet
+
+DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
+rules will be changing to match the behavior specified by CSS in an upcoming
+version. To keep the existing behavior, move the declaration above the nested
+rule. To opt into the new behavior, wrap the declaration in `& {}`.
+
+More info: https://sass-lang.com/d/mixed-decls
+
+   ┌──> src/assets/scss/bootstrap/_modal.scss
+46 │       transform: translate(0, -25%);
+   │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
+   ╵
+   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
+10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
+11 │ │     transition: none;
+12 │ │   }
+   │ └─── nested rule
+   ╵
+    src/assets/scss/bootstrap/_modal.scss 46:5  @import
+    src/assets/scss/argon.scss 58:9             root stylesheet
+
+DEPRECATION WARNING [function-units]: $degrees: Passing a unit other than deg (25%) is deprecated.
+
+To preserve current behavior: calc($degrees / 1%)
+
+See https://sass-lang.com/d/function-units
+
+   ╷
+16 │         background: linear-gradient(87deg, $color 0, adjust-hue($color, 25%) 100%) !important;
+   │                                                      ^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/assets/scss/custom/mixins/_background-variant.scss 16:54  bg-gradient-variant()
+    src/assets/scss/custom/utilities/_backgrounds.scss 6:2        @import
+    src/assets/scss/custom/_utilities.scss 1:9                    @import
+    src/assets/scss/argon.scss 69:9                               root stylesheet
+
+WARNING: 448 repetitive deprecation warnings omitted.
+
+[2K[1A[2K[G[51%] building (187/640 modules)
+[2K[1A[2K[G[51%] building (380/679 modules)
