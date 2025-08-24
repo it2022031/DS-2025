@@ -72,6 +72,10 @@
           <router-link to="/delete-reviews-admin" class="nav-link">See All Reviews</router-link>
         </li>
 
+        <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
+          <router-link to="/delete-rentals-admin" class="nav-link">See All Rentals</router-link>
+        </li>
+
       </ul>
 
 

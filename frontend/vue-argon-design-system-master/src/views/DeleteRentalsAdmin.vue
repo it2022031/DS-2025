@@ -5,7 +5,6 @@
 
       <!-- 🔍 Search + Filter -->
       <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
-        <!-- Search bar -->
         <input
             type="text"
             v-model="searchQuery"
@@ -13,13 +12,21 @@
             class="form-control search-input"
         />
 
-        <!-- Dropdown filter -->
         <select v-model="selectedStatus" class="form-control filter-select">
           <option value="ALL">All</option>
           <option value="PENDING">Pending</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
         </select>
+
+        <!-- 🚀 Delete All Rejected Button (Admin only) -->
+        <button
+            @click="deleteAllRejected"
+            class="btn btn-danger"
+            :disabled="!hasRejectedRentals"
+        >
+          🗑️ Delete All Rejected
+        </button>
       </div>
 
       <div v-if="loading" class="text-center text-white">Loading rentals...</div>
@@ -31,12 +38,12 @@
           <div class="rental-info">
             <h3>Rental ID: {{ rental.id }}</h3>
             <p><strong>Property's Name:</strong> {{ rental.propertyName }}</p>
-            <p><strong>Renter's Name:</strong> {{ rental.renterFirstName }} {{rental.renterLastName}}</p>
+            <p><strong>Renter's Name:</strong> {{ rental.renterFirstName }} {{ rental.renterLastName }}</p>
             <p><strong>Check-In Date:</strong> {{ formatDate(rental.startDate) }}</p>
             <p><strong>Check-Out Date:</strong> {{ formatDate(rental.endDate) }}</p>
-            <p><strong>Total Price:</strong> {{ rental.totalPrice}} <strong> €</strong></p>
+            <p><strong>Total Price:</strong> {{ rental.TotalPrice }} €</p>
             <p>
-              <strong>Approval Status (by You):</strong>
+              <strong>Approval Status (by Owner):</strong>
               <span :class="{
                 approved: rental.approvalStatus === 'APPROVED',
                 pending: rental.approvalStatus === 'PENDING',
@@ -45,18 +52,6 @@
                 {{ rental.approvalStatus }}
               </span>
             </p>
-          </div>
-
-          <!-- Action buttons only for PENDING -->
-          <div class="rental-actions mt-3" v-if="rental.approvalStatus === 'PENDING'">
-            <button class="btn btn-success btn-sm mr-2"
-                    @click="approveRental(rental.id)">
-              ✅ Approve
-            </button>
-            <button class="btn btn-danger btn-sm"
-                    @click="rejectRental(rental.id)">
-              ❌ Reject
-            </button>
           </div>
         </li>
       </ul>
@@ -75,21 +70,23 @@ export default {
       loading: false,
       error: false,
       baseURL: 'http://localhost:8080',
-      searchQuery: "",       // 🔍 new
-      selectedStatus: "ALL", // ⬇️ new
+      searchQuery: "",
+      selectedStatus: "ALL",
     };
   },
   computed: {
     filteredRentals() {
-      return this.rentals.filter((r) => {
+      return this.rentals.filter(r => {
         const matchesSearch =
-            r.propertyName &&
             r.propertyName.toLowerCase().includes(this.searchQuery.toLowerCase());
         const matchesStatus =
             this.selectedStatus === "ALL" || r.approvalStatus === this.selectedStatus;
         return matchesSearch && matchesStatus;
       });
     },
+    hasRejectedRentals() {
+      return this.rentals.some(p => p.approvalStatus === "REJECTED");
+    }
   },
   methods: {
     formatDate(dateStr) {
@@ -97,16 +94,15 @@ export default {
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
-
     async fetchRentals() {
       this.loading = true;
       this.error = false;
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${this.baseURL}/api/rentals/owner`, {
+        const response = await axios.get(`${this.baseURL}/api/rentals/all`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        this.rentals = response.data;
+        this.rentals = response.data; // already has correct fields
       } catch (err) {
         console.error('Error fetching rentals:', err);
         this.error = true;
@@ -114,38 +110,26 @@ export default {
         this.loading = false;
       }
     },
-
-    async approveRental(rentalId) {
+    async deleteAllRejected() {
+      if (!confirm("Are you sure you want to delete ALL rejected rentals?")) {
+        return;
+      }
+      const token = localStorage.getItem("token");
       try {
-        const token = localStorage.getItem('token');
-        await axios.post(`${this.baseURL}/api/rentals/${rentalId}/approve`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        alert(`Rental ${rentalId} approved ✅`);
-        await this.fetchRentals();
+        await axios.delete(
+            `http://localhost:8080/api/rentals/status/rejected`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        await this.fetchRentals(); // refresh the list
+        alert("All rejected rentals deleted 🗑️");
       } catch (err) {
-        console.error(`Error approving rental ${rentalId}:`, err);
-        alert(`Failed to approve rental ${rentalId}`);
+        console.error("Error deleting rejected rentals:", err);
+        alert("Failed to delete rejected rentals ❌");
       }
     },
-
-    async rejectRental(rentalId) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.post(`${this.baseURL}/api/rentals/${rentalId}/reject`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        alert(`Rental ${rentalId} rejected ❌`);
-        await this.fetchRentals();
-      } catch (err) {
-        console.error(`Error rejecting rental ${rentalId}:`, err);
-        alert(`Failed to reject rental ${rentalId}`);
-      }
-    }
   },
-
-  async mounted() {
-    await this.fetchRentals();
+  mounted() {
+    this.fetchRentals();
   }
 };
 </script>
@@ -223,11 +207,6 @@ export default {
   font-weight: bold;
 }
 
-.rental-actions {
-  display: flex;
-  justify-content: flex-start;
-}
-
 .text-center {
   text-align: center;
 }
@@ -249,33 +228,23 @@ export default {
   padding-bottom: 3rem;
 }
 
-.btn {
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 0.3rem;
-  font-size: 1rem;
-}
-
-.btn-light {
-  background-color: #f8f9fa;
-  border: 1px solid #ced4da;
-  color: #212529;
-  transition: background-color 0.2s ease;
-}
-
-.btn-light:hover {
-  background-color: #e2e6ea;
-}
-
-.btn-success {
-  background-color: #28a745;
-  border: none;
-  color: white;
-}
-
 .btn-danger {
   background-color: #dc3545;
   border: none;
-  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.2s ease;
 }
+
+.btn-danger:hover {
+  background-color: #b02a37;
+}
+
+.btn-danger:disabled {
+  background-color: #e6aeb3;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 </style>
