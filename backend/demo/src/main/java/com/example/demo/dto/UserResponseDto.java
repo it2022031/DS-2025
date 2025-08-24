@@ -3,6 +3,9 @@ package com.example.demo.dto;
 import com.example.demo.Entities.User;
 import com.example.demo.Security.Role;
 
+import com.example.demo.Entities.User;
+import com.example.demo.Security.Role;
+
 public record UserResponseDto(
         Long id,
         String username,
@@ -11,7 +14,8 @@ public record UserResponseDto(
         String lastName,
         String role,
         String passportNumber,
-        String afm
+        String afm,
+        String renterRequestStatus   // νέο
 ) {
     public static UserResponseDto fromEntity(User u) {
         return new UserResponseDto(
@@ -20,10 +24,10 @@ public record UserResponseDto(
                 u.getEmail(),
                 u.getFirstName(),
                 u.getLastName(),
-                // αν έχεις πλέον Set<Role>:
                 u.getRoles().stream().findFirst().map(Role::name).orElse(null),
                 u.getPassportNumber(),
-                u.getAfm()
+                u.getAfm(),
+                u.getRenterRequestStatus() != null ? u.getRenterRequestStatus().name() : null
         );
     }
 }
