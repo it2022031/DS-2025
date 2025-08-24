@@ -3,8 +3,7 @@ package com.example.demo.dto;
 import com.example.demo.Entities.User;
 import com.example.demo.Security.Role;
 
-import com.example.demo.Entities.User;
-import com.example.demo.Security.Role;
+import java.util.List;
 
 public record UserResponseDto(
         Long id,
@@ -12,19 +11,23 @@ public record UserResponseDto(
         String email,
         String firstName,
         String lastName,
-        String role,
+        List<String> roles,         // λίστα με όλους τους ρόλους
         String passportNumber,
         String afm,
-        String renterRequestStatus   // νέο
+        String renterRequestStatus
 ) {
     public static UserResponseDto fromEntity(User u) {
+        List<String> roleNames = u.getRoles().stream()
+                .map(Role::name)        // μετατρέπουμε τα enums σε String
+                .toList();
+
         return new UserResponseDto(
                 u.getId(),
                 u.getUsername(),
                 u.getEmail(),
                 u.getFirstName(),
                 u.getLastName(),
-                u.getRoles().stream().findFirst().map(Role::name).orElse(null),
+                roleNames,
                 u.getPassportNumber(),
                 u.getAfm(),
                 u.getRenterRequestStatus() != null ? u.getRenterRequestStatus().name() : null
