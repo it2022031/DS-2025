@@ -44,7 +44,8 @@ SELECT id, username FROM users;
 INSERT INTO rentals
 (property_id, user_id, start_date, end_date, payment_amount, approval_status)
 VALUES
-    (1, 2, '2024-01-10', '2024-01-15', 500.00, 'APPROVED');
+    (2, 3, '2024-02-10', '2024-02-15', 500.00, 'PENDING');
+
 -- allagi idi iparxon rental
 UPDATE rentals
 SET start_date = '2024-01-10',
@@ -84,13 +85,12 @@ DELETE FROM user_roles WHERE user_id = 5;
 
 -- 2) Βάλε τους νέους (π.χ. μόνο ADMIN και RENTER)
 INSERT INTO user_roles(user_id, role) VALUES
-                                          (5, 'ADMIN'),
-                                          (5, 'RENTER');
+                                          (2, 'ADMIN');
 
 COMMIT;
 
 -- kanton admin
-INSERT INTO user_roles(user_id, role) VALUES (5, 'ADMIN')
+INSERT INTO user_roles(user_id, role) VALUES (2, 'ADMIN')
 ON CONFLICT (user_id, role) DO NOTHING;
 -- Κάν’ τον σκέτο USER
 BEGIN;

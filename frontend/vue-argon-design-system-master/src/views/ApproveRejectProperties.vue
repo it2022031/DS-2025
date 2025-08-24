@@ -20,7 +20,19 @@
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
         </select>
+
+        <!-- 🚀 Delete All Rejected Button (Admin only) -->
+        <button
+            v-if="userRole === 'ADMIN'"
+            @click="deleteAllRejected"
+            class="btn btn-danger"
+        >
+          🗑️ Delete All Rejected
+        </button>
       </div>
+
+
+
 
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
@@ -190,6 +202,23 @@ export default {
         alert(`Failed to reject property ${propertyId}`);
       }
     },
+    async deleteAllRejected() {
+      if (!confirm("Are you sure you want to delete ALL rejected properties?")) {
+        return;
+      }
+      const token = localStorage.getItem("token");
+      try {
+        await axios.delete(
+            `http://localhost:8080/api/properties/status/rejected`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        await this.fetchProperties(); // refresh the list
+        alert("All rejected properties deleted 🗑️");
+      } catch (err) {
+        console.error("Error deleting rejected properties:", err);
+        alert("Failed to delete rejected properties ❌");
+      }
+    },
 
     canModerate(property) {
       return this.userRole === "ADMIN";
@@ -289,4 +318,18 @@ export default {
 .status-rejected {
   color: #dc3545;
 }
+
+.btn-danger {
+  background-color: #dc3545;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: #b02a37;
+}
+
 </style>
