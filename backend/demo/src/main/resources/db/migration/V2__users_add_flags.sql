@@ -44,7 +44,7 @@ SELECT id, username FROM users;
 INSERT INTO rentals
 (property_id, user_id, start_date, end_date, payment_amount, approval_status)
 VALUES
-    (2, 3, '2024-02-10', '2024-02-15', 500.00, 'PENDING');
+    (8, 3, '2024-02-10', '2024-02-15', 500.00, 'APPROVED');
 
 -- allagi idi iparxon rental
 UPDATE rentals

@@ -22,7 +22,7 @@ import PropertyDetails from "@/views/PropertyDetails.vue";
 import ListBookings from "@/views/ListBookings.vue";
 import ApproveRejectProperties from "@/views/ApproveRejectProperties.vue";
 import ApproveRejectRenters from "@/views/ApproveRejectRenters.vue";
-import DeleteReviewsAdmin from "@/views/components/DeleteReviewsAdmin.vue";
+import DeleteReviewsAdmin from "@/views/DeleteReviewsAdmin.vue";
 import DeleteRentalsAdmin from "@/views/DeleteRentalsAdmin.vue";
 
 Vue.use(Router);
