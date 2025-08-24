@@ -7,6 +7,7 @@ import com.example.demo.Entities.User;
 import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Security.Role;
 import com.example.demo.Services.UserService;
+import com.example.demo.dto.PropertyDto;
 import com.example.demo.dto.RenterRequestDto;
 import com.example.demo.dto.UpdateUserRolesRequest;
 import com.example.demo.dto.UserResponseDto;
@@ -68,12 +69,21 @@ public class UserController {
     public ResponseEntity<?> getPropertiesForUserId(@PathVariable Long id, Authentication authentication) {
         requireAuthenticated(authentication);
         User caller = getCaller(authentication);
+
         if (!isAdmin(authentication) && !caller.getId().equals(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden"));
         }
+
         List<Property> props = userService.getPropertiesForUserId(id);
-        return ResponseEntity.ok(props);
+
+        // ✅ αντί να επιστρέφεις entities → DTOs
+        List<PropertyDto> dto = props.stream()
+                .map(PropertyDto::fromEntity)
+                .toList();
+
+        return ResponseEntity.ok(dto);
     }
+
 
     // 4. Get rentals for user
     @GetMapping("/{id}/rentals")
