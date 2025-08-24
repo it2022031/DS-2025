@@ -233,6 +233,7 @@ export default {
     async deleteUser(userId) {
       if (!confirm("Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτόν τον χρήστη;")) return;
 
+
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
 
@@ -245,8 +246,15 @@ export default {
         this.fetchUsers();
       } catch (err) {
         console.error("Error deleting user:", err);
-        alert("Σφάλμα κατά τη διαγραφή του χρήστη.");
+
+        // Check if the backend sent a custom error message
+        if (err.response && err.response.data && err.response.data.error) {
+          alert(err.response.data.error);
+        } else {
+          alert("Κάτι πήγε στραβά κατά τη διαγραφή του χρήστη.");
+        }
       }
+
     }
   },
 

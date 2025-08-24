@@ -116,6 +116,7 @@ export default {
     },
 
     async approveRental(rentalId) {
+      if (!confirm("Are you sure you want to approve this rental?")) return;
       try {
         const token = localStorage.getItem('token');
         await axios.post(`${this.baseURL}/api/rentals/${rentalId}/approve`, {}, {
@@ -130,6 +131,7 @@ export default {
     },
 
     async rejectRental(rentalId) {
+      if (!confirm("Are you sure you want to reject this rental?")) return;
       try {
         const token = localStorage.getItem('token');
         await axios.post(`${this.baseURL}/api/rentals/${rentalId}/reject`, {}, {

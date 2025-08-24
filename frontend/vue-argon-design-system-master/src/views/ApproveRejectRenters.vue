@@ -78,6 +78,8 @@ export default {
     },
 
     async approveUser(userId) {
+      if (!confirm("Are you sure you want to approve this renter?")) return;
+
       try {
         const token = localStorage.getItem("token");
         await axios.post(
@@ -96,6 +98,8 @@ export default {
     },
 
     async rejectUser(userId) {
+      if (!confirm("Are you sure you want to reject this renter?")) return;
+
       try {
         const token = localStorage.getItem("token");
         await axios.post(
