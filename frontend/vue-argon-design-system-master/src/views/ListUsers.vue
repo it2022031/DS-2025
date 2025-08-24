@@ -64,7 +64,6 @@
             <input type="text" v-model="selectedUser.passportNumber" class="form-control" :disabled="!editMode" />
           </div>
 
-
           <div class="form-group">
             <label>Ρόλοι</label>
 
@@ -99,9 +98,6 @@
               <label class="form-check-label" for="role-admin">ADMIN</label>
             </div>
           </div>
-
-
-
 
           <div v-if="!editMode">
             <button class="btn btn-primary" @click="editMode = true">✏️ Επεξεργασία</button>
@@ -147,12 +143,11 @@ export default {
   methods: {
     async fetchUsers() {
       this.loading = true;
+      this.error = false;
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get("http://localhost:8080/api/users", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
         this.users = res.data;
       } catch (err) {
@@ -168,15 +163,10 @@ export default {
         this.selectedUser = null;
         this.editMode = false;
       } else {
-        // Make a deep copy of the user
+        // Deep copy user object
         this.selectedUser = JSON.parse(JSON.stringify(user));
 
-        // Ensure roles is an array of strings
-        this.selectedUser.roles = Array.isArray(this.selectedUser.roles)
-            ? this.selectedUser.roles.map(r => r.toUpperCase()) // normalize
-            : [];
-
-        // Always include "USER"
+        // Ensure USER is always included
         if (!this.selectedUser.roles.includes("USER")) {
           this.selectedUser.roles.push("USER");
         }
@@ -192,21 +182,17 @@ export default {
     },
 
     async saveProfile() {
+      if (!this.selectedUser) return;
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
 
       this.saving = true;
-
       const userId = this.selectedUser.id;
 
-      // Prepare data for roles
       const roleUpdates = {
-        set: [...new Set(["USER", ...(this.selectedUser.roles.filter(r => r !== "USER"))])]
+        set: [...new Set(this.selectedUser.roles)] // keep roles as-is: ["USER", "ADMIN", ...]
       };
 
-
-
-      // Prepare data for user info
       const userUpdates = {
         firstName: this.selectedUser.firstName,
         lastName: this.selectedUser.lastName,
@@ -227,10 +213,11 @@ export default {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Refresh the users list
+        // Refresh users list
         await this.fetchUsers();
 
         this.saveSuccess = true;
+        alert("Τα στοιχεία του χρήστη ενημερώθηκαν!.");
         setTimeout(() => (this.saveSuccess = false), 3000);
         this.editMode = false;
         this.selectedUser = null;

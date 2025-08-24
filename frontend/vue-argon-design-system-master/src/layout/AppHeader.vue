@@ -30,7 +30,7 @@
         </li>
 
         <li v-if="isLoggedIn && (!hasRole('ADMIN') && !hasRole('RENTER'))" class="nav-item">
-          <router-link to="/rent" class="nav-link">Ενοικίαση</router-link>
+          <router-link to="/request-renter" class="nav-link">Ενοικίαση</router-link>
         </li>
 
         <!-- Νέα Αγγελία: OWNER ή ADMIN -->
