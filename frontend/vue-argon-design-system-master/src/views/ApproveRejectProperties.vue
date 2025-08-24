@@ -23,12 +23,13 @@
 
         <!-- 🚀 Delete All Rejected Button (Admin only) -->
         <button
-            v-if="userRole === 'ADMIN'"
             @click="deleteAllRejected"
             class="btn btn-danger"
+            :disabled="!hasRejectedProperties"
         >
           🗑️ Delete All Rejected
         </button>
+
       </div>
 
 
@@ -115,6 +116,9 @@ export default {
         return matchesSearch && matchesStatus;
       });
     },
+    hasRejectedProperties() {
+      return this.properties.some(p => p.approvalStatus === "REJECTED");
+    }
   },
   methods: {
     async fetchProperties() {
@@ -219,7 +223,6 @@ export default {
         alert("Failed to delete rejected properties ❌");
       }
     },
-
     canModerate(property) {
       return this.userRole === "ADMIN";
     },
@@ -330,6 +333,12 @@ export default {
 
 .btn-danger:hover {
   background-color: #b02a37;
+}
+
+.btn-danger:disabled {
+  background-color: #e6aeb3;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 </style>
