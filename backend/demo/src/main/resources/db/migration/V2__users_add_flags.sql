@@ -104,3 +104,57 @@ SELECT role FROM user_roles WHERE user_id = 5;
 SELECT ur.user_id, ur.role
 FROM user_roles ur
 WHERE ur.user_id = 2;
+
+--1
+SELECT schemaname, tablename
+FROM pg_catalog.pg_tables
+ORDER BY schemaname, tablename;
+-- 2
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_type = 'BASE TABLE'
+ORDER BY table_schema, table_name;
+
+--3
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_type = 'BASE TABLE'
+ORDER BY table_name;
+
+-- 4
+SELECT table_name, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public'
+ORDER BY table_name, ordinal_position;
+
+-- 5
+SELECT tc.table_name,
+       tc.constraint_name,
+       tc.constraint_type,
+       kcu.column_name,
+       ccu.table_name AS foreign_table,
+       ccu.column_name AS foreign_column
+FROM information_schema.table_constraints AS tc
+         LEFT JOIN information_schema.key_column_usage AS kcu
+                   ON tc.constraint_name = kcu.constraint_name
+                       AND tc.table_schema = kcu.table_schema
+         LEFT JOIN information_schema.constraint_column_usage AS ccu
+                   ON ccu.constraint_name = tc.constraint_name
+                       AND ccu.table_schema = tc.table_schema
+WHERE tc.table_schema = 'public'
+ORDER BY tc.table_name, tc.constraint_type;
+
+-- 6
+SELECT c.table_name, c.column_name, c.data_type,
+       tc.constraint_type, tc.constraint_name
+FROM information_schema.columns c
+         LEFT JOIN information_schema.key_column_usage kcu
+                   ON c.table_name = kcu.table_name
+                       AND c.column_name = kcu.column_name
+                       AND c.table_schema = kcu.table_schema
+         LEFT JOIN information_schema.table_constraints tc
+                   ON tc.constraint_name = kcu.constraint_name
+                       AND tc.table_schema = c.table_schema
+WHERE c.table_schema = 'public'
+ORDER BY c.table_name, c.ordinal_position;

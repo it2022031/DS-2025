@@ -1,0 +1,90 @@
+erDiagram
+  USERS ||--o{ USER_ROLES       : has
+  USERS ||--o{ PROPERTIES       : owns
+  PROPERTIES ||--o{ PROPERTY_PHOTOS : has
+  USERS ||--o{ RENTALS          : makes
+  PROPERTIES ||--o{ RENTALS      : booked_for
+  USERS ||--o{ REVIEWS          : writes
+  PROPERTIES ||--o{ REVIEWS      : about
+  RENTALS ||--|{ REVIEWS         : referenced_by
+  PROPERTIES ||--o{ BOOKINGS     : has
+  APPROVAL_STATUS ||--o{ PROPERTIES : defines
+  APPROVAL_STATUS ||--o{ RENTALS    : defines
+
+  USERS {
+    bigint id PK
+    varchar username UK
+    varchar email UK
+    varchar password
+    varchar firstName
+    varchar lastName
+    varchar passport_number UK
+    varchar afm UK
+    boolean enabled
+    boolean accountNonLocked
+    varchar renterRequestStatus
+    bytea   profile_picture
+    varchar profile_picture_content_type
+    varchar profile_picture_filename
+  }
+
+  USER_ROLES {
+    bigint  user_id FK
+    Role    role
+  }
+
+  PROPERTIES {
+    bigint  id PK
+    varchar name
+    text    description
+    varchar country
+    varchar city
+    varchar street
+    varchar postalCode
+    double  squareMeters
+    bigint  approval_status_id FK
+    decimal price
+    bigint  owner_id FK
+  }
+
+  PROPERTY_PHOTOS {
+    bigint  id PK
+    bigint  property_id FK
+    bytea   image
+    varchar contentType
+    varchar filename
+  }
+
+  RENTALS {
+    bigint  id PK
+    date    startDate
+    date    endDate
+    decimal paymentAmount
+    bigint  approval_status_id FK
+    bigint  user_id FK
+    bigint  property_id FK
+  }
+
+  REVIEWS {
+    bigint    id PK
+    text      content
+    int       rating
+    timestamp createdAt
+    bigint    user_id FK
+    bigint    property_id FK
+    bigint    rental_id FK
+  }
+
+  BOOKINGS {
+    bigint   id PK
+    date     bookedFrom
+    date     bookedTo
+    boolean  status
+    bigint   property_id FK
+  }
+
+  APPROVAL_STATUS {
+    int      id PK
+    varchar  name 
+  }
+
