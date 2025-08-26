@@ -1,508 +1,264 @@
  INFO  Starting development server...
-[3%] setup (watch run)
-[2K[1A[2K[G[3%] setup (watch run webpack-dev-middleware)
-[2K[1A[2K[G[3%] setup (watch run)
-[2K[1A[2K[G[4%] setup (normal module factory)
-[2K[1A[2K[G[4%] setup (normal module factory CaseSensitivePathsPlugin)
-[2K[1A[2K[G[4%] setup (normal module factory)
-[2K[1A[2K[G[5%] setup (context module factory)
-[2K[1A[2K[G[6%] setup (before compile)
-[2K[1A[2K[G[6%] setup (before compile ProgressPlugin)
-[2K[1A[2K[G[6%] setup (before compile)
-[2K[1A[2K[G[7%] setup (compile)
-[2K[1A[2K[G[7%] setup (compile ExternalsPlugin)
-[2K[1A[2K[G[7%] setup (compile)
-[2K[1A[2K[G[8%] setup (compilation)
-[2K[1A[2K[G[8%] setup (compilation HtmlWebpackPlugin)
-[2K[1A[2K[G[8%] setup (compilation CopyPlugin)
-[2K[1A[2K[G[8%] setup (compilation ArrayPushCallbackChunkFormatPlugin)
-[2K[1A[2K[G[8%] setup (compilation JsonpChunkLoadingPlugin)
-[2K[1A[2K[G[8%] setup (compilation StartupChunkDependenciesPlugin)
-[2K[1A[2K[G[8%] setup (compilation ImportScriptsChunkLoadingPlugin)
-[2K[1A[2K[G[8%] setup (compilation WorkerPlugin)
-[2K[1A[2K[G[8%] setup (compilation SplitChunksPlugin)
-[2K[1A[2K[G[8%] setup (compilation ResolverCachePlugin)
-[2K[1A[2K[G[8%] setup (compilation)
-[2K[1A[2K[G[9%] setup (compilation)
-[2K[1A[2K[G[9%] setup (compilation vue-loader-plugin)
-[2K[1A[2K[G[9%] setup (compilation DefinePlugin)
-[2K[1A[2K[G[9%] setup (compilation ProgressPlugin)
-[2K[1A[2K[G[9%] setup (compilation LimitChunkCountPlugin)
-[2K[1A[2K[G[9%] setup (compilation EntryPlugin)
-[2K[1A[2K[G[9%] setup (compilation ExternalsPlugin)
-[2K[1A[2K[G[9%] setup (compilation ChunkPrefetchPreloadPlugin)
-[2K[1A[2K[G[9%] setup (compilation ModuleInfoHeaderPlugin)
-[2K[1A[2K[G[9%] setup (compilation EvalSourceMapDevToolPlugin)
-[2K[1A[2K[G[9%] setup (compilation JavascriptModulesPlugin)
-[2K[1A[2K[G[9%] setup (compilation JsonModulesPlugin)
-[2K[1A[2K[G[9%] setup (compilation AssetModulesPlugin)
-[2K[1A[2K[G[9%] setup (compilation EntryPlugin)
-[2K[1A[2K[G[9%] setup (compilation RuntimePlugin)
-[2K[1A[2K[G[9%] setup (compilation InferAsyncModulesPlugin)
-[2K[1A[2K[G[9%] setup (compilation DataUriPlugin)
-[2K[1A[2K[G[9%] setup (compilation FileUriPlugin)
-[2K[1A[2K[G[9%] setup (compilation CompatibilityPlugin)
-[2K[1A[2K[G[9%] setup (compilation HarmonyModulesPlugin)
-[2K[1A[2K[G[9%] setup (compilation AMDPlugin)
-[2K[1A[2K[G[9%] setup (compilation RequireJsStuffPlugin)
-[2K[1A[2K[G[9%] setup (compilation CommonJsPlugin)
-[2K[1A[2K[G[9%] setup (compilation LoaderPlugin)
-[2K[1A[2K[G[9%] setup (compilation NodeStuffPlugin)
-[2K[1A[2K[G[9%] setup (compilation APIPlugin)
-[2K[1A[2K[G[9%] setup (compilation ExportsInfoApiPlugin)
-[2K[1A[2K[G[9%] setup (compilation WebpackIsIncludedPlugin)
-[2K[1A[2K[G[9%] setup (compilation ConstPlugin)
-[2K[1A[2K[G[9%] setup (compilation UseStrictPlugin)
-[2K[1A[2K[G[9%] setup (compilation RequireIncludePlugin)
-[2K[1A[2K[G[9%] setup (compilation RequireEnsurePlugin)
-[2K[1A[2K[G[9%] setup (compilation RequireContextPlugin)
-[2K[1A[2K[G[9%] setup (compilation ImportPlugin)
-[2K[1A[2K[G[9%] setup (compilation ImportMetaContextPlugin)
-[2K[1A[2K[G[9%] setup (compilation SystemPlugin)
-[2K[1A[2K[G[9%] setup (compilation ImportMetaPlugin)
-[2K[1A[2K[G[9%] setup (compilation URLPlugin)
-[2K[1A[2K[G[9%] setup (compilation DefaultStatsFactoryPlugin)
-[2K[1A[2K[G[9%] setup (compilation DefaultStatsPresetPlugin)
-[2K[1A[2K[G[9%] setup (compilation DefaultStatsPrinterPlugin)
-[2K[1A[2K[G[9%] setup (compilation JavascriptMetaInfoPlugin)
-[2K[1A[2K[G[9%] setup (compilation EnsureChunkConditionsPlugin)
-[2K[1A[2K[G[9%] setup (compilation RemoveEmptyChunksPlugin)
-[2K[1A[2K[G[9%] setup (compilation MergeDuplicateChunksPlugin)
-[2K[1A[2K[G[9%] setup (compilation SideEffectsFlagPlugin)
-[2K[1A[2K[G[9%] setup (compilation FlagDependencyExportsPlugin)
-[2K[1A[2K[G[9%] setup (compilation NamedModuleIdsPlugin)
-[2K[1A[2K[G[9%] setup (compilation NamedChunkIdsPlugin)
-[2K[1A[2K[G[9%] setup (compilation DefinePlugin)
-[2K[1A[2K[G[9%] setup (compilation TemplatedPathPlugin)
-[2K[1A[2K[G[9%] setup (compilation RecordIdsPlugin)
-[2K[1A[2K[G[9%] setup (compilation WarnCaseSensitiveModulesPlugin)
-[2K[1A[2K[G[9%] setup (compilation EntryPlugin)
-[2K[1A[2K[G[9%] setup (compilation ProvidePlugin)
-[2K[1A[2K[G[9%] setup (compilation HotModuleReplacementPlugin)
-[2K[1A[2K[G[9%] setup (compilation ProgressPlugin)
-[2K[1A[2K[G[9%] setup (compilation)
-[2K[1A[2K[G[10%] building 
-[2K[1A[2K[G[10%] building (0/0 modules)
-[2K[1A[2K[G[10%] building (import loader babel-loader/lib/index.js)
-[2K[1A[2K[G[10%] building (0/3 modules)
-[2K[1A[2K[G[24%] building (7/19 modules)
-[2K[1A[2K[G[24%] building (import loader @vue/vue-loader-v15/lib/index.js)
-[2K[1A[2K[G[24%] building (16/28 modules)
-[2K[1A[2K[G[24%] building (import loader @vue/vue-loader-v15/lib/loaders/pitcher.js)
-[2K[1A[2K[G[24%] building (19/72 modules)
-[2K[1A[2K[G[24%] building (import loader @vue/vue-loader-v15/lib/loaders/templateLoader.js)
-[2K[1A[2K[G[24%] building (19/72 modules)
-[2K[1A[2K[G[24%] building (20/122 modules)
-[2K[1A[2K[G[38%] building (42/242 modules)
-[2K[1A[2K[G[38%] building (import loader vue-style-loader/index.js)
-[2K[1A[2K[G[38%] building (import loader css-loader/dist/cjs.js)
-[2K[1A[2K[G[38%] building (import loader postcss-loader/dist/cjs.js)
-[2K[1A[2K[G[38%] building (48/278 modules)
-[2K[1A[2K[G[38%] building (import loader sass-loader/dist/cjs.js)
-[2K[1A[2K[G[38%] building (68/433 modules)
-[2K[1A[2K[G[38%] building (import loader @vue/vue-loader-v15/lib/loaders/stylePostLoader.js
-)
-[2K[1A[2K[1A[2K[G[38%] building (68/433 modules)
-[2K[1A[2K[G[51%] building (74/483 modules)
-[2K[1A[2K[G[51%] building (141/555 modules)
-DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+<s> [webpack.Progress] 0% compiling
+<s> [webpack.Progress] 10% building 0/0 modules 0 active 
+<s> [webpack.Progress] 10% building 0/1 modules 1 active multi /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/index.js?http://192.168.1.47:8081/sockjs-node /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/dev-server.js ./src/main.js
+<s> [webpack.Progress] 10% building 1/1 modules 0 active 
+<s> [webpack.Progress] 10% building 1/1 modules 0 active 
+<s> [webpack.Progress] 10% building 1/2 modules 1 active multi /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/index.js?http://localhost /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/dev-server.js /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/index.js?http://192.168.1.47:8081/sockjs-node ./src/main.js
+<s> [webpack.Progress] 10% building 2/2 modules 0 active 
+<s> [webpack.Progress] 10% building 2/3 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/index.js?http://192.168.1.47:8081/sockjs-node
+<s> [webpack.Progress] 10% building 2/4 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/index.js?http://localhost
+<s> [webpack.Progress] 10% building 2/5 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/dev-server.js
+<s> [webpack.Progress] 10% building 3/5 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/dev-server.js
+<s> [webpack.Progress] 10% building 4/5 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/dev-server.js
+<s> [webpack.Progress] 10% building 5/5 modules 0 active 
+<s> [webpack.Progress] 10% building 5/6 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot sync nonrecursive /^\.\/log$/
+<s> [webpack.Progress] 10% building 6/6 modules 0 active 
+<s> [webpack.Progress] 10% building 6/7 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/log.js
+<s> [webpack.Progress] 10% building 6/8 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/log-apply-result.js
+<s> [webpack.Progress] 10% building 6/9 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/hot/emitter.js
+<s> [webpack.Progress] 10% building 6/10 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/socket.js
+<s> [webpack.Progress] 10% building 6/11 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/overlay.js
+<s> [webpack.Progress] 10% building 6/12 modules 6 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/log.js
+<s> [webpack.Progress] 10% building 6/13 modules 7 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/sendMessage.js
+<s> [webpack.Progress] 10% building 6/14 modules 8 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/reloadApp.js
+<s> [webpack.Progress] 10% building 6/15 modules 9 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 10% building 7/15 modules 8 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 10% building 8/15 modules 7 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 11% building 9/15 modules 6 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 11% building 10/15 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 11% building 11/15 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 11% building 12/15 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 11% building 13/15 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 11% building 14/15 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/createSocketUrl.js
+<s> [webpack.Progress] 11% building 15/15 modules 0 active 
+<s> [webpack.Progress] 11% building 15/16 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/cache-loader/dist/cjs.js??ref--12-0!/home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/babel-loader/lib/index.js!/home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/src/main.js
+<s> [webpack.Progress] 11% building 15/17 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/clients/SockJSClient.js
+<s> [webpack.Progress] 11% building 15/18 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/events/events.js
+<s> [webpack.Progress] 11% building 16/18 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/events/events.js
+<s> [webpack.Progress] 11% building 16/19 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/getCurrentScriptSource.js
+<s> [webpack.Progress] 12% building 17/19 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/utils/getCurrentScriptSource.js
+<s> [webpack.Progress] 12% building 17/20 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/url.js
+<s> [webpack.Progress] 12% building 18/20 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/url.js
+<s> [webpack.Progress] 12% building 19/20 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/url.js
+<s> [webpack.Progress] 12% building 20/20 modules 0 active 
+<s> [webpack.Progress] 12% building 20/21 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/client/clients/BaseClient.js
+<s> [webpack.Progress] 12% building 20/22 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/node_modules/strip-ansi/index.js
+<s> [webpack.Progress] 12% building 21/22 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/node_modules/strip-ansi/index.js
+<s> [webpack.Progress] 12% building 22/22 modules 0 active 
+<s> [webpack.Progress] 40% building 22/22 modules 0 active 
+<s> [webpack.Progress] 40% building 22/23 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/ansi-html-community/index.js
+<s> [webpack.Progress] 40% building 22/24 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/html-entities/lib/index.js
+<s> [webpack.Progress] 40% building 22/25 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/node-libs-browser/node_modules/punycode/punycode.js
+<s> [webpack.Progress] 40% building 23/25 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/node-libs-browser/node_modules/punycode/punycode.js
+<s> [webpack.Progress] 40% building 23/26 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/loglevel/lib/loglevel.js
+<s> [webpack.Progress] 40% building 24/26 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/loglevel/lib/loglevel.js
+<s> [webpack.Progress] 40% building 25/26 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/loglevel/lib/loglevel.js
+<s> [webpack.Progress] 40% building 25/27 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/buildin/module.js
+<s> [webpack.Progress] 40% building 25/28 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/buildin/global.js
+<s> [webpack.Progress] 40% building 26/28 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack/buildin/global.js
+<s> [webpack.Progress] 40% building 27/28 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/loglevel/lib/loglevel.js
+<s> [webpack.Progress] 40% building 27/29 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/sockjs-client/dist/sockjs.js
+<s> [webpack.Progress] 40% building 28/29 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/sockjs-client/dist/sockjs.js
+<s> [webpack.Progress] 40% building 29/29 modules 0 active 
+<s> [webpack.Progress] 40% building 29/30 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/html-entities/lib/xml-entities.js
+<s> [webpack.Progress] 40% building 29/31 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/html-entities/lib/html4-entities.js
+<s> [webpack.Progress] 40% building 29/32 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/html-entities/lib/html5-entities.js
+<s> [webpack.Progress] 40% building 30/32 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/html-entities/lib/html5-entities.js
+<s> [webpack.Progress] 40% building 31/32 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/html-entities/lib/html5-entities.js
+<s> [webpack.Progress] 40% building 32/32 modules 0 active 
+<s> [webpack.Progress] 40% building 32/33 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/node_modules/qs/lib/index.js
+<s> [webpack.Progress] 40% building 33/33 modules 0 active 
+<s> [webpack.Progress] 40% building 33/34 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/html-entities/lib/surrogate-pairs.js
+<s> [webpack.Progress] 40% building 33/35 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/node_modules/ansi-regex/index.js
+<s> [webpack.Progress] 40% building 34/35 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/webpack-dev-server/node_modules/ansi-regex/index.js
+<s> [webpack.Progress] 40% building 35/35 modules 0 active 
+<s> [webpack.Progress] 40% building 35/36 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/node_modules/qs/lib/stringify.js
+<s> [webpack.Progress] 40% building 35/37 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/node_modules/qs/lib/formats.js
+<s> [webpack.Progress] 40% building 35/38 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/node_modules/qs/lib/parse.js
+<s> [webpack.Progress] 40% building 36/38 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/node_modules/qs/lib/parse.js
+<s> [webpack.Progress] 40% building 37/38 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/node_modules/qs/lib/parse.js
+<s> [webpack.Progress] 40% building 38/38 modules 0 active 
+<s> [webpack.Progress] 40% building 38/39 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/url/node_modules/qs/lib/utils.js
+<s> [webpack.Progress] 40% building 39/39 modules 0 active 
+<s> [webpack.Progress] 40% building 39/40 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/side-channel/index.js
+<s> [webpack.Progress] 40% building 40/40 modules 0 active 
+<s> [webpack.Progress] 40% building 40/41 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/type.js
+<s> [webpack.Progress] 40% building 41/41 modules 0 active 
+<s> [webpack.Progress] 40% building 41/42 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/object-inspect/index.js
+<s> [webpack.Progress] 40% building 41/43 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/side-channel-list/index.js
+<s> [webpack.Progress] 40% building 41/44 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/side-channel-map/index.js
+<s> [webpack.Progress] 40% building 41/45 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/side-channel-weakmap/index.js
+<s> [webpack.Progress] 40% building 42/45 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/side-channel-weakmap/index.js
+<s> [webpack.Progress] 40% building 43/45 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/side-channel-weakmap/index.js
+<s> [webpack.Progress] 40% building 44/45 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/side-channel-list/index.js
+<s> [webpack.Progress] 40% building 45/45 modules 0 active 
+<s> [webpack.Progress] 40% building 45/46 modules 1 active ignored /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/object-inspect ./util.inspect
+<s> [webpack.Progress] 40% building 46/46 modules 0 active 
+<s> [webpack.Progress] 40% building 46/47 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/get-intrinsic/index.js
+<s> [webpack.Progress] 40% building 46/48 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bound/index.js
+<s> [webpack.Progress] 40% building 47/48 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bound/index.js
+<s> [webpack.Progress] 40% building 48/48 modules 0 active 
+<s> [webpack.Progress] 40% building 48/49 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/eval.js
+<s> [webpack.Progress] 40% building 48/50 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/syntax.js
+<s> [webpack.Progress] 40% building 48/51 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/range.js
+<s> [webpack.Progress] 40% building 48/52 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/uri.js
+<s> [webpack.Progress] 40% building 48/53 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/ref.js
+<s> [webpack.Progress] 40% building 49/53 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/ref.js
+<s> [webpack.Progress] 40% building 50/53 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/ref.js
+<s> [webpack.Progress] 40% building 51/53 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/ref.js
+<s> [webpack.Progress] 40% building 52/53 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/ref.js
+<s> [webpack.Progress] 40% building 52/54 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/get-proto/Reflect.getPrototypeOf.js
+<s> [webpack.Progress] 40% building 52/55 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/get-proto/Object.getPrototypeOf.js
+<s> [webpack.Progress] 40% building 52/56 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bind-apply-helpers/functionApply.js
+<s> [webpack.Progress] 40% building 52/57 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bind-apply-helpers/functionCall.js
+<s> [webpack.Progress] 40% building 53/57 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bind-apply-helpers/functionCall.js
+<s> [webpack.Progress] 40% building 53/58 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/abs.js
+<s> [webpack.Progress] 40% building 53/59 modules 6 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/floor.js
+<s> [webpack.Progress] 40% building 53/60 modules 7 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/max.js
+<s> [webpack.Progress] 40% building 53/61 modules 8 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/min.js
+<s> [webpack.Progress] 40% building 53/62 modules 9 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/pow.js
+<s> [webpack.Progress] 40% building 53/63 modules 10 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/round.js
+<s> [webpack.Progress] 40% building 53/64 modules 11 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 54/64 modules 10 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 55/64 modules 9 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 56/64 modules 8 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 57/64 modules 7 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 58/64 modules 6 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 59/64 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 60/64 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 61/64 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 62/64 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 63/64 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/sign.js
+<s> [webpack.Progress] 40% building 64/64 modules 0 active 
+<s> [webpack.Progress] 40% building 64/65 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-errors/index.js
+<s> [webpack.Progress] 40% building 65/65 modules 0 active 
+<s> [webpack.Progress] 40% building 65/66 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/get-proto/index.js
+<s> [webpack.Progress] 40% building 65/67 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bind-apply-helpers/index.js
+<s> [webpack.Progress] 40% building 65/68 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-object-atoms/index.js
+<s> [webpack.Progress] 40% building 65/69 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/gopd/index.js
+<s> [webpack.Progress] 40% building 65/70 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/es-define-property/index.js
+<s> [webpack.Progress] 40% building 65/71 modules 6 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/hasown/index.js
+<s> [webpack.Progress] 40% building 65/72 modules 7 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/has-symbols/index.js
+<s> [webpack.Progress] 40% building 65/73 modules 8 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/isNaN.js
+<s> [webpack.Progress] 40% building 66/73 modules 7 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/isNaN.js
+<s> [webpack.Progress] 40% building 67/73 modules 6 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/isNaN.js
+<s> [webpack.Progress] 40% building 68/73 modules 5 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/isNaN.js
+<s> [webpack.Progress] 40% building 69/73 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/isNaN.js
+<s> [webpack.Progress] 40% building 70/73 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/math-intrinsics/isNaN.js
+<s> [webpack.Progress] 40% building 70/74 modules 4 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/function-bind/index.js
+<s> [webpack.Progress] 40% building 71/74 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/function-bind/index.js
+<s> [webpack.Progress] 40% building 72/74 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/function-bind/index.js
+<s> [webpack.Progress] 40% building 73/74 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/function-bind/index.js
+<s> [webpack.Progress] 40% building 74/74 modules 0 active 
+<s> [webpack.Progress] 40% building 74/75 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bind-apply-helpers/actualApply.js
+<s> [webpack.Progress] 40% building 74/76 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/gopd/gOPD.js
+<s> [webpack.Progress] 40% building 74/77 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/has-symbols/shams.js
+<s> [webpack.Progress] 40% building 75/77 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/has-symbols/shams.js
+<s> [webpack.Progress] 40% building 76/77 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/has-symbols/shams.js
+<s> [webpack.Progress] 40% building 76/78 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/function-bind/implementation.js
+<s> [webpack.Progress] 40% building 76/79 modules 3 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/dunder-proto/get.js
+<s> [webpack.Progress] 40% building 77/79 modules 2 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/dunder-proto/get.js
+<s> [webpack.Progress] 40% building 78/79 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/dunder-proto/get.js
+<s> [webpack.Progress] 40% building 79/79 modules 0 active 
+<s> [webpack.Progress] 40% building 79/80 modules 1 active /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master/node_modules/call-bind-apply-helpers/reflectApply.js
+<s> [webpack.Progress] 40% building 80/80 modules 0 active 
+<s> [webpack.Progress] 70% building 80/80 modules 0 active 
+<s> [webpack.Progress] 70% finish module graph
+<s> [webpack.Progress] 70% finish module graph FlagDependencyExportsPlugin
+<s> [webpack.Progress] 70% sealing
+<s> [webpack.Progress] 70% sealing WarnCaseSensitiveModulesPlugin
+<s> [webpack.Progress] 72% basic dependencies optimization
+<s> [webpack.Progress] 72% dependencies optimization
+<s> [webpack.Progress] 73% advanced dependencies optimization
+<s> [webpack.Progress] 73% after dependencies optimization
+<s> [webpack.Progress] 71% chunk graph
+<s> [webpack.Progress] 71% after chunk graph
+<s> [webpack.Progress] 71% after chunk graph WebAssemblyModulesPlugin
+<s> [webpack.Progress] 74% optimizing
+<s> [webpack.Progress] 74% basic module optimization
+<s> [webpack.Progress] 75% module optimization
+<s> [webpack.Progress] 75% advanced module optimization
+<s> [webpack.Progress] 76% after module optimization
+<s> [webpack.Progress] 76% basic chunk optimization
+<s> [webpack.Progress] 76% basic chunk optimization EnsureChunkConditionsPlugin
+<s> [webpack.Progress] 76% basic chunk optimization RemoveEmptyChunksPlugin
+<s> [webpack.Progress] 76% basic chunk optimization MergeDuplicateChunksPlugin
+<s> [webpack.Progress] 77% chunk optimization
+<s> [webpack.Progress] 77% advanced chunk optimization
+<s> [webpack.Progress] 77% advanced chunk optimization SplitChunksPlugin
+<s> [webpack.Progress] 77% advanced chunk optimization LimitChunkCountPlugin
+<s> [webpack.Progress] 77% advanced chunk optimization RemoveEmptyChunksPlugin
+<s> [webpack.Progress] 77% after chunk optimization
+<s> [webpack.Progress] 78% module and chunk tree optimization
+<s> [webpack.Progress] 78% after module and chunk tree optimization
+<s> [webpack.Progress] 79% basic chunk modules optimization
+<s> [webpack.Progress] 80% chunk modules optimization
+<s> [webpack.Progress] 80% advanced chunk modules optimization
+<s> [webpack.Progress] 81% after chunk modules optimization
+<s> [webpack.Progress] 81% module reviving
+<s> [webpack.Progress] 81% module reviving RecordIdsPlugin
+<s> [webpack.Progress] 82% module order optimization
+<s> [webpack.Progress] 82% advanced module order optimization
+<s> [webpack.Progress] 83% before module ids
+<s> [webpack.Progress] 83% before module ids NamedModulesPlugin
+<s> [webpack.Progress] 83% module ids
+<s> [webpack.Progress] 84% module id optimization
+<s> [webpack.Progress] 84% module id optimization
+<s> [webpack.Progress] 85% chunk reviving
+<s> [webpack.Progress] 85% chunk reviving RecordIdsPlugin
+<s> [webpack.Progress] 85% chunk order optimization
+<s> [webpack.Progress] 85% chunk order optimization OccurrenceOrderChunkIdsPlugin
+<s> [webpack.Progress] 86% before chunk ids
+<s> [webpack.Progress] 86% before chunk ids NamedChunksPlugin
+<s> [webpack.Progress] 86% chunk id optimization
+<s> [webpack.Progress] 87% after chunk id optimization
+<s> [webpack.Progress] 87% record modules
+<s> [webpack.Progress] 87% record modules RecordIdsPlugin
+<s> [webpack.Progress] 87% record chunks
+<s> [webpack.Progress] 87% record chunks RecordIdsPlugin
+<s> [webpack.Progress] 88% hashing
+<s> [webpack.Progress] 88% after hashing
+<s> [webpack.Progress] 88% after hashing HotModuleReplacementPlugin
+<s> [webpack.Progress] 89% record hash
+<s> [webpack.Progress] 89% module assets processing
+<s> [webpack.Progress] 90% chunk assets processing
+<s> [webpack.Progress] 90% additional chunk assets processing
+<s> [webpack.Progress] 90% additional chunk assets processing HotModuleReplacementPlugin
+<s> [webpack.Progress] 91% recording
+<s> [webpack.Progress] 91% recording HotModuleReplacementPlugin
+<s> [webpack.Progress] 92% additional asset processing
+<s> [webpack.Progress] 92% chunk asset optimization
+<s> [webpack.Progress] 93% after chunk asset optimization
+<s> [webpack.Progress] 93% asset optimization
+<s> [webpack.Progress] 94% after asset optimization
+<s> [webpack.Progress] 94% after seal
+<s> [webpack.Progress] 95% emitting
+<s> [webpack.Progress] 95% emitting HtmlWebpackPlugin
+<s> [webpack.Progress] 95% emitting CopyPlugin
+<s> [webpack.Progress] 98% after emitting
+<s> [webpack.Progress] 98% after emitting CopyPlugin
+ ERROR  Failed to compile with 1 error9:46:38 PM
+
+ error  in ./src/main.js
+
+Syntax Error: Error: Could not resolve "@vue/cli-plugin-babel/preset" in file /home/john/Documents/DS-2025/frontend/vue-argon-design-system-master.
+    at loadPreset.next (<anonymous>)
+    at createDescriptor.next (<anonymous>)
+    at Array.forEach (<anonymous>)
+    at Generator.next (<anonymous>)
+    at createDescriptors.next (<anonymous>)
+    at createPresetDescriptors.next (<anonymous>)
+    at Generator.next (<anonymous>)
+    at mergeChainOpts.next (<anonymous>)
+    at chainWalker.next (<anonymous>)
+    at loadFileChain.next (<anonymous>)
+    at buildRootChain.next (<anonymous>)
+    at loadPrivatePartialConfig.next (<anonymous>)
+    at loadPartialConfig.next (<anonymous>)
+
+
+ @ multi (webpack)-dev-server/client?http://192.168.1.47:8081/sockjs-node (webpack)/hot/dev-server.js ./src/main.js
+
+<s> [webpack.Progress] 100% 
 
-More info: https://sass-lang.com/d/legacy-js-api
-
-DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-21 │ @import "bootstrap/functions";
-   │         ^^^^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/argon.scss 21:9  root stylesheet
-
-DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-22 │ @import "custom/functions";
-   │         ^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/argon.scss 22:9  root stylesheet
-
-DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-24 │ @import "custom/variables";
-   │         ^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/argon.scss 24:9  root stylesheet
-
-DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-25 │ @import "bootstrap/variables";
-   │         ^^^^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/argon.scss 25:9  root stylesheet
-
-DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-27 │ @import "bootstrap/mixins";
-   │         ^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/argon.scss 27:9  root stylesheet
-
-DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
-Use map.merge instead.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-28 │   $grays: map-merge((
-   │ ┌─────────^
-29 │ │   "100": $gray-100,
-30 │ │   "200": $gray-200,
-31 │ │   "300": $gray-300,
-32 │ │   "400": $gray-400,
-33 │ │   "500": $gray-500,
-34 │ │   "600": $gray-600,
-35 │ │   "700": $gray-700,
-36 │ │   "800": $gray-800,
-37 │ │   "900": $gray-900
-38 │ │ ), $grays);
-   │ └──────────^
-   ╵
-    src/assets/scss/custom/_variables.scss 28:9  @import
-    src/assets/scss/argon.scss 24:9              root stylesheet
-
-DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
-Use map.merge instead.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-52 │   $colors: map-merge((
-   │ ┌──────────^
-53 │ │   "blue":       $blue,
-54 │ │   "indigo":     $indigo,
-55 │ │   "purple":     $purple,
-56 │ │   "pink":       $pink,
-57 │ │   "red":        $red,
-58 │ │   "orange":     $orange,
-59 │ │   "yellow":     $yellow,
-60 │ │   "green":      $green,
-61 │ │   "teal":       $teal,
-62 │ │   "cyan":       $cyan,
-63 │ │   "white":      $white,
-64 │ │   "gray":       $gray-600,
-65 │ │   "light":      $gray-400,
-66 │ │   "lighter":    $gray-200,
-67 │ │   "gray-dark":  $gray-800
-68 │ │ ), $colors);
-   │ └───────────^
-   ╵
-    src/assets/scss/custom/_variables.scss 52:10  @import
-    src/assets/scss/argon.scss 24:9               root stylesheet
-
-DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
-Use color.adjust instead.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-   ╷
-79 │ $darker:        darken($gray-900, 15%) !default;
-   │                 ^^^^^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/custom/_variables.scss 79:17  @import
-    src/assets/scss/argon.scss 24:9               root stylesheet
-
-DEPRECATION WARNING [color-functions]: darken() is deprecated. Suggestions:
-
-color.scale($color, $lightness: -100%)
-color.adjust($color, $lightness: -15%)
-
-More info: https://sass-lang.com/d/color-functions
-
-   ╷
-79 │ $darker:        darken($gray-900, 15%) !default;
-   │                 ^^^^^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/custom/_variables.scss 79:17  @import
-    src/assets/scss/argon.scss 24:9               root stylesheet
-
-DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
-Use map.merge instead.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-    ╷
-92  │   $theme-colors: map-merge((
-    │ ┌────────────────^
-93  │ │   "default":      $default,
-94  │ │   "primary":      $primary,
-95  │ │   "secondary":    $secondary,
-96  │ │   "success":      $success,
-97  │ │   "info":         $info,
-98  │ │   "warning":      $warning,
-99  │ │   "danger":       $danger,
-100 │ │   "white":        $white,
-101 │ │   "neutral":      $white,
-102 │ │   "dark":         $dark,
-103 │ │   "darker":       $darker
-104 │ │ ), $theme-colors);
-    │ └─────────────────^
-    ╵
-    src/assets/scss/custom/_variables.scss 92:16  @import
-    src/assets/scss/argon.scss 24:9               root stylesheet
-
-DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
-Use map.merge instead.
-
-More info and automated migrator: https://sass-lang.com/d/import
-
-    ╷
-107 │   $brand-colors: map-merge((
-    │ ┌────────────────^
-108 │ │   "facebook":     $facebook,
-109 │ │   "twitter":      $twitter,
-110 │ │   "google-plus":  $google-plus,
-111 │ │   "instagram":    $instagram,
-112 │ │   "pinterest":    $pinterest,
-113 │ │   "youtube":      $youtube,
-114 │ │   "slack":        $slack,
-115 │ │   "dribbble":     $dribbble,
-116 │ │   "github":       $github
-117 │ │ ), $brand-colors);
-    │ └─────────────────^
-    ╵
-    src/assets/scss/custom/_variables.scss 107:16  @import
-    src/assets/scss/argon.scss 24:9                root stylesheet
-
-DEPRECATION WARNING [color-functions]: darken() is deprecated. Suggestions:
-
-color.scale($color, $lightness: -23.7577639752%)
-color.adjust($color, $lightness: -15%)
-
-More info: https://sass-lang.com/d/color-functions
-
-    ╷
-220 │ $link-hover-color:          darken($link-color, 15%);
-    │                             ^^^^^^^^^^^^^^^^^^^^^^^^
-    ╵
-    src/assets/scss/custom/_variables.scss 220:29  @import
-    src/assets/scss/argon.scss 24:9                root stylesheet
-
-DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
-
-Recommendation: math.div($spacer, 2) or calc($spacer / 2)
-
-More info and automated migrator: https://sass-lang.com/d/slash-div
-
-    ╷
-338 │ $headings-margin-bottom:      ($spacer / 2);
-    │                                ^^^^^^^^^^^
-    ╵
-    src/assets/scss/custom/_variables.scss 338:32  @import
-    src/assets/scss/argon.scss 24:9                root stylesheet
-
-DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
-
-color.scale($color, $lightness: 8.7729357798%)
-color.adjust($color, $lightness: 7.5%)
-
-More info: https://sass-lang.com/d/color-functions
-
-    ╷
-425 │ $table-dark-border-color:     lighten($gray-900, 7.5%);
-    │                               ^^^^^^^^^^^^^^^^^^^^^^^^
-    ╵
-    src/assets/scss/custom/_variables.scss 425:31  @import
-    src/assets/scss/argon.scss 24:9                root stylesheet
-
-DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
-
-color.scale($color, $lightness: 29.5366795367%)
-color.adjust($color, $lightness: 15%)
-
-More info: https://sass-lang.com/d/color-functions
-
-    ╷
-578 │ $form-feedback-valid-bg:         lighten($success, 15%);
-    │                                  ^^^^^^^^^^^^^^^^^^^^^^
-    ╵
-    src/assets/scss/custom/_variables.scss 578:34  @import
-    src/assets/scss/argon.scss 24:9                root stylesheet
-
-DEPRECATION WARNING [color-functions]: lighten() is deprecated. Suggestions:
-
-color.scale($color, $lightness: 39.2307692308%)
-color.adjust($color, $lightness: 15%)
-
-More info: https://sass-lang.com/d/color-functions
-
-    ╷
-580 │ $form-feedback-invalid-bg:       lighten($warning, 15%);
-    │                                  ^^^^^^^^^^^^^^^^^^^^^^
-    ╵
-    src/assets/scss/custom/_variables.scss 580:34  @import
-    src/assets/scss/argon.scss 24:9                root stylesheet
-
-DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
-
-Recommendation: math.div(($r * 299) + ($g * 587) + ($b * 114), 1000) or calc((($r * 299) + ($g * 587) + ($b * 114)) / 1000)
-
-More info and automated migrator: https://sass-lang.com/d/slash-div
-
-   ╷
-57 │   $yiq: (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
-   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/bootstrap/_functions.scss 57:9  color-yiq()
-    src/assets/scss/custom/_variables.scss 641:37   @import
-    src/assets/scss/argon.scss 24:9                 root stylesheet
-
-DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
-
-Recommendation: math.div($spacer, 2) or calc($spacer / 2)
-
-More info and automated migrator: https://sass-lang.com/d/slash-div
-
-    ╷
-640 │ $nav-divider-margin-y:              ($spacer / 2) !default;
-    │                                      ^^^^^^^^^^^
-    ╵
-    src/assets/scss/bootstrap/_variables.scss 640:38  @import
-    src/assets/scss/argon.scss 25:9                   root stylesheet
-
-DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
-
-Recommendation: math.div($nav-link-height - $navbar-brand-height, 2) or calc(($nav-link-height - $navbar-brand-height) / 2)
-
-More info and automated migrator: https://sass-lang.com/d/slash-div
-
-    ╷
-653 │ $navbar-brand-padding-y:            ($nav-link-height - $navbar-brand-height) / 2 !default;
-    │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ╵
-    src/assets/scss/bootstrap/_variables.scss 653:37  @import
-    src/assets/scss/argon.scss 25:9                   root stylesheet
-
-DEPRECATION WARNING [slash-div]: Using / for division outside of calc() is deprecated and will be removed in Dart Sass 2.0.0.
-
-Recommendation: math.div($grid-gutter-width, 2) or calc($grid-gutter-width / 2)
-
-More info and automated migrator: https://sass-lang.com/d/slash-div
-
-    ╷
-724 │ $card-group-margin:                 ($grid-gutter-width / 2) !default;
-    │                                      ^^^^^^^^^^^^^^^^^^^^^^
-    ╵
-    src/assets/scss/bootstrap/_variables.scss 724:38  @import
-    src/assets/scss/argon.scss 25:9                   root stylesheet
-
-DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
-rules will be changing to match the behavior specified by CSS in an upcoming
-version. To keep the existing behavior, move the declaration above the nested
-rule. To opt into the new behavior, wrap the declaration in `& {}`.
-
-More info: https://sass-lang.com/d/mixed-decls
-
-   ┌──> src/assets/scss/bootstrap/_custom-forms.scss
-344│       appearance: none;
-   │       ^^^^^^^^^^^^^^^^ declaration
-   ╵
-   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
-10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
-11 │ │     transition: none;
-12 │ │   }
-   │ └─── nested rule
-   ╵
-    src/assets/scss/bootstrap/_custom-forms.scss 344:5  @import
-    src/assets/scss/argon.scss 45:9                     root stylesheet
-
-DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
-rules will be changing to match the behavior specified by CSS in an upcoming
-version. To keep the existing behavior, move the declaration above the nested
-rule. To opt into the new behavior, wrap the declaration in `& {}`.
-
-More info: https://sass-lang.com/d/mixed-decls
-
-   ┌──> src/assets/scss/bootstrap/_custom-forms.scss
-370│       appearance: none;
-   │       ^^^^^^^^^^^^^^^^ declaration
-   ╵
-   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
-10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
-11 │ │     transition: none;
-12 │ │   }
-   │ └─── nested rule
-   ╵
-    src/assets/scss/bootstrap/_custom-forms.scss 370:5  @import
-    src/assets/scss/argon.scss 45:9                     root stylesheet
-
-DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
-rules will be changing to match the behavior specified by CSS in an upcoming
-version. To keep the existing behavior, move the declaration above the nested
-rule. To opt into the new behavior, wrap the declaration in `& {}`.
-
-More info: https://sass-lang.com/d/mixed-decls
-
-   ┌──> src/assets/scss/bootstrap/_custom-forms.scss
-399│       appearance: none;
-   │       ^^^^^^^^^^^^^^^^ declaration
-   ╵
-   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
-10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
-11 │ │     transition: none;
-12 │ │   }
-   │ └─── nested rule
-   ╵
-    src/assets/scss/bootstrap/_custom-forms.scss 399:5  @import
-    src/assets/scss/argon.scss 45:9                     root stylesheet
-
-DEPRECATION WARNING [mixed-decls]: Sass's behavior for declarations that appear after nested
-rules will be changing to match the behavior specified by CSS in an upcoming
-version. To keep the existing behavior, move the declaration above the nested
-rule. To opt into the new behavior, wrap the declaration in `& {}`.
-
-More info: https://sass-lang.com/d/mixed-decls
-
-   ┌──> src/assets/scss/bootstrap/_modal.scss
-46 │       transform: translate(0, -25%);
-   │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ declaration
-   ╵
-   ┌──> src/assets/scss/bootstrap/mixins/_transition.scss
-10 │ ┌   @media screen and (prefers-reduced-motion: reduce) {
-11 │ │     transition: none;
-12 │ │   }
-   │ └─── nested rule
-   ╵
-    src/assets/scss/bootstrap/_modal.scss 46:5  @import
-    src/assets/scss/argon.scss 58:9             root stylesheet
-
-DEPRECATION WARNING [function-units]: $degrees: Passing a unit other than deg (25%) is deprecated.
-
-To preserve current behavior: calc($degrees / 1%)
-
-See https://sass-lang.com/d/function-units
-
-   ╷
-16 │         background: linear-gradient(87deg, $color 0, adjust-hue($color, 25%) 100%) !important;
-   │                                                      ^^^^^^^^^^^^^^^^^^^^^^^
-   ╵
-    src/assets/scss/custom/mixins/_background-variant.scss 16:54  bg-gradient-variant()
-    src/assets/scss/custom/utilities/_backgrounds.scss 6:2        @import
-    src/assets/scss/custom/_utilities.scss 1:9                    @import
-    src/assets/scss/argon.scss 69:9                               root stylesheet
-
-WARNING: 448 repetitive deprecation warnings omitted.
-
-[2K[1A[2K[G[51%] building (187/640 modules)
-[2K[1A[2K[G[51%] building (380/679 modules)
