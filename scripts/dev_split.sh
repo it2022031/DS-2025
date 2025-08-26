@@ -20,6 +20,50 @@ mkdir -p "$ROOT_DIR/scripts"
 BACK_CMD="$ROOT_DIR/scripts/.run_backend.sh"
 FRONT_CMD="$ROOT_DIR/scripts/.run_frontend.sh"
 
+# -------- DB check & (optional) docker compose up --------
+DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-5432}"
+
+db_up=1
+if command -v nc >/dev/null 2>&1; then
+  if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then db_up=0; fi
+elif command -v pg_isready >/dev/null 2>&1; then
+  if pg_isready -h "$DB_HOST" -p "$DB_PORT" >/dev/null 2>&1; then db_up=0; fi
+fi
+
+if [[ $db_up -eq 0 ]]; then
+  echo "✅ Η βάση φαίνεται να τρέχει ήδη στο ${DB_HOST}:${DB_PORT} — δεν σηκώνω docker."
+else
+  # Βρες ένα docker-compose.yml για τη βάση
+  COMPOSE_FILE=""
+  for f in \
+    "$BACKEND_DIR/src/main/java/com/example/demo/docker-compose.yml" \
+    "$BACKEND_DIR/docker-compose.yml" \
+    "$ROOT_DIR/docker-compose.yml"
+  do
+    if [[ -f "$f" ]]; then COMPOSE_FILE="$f"; break; fi
+  done
+
+  if [[ -n "$COMPOSE_FILE" ]]; then
+    echo "🟡 DB down — ξεκινάω docker compose: $COMPOSE_FILE"
+    # Αν έχεις όνομα service (π.χ. 'db' ή 'postgres'), μπορείς να βάλεις: ... up -d db
+    docker compose -f "$COMPOSE_FILE" up -d
+
+    echo "⏳ Περιμένω τη βάση να ανοίξει στο ${DB_HOST}:${DB_PORT}..."
+    for i in {1..40}; do
+      if command -v nc >/dev/null 2>&1; then
+        nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null && { echo "✅ DB UP"; break; }
+      elif command -v pg_isready >/dev/null 2>&1; then
+        pg_isready -h "$DB_HOST" -p "$DB_PORT" >/dev/null 2>&1 && { echo "✅ DB UP"; break; }
+      fi
+      sleep 1
+      [[ $i -eq 40 ]] && echo "⚠️  Δεν επιβεβαιώθηκε η εκκίνηση της DB (ίσως αργεί λίγο ακόμα)."
+    done
+  else
+    echo "⚠️  Δεν βρέθηκε docker-compose.yml για DB. Συνεχίζω χωρίς να σηκώσω βάση."
+  fi
+fi
+
 # -------- backend helper --------
 cat > "$BACK_CMD" <<'BACK'
 #!/usr/bin/env bash
@@ -85,7 +129,7 @@ elif command -v tmux >/dev/null 2>&1; then
     attach
 else
   echo "No gnome-terminal/xterm/tmux found."
-  echo "Run manually in two terminals:"
+  echo "Run manually σε δύο τερματικά:"
   echo "  (1) cd '$BACKEND_DIR' && SKIP_TESTS='${SKIP_TESTS:-1}' '$BACK_CMD'"
   echo "  (2) cd '$FRONTEND_DIR' && '$FRONT_CMD'"
 fi
