@@ -17,10 +17,6 @@ import java.util.Optional;
 @Repository
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
-    /**
-     * Επιστρέφει κάθε σειριακή προβολή των rentals μαζί με τα IDs χρήστη και ακινήτου.
-     * Χρήση για admin λίστα.
-     */
     @Query("""
           SELECT r.id,
                  r.startDate,
@@ -33,26 +29,14 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
       """)
     List<Object[]> findAllRentalData();
 
-    /**
-     * Όλα τα rentals, π.χ. για απλή προεπιλεγμένη χρήση.
-     */
     @Override
     List<Rental> findAll();
 
-    /**
-     * Βρίσκει ένα rental κατά ID (κληρονομείται, αλλά μπορείς να το ορίσεις αν θέλεις).
-     */
     @Override
     Optional<Rental> findById(Long id);
 
-    /**
-     * Rentals για συγκεκριμένο χρήστη.
-     */
     List<Rental> findRentalsByUserId(Long userId);
 
-    /**
-     * Ενεργά rentals που επικαλύπτονται με το ζητούμενο διάστημα για ένα ακίνητο.
-     */
     @Query("""
         SELECT r FROM Rental r
         WHERE r.property.id = :propertyId
@@ -71,12 +55,18 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     long deleteByIdAndUser_Id(Long rentalId, Long userId);
 
     List<Rental> findByApprovalStatus(ApprovalStatus status);
+
     void deleteByApprovalStatus(ApprovalStatus status);
+
     List<Rental> findByPropertyIdAndUserId(Long propertyId, Long userId);
+
     List<Rental> findByPropertyIdAndApprovalStatusAndEndDateGreaterThanEqual(
             Long propertyId, ApprovalStatus status, LocalDate date);
+
+    // Βρίσκω rentals με βάση propertyId, approvalStatus, dates
     List<Rental> findByPropertyIdAndApprovalStatusInAndEndDateGreaterThanEqual(
             Long propertyId, Collection<ApprovalStatus> statuses, LocalDate date);
+
     @Query("""
        SELECT r
        FROM Rental r
@@ -86,7 +76,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
        ORDER BY r.startDate DESC
        """)
     List<Rental> findAllByRenterIdWithPropertyOwner(@Param("renterId") Long renterId);
-
 
     List<Rental> findTop1ByUserIdAndPropertyIdAndApprovalStatusAndEndDateBeforeOrderByEndDateDesc(
             Long userId, Long propertyId, ApprovalStatus status, LocalDate before);

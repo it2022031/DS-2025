@@ -17,9 +17,11 @@ import java.util.Optional;
 @Repository
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    // custom methods if needed
+
     Optional<User> findByUsername(String username);
+
     boolean existsByUsername(String username);
+
     boolean existsByEmail(String email);
 
     @Query("SELECT u FROM User u")
@@ -55,7 +57,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     )
     List<Object[]> fetchUserAndRentalIds();
 
-
     @Query("""
       SELECT u FROM User u
       LEFT JOIN FETCH u.rentals r
@@ -63,21 +64,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
       """)
     Optional<User> findByUsernameWithRentals(@Param("username") String username);
 
-
-
-    // Rentals του χρήστη (φορτώνει και το property για κάθε rental)
     @Query("SELECT r FROM Rental r JOIN FETCH r.property WHERE r.user.id = :userId")
     List<Rental> findRentalsByUserId(@Param("userId") Long userId);
 
     boolean existsByUsernameAndIdNot(String username, Long id);
+
     boolean existsByEmailAndIdNot(String email, Long id);
 
-//    // Properties του χρήστη (owner)
-//    @Query("SELECT p FROM Property p WHERE p.owner.id = :userId")
-//    List<Property> findPropertiesByOwnerId(@Param("userId") Long userId)
-
     List<User> findByRenterRequestStatus(ApprovalStatus status);
-
 
     @Modifying
     @Transactional
