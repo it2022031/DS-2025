@@ -1,0 +1,242 @@
+@startuml DB_ER
+' ---------- Global settings ----------
+left to right direction
+skinparam shadowing false
+skinparam class {
+  BackgroundColor White
+  BorderColor #555555
+  FontSize 12
+}
+' ---------- Entities ----------
+entity "USERS" as USERS {
+  * id : bigint <<PK>>
+  --
+  username : varchar <<UK>>
+  email : varchar <<UK>>
+  password : varchar
+  firstName : varchar
+  lastName : varchar
+  passport_number : varchar <<UK>>
+  afm : varchar <<UK>>
+  enabled : boolean
+  accountNonLocked : boolean
+  renterRequestStatus : varchar
+  profile_picture : bytea
+  profile_picture_content_type : varchar
+  profile_picture_filename : varchar
+}
+
+entity "USER_ROLES" as USER_ROLES {
+  user_id : bigint <<FK>>
+  role : Role
+}
+
+entity "PROPERTIES" as PROPERTIES {
+  * id : bigint <<PK>>
+  --
+  name : varchar
+  description : text
+  country : varchar
+  city : varchar
+  street : varchar
+  postalCode : varchar
+  squareMeters : double
+  approval_status_id : bigint <<FK>>
+  price : decimal
+  owner_id : bigint <<FK>>
+}
+
+entity "PROPERTY_PHOTOS" as PROPERTY_PHOTOS {
+  * id : bigint <<PK>>
+  --
+  property_id : bigint <<FK>>
+  image : bytea
+  contentType : varchar
+  filename : varchar
+}
+
+entity "RENTALS" as RENTALS {
+  * id : bigint <<PK>>
+  --
+  startDate : date
+  endDate : date
+  paymentAmount : decimal
+  approval_status_id : bigint <<FK>>
+  user_id : bigint <<FK>>
+  property_id : bigint <<FK>>
+}
+
+entity "REVIEWS" as REVIEWS {
+  * id : bigint <<PK>>
+  --
+  content : text
+  rating : int
+  createdAt : timestamp
+  user_id : bigint <<FK>>
+  property_id : bigint <<FK>>
+  rental_id : bigint <<FK>>
+}
+
+entity "BOOKINGS" as BOOKINGS {
+  * id : bigint <<PK>>
+  --
+  bookedFrom : date
+  bookedTo : date
+  status : boolean
+  property_id : bigint <<FK>>
+}
+
+entity "APPROVAL_STATUS" as APPROVAL_STATUS {
+  * id : int <<PK>>
+  --
+  name : varchar
+}
+
+' ---------- Relationships ----------
+USERS ||--o{ USER_ROLES : has
+USERS ||--o{ PROPERTIES : owns
+PROPERTIES ||--o{ PROPERTY_PHOTOS : has
+USERS ||--o{ RENTALS : makes
+PROPERTIES ||--o{ RENTALS : booked_for
+USERS ||--o{ REVIEWS : writes
+PROPERTIES ||--o{ REVIEWS : about
+RENTALS ||--|{ REVIEWS : referenced_by
+PROPERTIES ||--o{ BOOKINGS : has
+APPROVAL_STATUS ||--o{ PROPERTIES : defines
+APPROVAL_STATUS ||--o{ RENTALS : defines
+@enduml
+
+@startuml API_Services
+left to right direction
+skinparam shadowing false
+skinparam class {
+  BackgroundColor White
+  BorderColor #555555
+  FontSize 12
+}
+
+class Users
+class Properties
+class Rentals
+class Reviews
+class PropertyPhotos
+class Bookings
+class ApprovalStatus
+
+note bottom of Users
+REST:
+  GET /api/users/{id}
+  GET /api/users
+  GET /api/users/me
+  POST /api/users
+  PATCH /api/users/{id}
+  PATCH /api/users/{id}/roles
+  DELETE /api/users/{id}
+
+Service:
+  updateUserPartial(id, fields)
+  updateUserRoles(id, add, remove)
+
+Repository:
+  findByUsername(u)
+  existsByEmail(e)
+end note
+
+note bottom of Properties
+REST:
+  GET /api/properties/{id}
+  GET /api/properties
+  POST /api/properties
+  PATCH /api/properties/{id}
+  DELETE /api/properties/{id}
+  GET /api/properties/{id}/closed-dates
+  GET /api/properties/{id}/photos/{photoId}
+  POST /api/properties/{id}/photos
+  PATCH /api/properties/{id}/photos/{photoId}
+  DELETE /api/properties/{id}/photos/{photoId}
+  GET /api/users/{userId}/properties
+
+Service:
+  findByIdOptional(id)
+  getClosedDateRanges(propertyId)
+  getClosedDatesFlat(propertyId)
+
+Repository:
+  findByOwnerId(ownerId)
+  findByApprovalStatus(status)
+end note
+
+note bottom of Rentals
+REST:
+  POST /api/rentals/add
+  GET /api/rentals/all
+  GET /api/rentals/by-renter/{renterId}
+  PATCH /api/rentals/{id}/approve
+  PATCH /api/rentals/{id}/reject
+
+Service:
+  createRental(propertyId, userId, start, end)
+  getAllRentalData()
+  getRentalsByRenter(renterId)
+  rejectExpiredPendingRentalsToday()
+
+Repository:
+  findOverlappingByStatusIn(propertyId, start, end, statuses)
+  findByPropertyIdAndApprovalStatusInAndEndDateGreaterThanEqual(...)
+end note
+
+note bottom of Reviews
+REST:
+  POST /api/properties/{propertyId}/reviews
+  PATCH /api/reviews/{reviewId}
+  DELETE /api/reviews/{reviewId}
+  GET /api/properties/{propertyId}/reviews
+  GET /api/reviews/user/{userId}
+  GET /api/reviews
+
+Service:
+  addReview(propertyId, userId, content, rating)
+  updateReview(reviewId, userId, content, rating)
+  deleteReview(reviewId, userId)
+  adminDeleteReview(reviewId)
+  getReviewsForProperty(propertyId)
+  getReviewsByUser(userId)
+
+Repository:
+  findByPropertyId(id)
+  findByUserId(id)
+end note
+
+note bottom of PropertyPhotos
+Repository:
+  findByIdAndPropertyId(photoId, propertyId)
+  countByPropertyId(propertyId)
+end note
+
+note bottom of Bookings
+REST:
+  GET /api/properties/{id}/bookings
+  POST /api/properties/{id}/bookings
+  PATCH /api/bookings/{id}
+  DELETE /api/bookings/{id}
+
+Repository:
+  findByPropertyId(id)
+  existsOverlapping(...)
+end note
+
+note bottom of ApprovalStatus
+REST (optional):
+  GET /api/approval-status
+end note
+
+' Optional arrows for readability
+Users --> Properties
+Users --> Rentals
+Users --> Reviews
+Properties --> PropertyPhotos
+Properties --> Rentals
+Properties --> Reviews
+Properties --> Bookings
+Rentals --> Reviews
+@enduml
