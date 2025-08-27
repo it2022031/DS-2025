@@ -91,30 +91,17 @@ class PropertyPhotos {
 + countByPropertyId(propertyId)
 }
 
-class Bookings {
-%% REST
-+ GET_api_properties_id_bookings()
-+ POST_api_properties_id_bookings()
-+ PATCH_api_bookings_id()
-+ DELETE_api_bookings_id()
-
-%% Repository
-+ findByPropertyId(id)
-+ existsOverlapping(...)
-}
-
 class ApprovalStatus {
 %% REST (optional)
 + GET_api_approvalStatus()
 }
 
-%% Optional visual associations
+%% Associations (χωρίς Bookings πλέον)
 Users --> Properties
 Users --> Rentals
 Users --> Reviews
 Properties --> PropertyPhotos
 Properties --> Rentals
 Properties --> Reviews
-Properties --> Bookings
 Rentals --> Reviews
 

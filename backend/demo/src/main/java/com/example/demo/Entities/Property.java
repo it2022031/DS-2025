@@ -29,8 +29,6 @@ public class Property {
 
     // ΣΧέσεις
 
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Booking> bookings;
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -127,13 +125,7 @@ public class Property {
         this.approvalStatus = approvalStatus;
     }
 
-    public List<Booking> getBookings() {
-        return bookings;
-    }
 
-    public void setBookings(List<Booking> bookings) {
-        this.bookings = bookings;
-    }
 
     public List<Rental> getRentals() {
         return rentals;

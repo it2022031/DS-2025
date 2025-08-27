@@ -77,15 +77,6 @@ entity "REVIEWS" as REVIEWS {
   rental_id : bigint <<FK>>
 }
 
-entity "BOOKINGS" as BOOKINGS {
-  * id : bigint <<PK>>
-  --
-  bookedFrom : date
-  bookedTo : date
-  status : boolean
-  property_id : bigint <<FK>>
-}
-
 entity "APPROVAL_STATUS" as APPROVAL_STATUS {
   * id : int <<PK>>
   --
@@ -101,7 +92,6 @@ PROPERTIES ||--o{ RENTALS : booked_for
 USERS ||--o{ REVIEWS : writes
 PROPERTIES ||--o{ REVIEWS : about
 RENTALS ||--|{ REVIEWS : referenced_by
-PROPERTIES ||--o{ BOOKINGS : has
 APPROVAL_STATUS ||--o{ PROPERTIES : defines
 APPROVAL_STATUS ||--o{ RENTALS : defines
 @enduml
@@ -120,7 +110,6 @@ class Properties
 class Rentals
 class Reviews
 class PropertyPhotos
-class Bookings
 class ApprovalStatus
 
 note bottom of Users
@@ -213,18 +202,6 @@ Repository:
   countByPropertyId(propertyId)
 end note
 
-note bottom of Bookings
-REST:
-  GET /api/properties/{id}/bookings
-  POST /api/properties/{id}/bookings
-  PATCH /api/bookings/{id}
-  DELETE /api/bookings/{id}
-
-Repository:
-  findByPropertyId(id)
-  existsOverlapping(...)
-end note
-
 note bottom of ApprovalStatus
 REST (optional):
   GET /api/approval-status
@@ -237,6 +214,6 @@ Users --> Reviews
 Properties --> PropertyPhotos
 Properties --> Rentals
 Properties --> Reviews
-Properties --> Bookings
 Rentals --> Reviews
 @enduml
+

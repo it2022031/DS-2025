@@ -158,3 +158,7 @@ FROM information_schema.columns c
                        AND tc.table_schema = c.table_schema
 WHERE c.table_schema = 'public'
 ORDER BY c.table_name, c.ordinal_position;
+
+--
+SELECT *
+FROM bookings;

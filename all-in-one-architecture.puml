@@ -171,25 +171,6 @@ class Reviews {
   + (option) UNIQUE (user_id, rental_id)
 }
 
-class Bookings {
-  .. DB Attributes ..
-  + id : bigint «PK»
-  + bookedFrom : date
-  + bookedTo : date
-  + status : boolean
-  + property_id : bigint «FK»
-
-  .. REST ..
-  + GET /api/properties/{id}/bookings()
-  + POST /api/properties/{id}/bookings()
-  + PATCH /api/bookings/{id}()
-  + DELETE /api/bookings/{id}()
-
-  .. Repository ..
-  + findByPropertyId(id)
-  + existsOverlapping(...)
-}
-
 class ApprovalStatus {
   .. DB Attributes ..
   + id : int «PK»
@@ -210,9 +191,9 @@ Properties --> Rentals : booked_for
 Users --> Reviews : writes
 Properties --> Reviews : about
 Rentals --> Reviews : referenced_by
-Properties --> Bookings : has
 ApprovalStatus --> Properties : defines
 ApprovalStatus --> Rentals : defines
 UserRoles --> Users : for
 
 @enduml
+

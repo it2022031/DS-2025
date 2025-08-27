@@ -7,7 +7,6 @@ erDiagram
   USERS ||--o{ REVIEWS          : writes
   PROPERTIES ||--o{ REVIEWS      : about
   RENTALS ||--|{ REVIEWS         : referenced_by
-  PROPERTIES ||--o{ BOOKINGS     : has
   APPROVAL_STATUS ||--o{ PROPERTIES : defines
   APPROVAL_STATUS ||--o{ RENTALS    : defines
 
@@ -73,14 +72,6 @@ erDiagram
     bigint    user_id FK
     bigint    property_id FK
     bigint    rental_id FK
-  }
-
-  BOOKINGS {
-    bigint   id PK
-    date     bookedFrom
-    date     bookedTo
-    boolean  status
-    bigint   property_id FK
   }
 
   APPROVAL_STATUS {

@@ -97,7 +97,8 @@ public class ReviewController {
                                           @RequestBody Map<String, Object> body,
                                           Authentication authentication) {
         if (authentication == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthenticated"));
         }
 
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
@@ -105,21 +106,33 @@ public class ReviewController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String content = (String) body.get("content");
-        Integer rating = body.get("rating") != null
-                ? ((Number) body.get("rating")).intValue()
-                : null;
+        Integer rating = null;
+        if (body.get("rating") != null) {
+            try {
+                rating = ((Number) body.get("rating")).intValue();
+            } catch (ClassCastException ex) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "rating must be a number"));
+            }
+        }
 
         if ((content == null || content.isBlank()) && rating == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "No fields to update"));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "No fields to update"));
         }
 
         try {
             Review updated = reviewService.updateReview(reviewId, user.getId(), content, rating);
-            return ResponseEntity.ok(updated);
+            return ResponseEntity.ok(ReviewDto.fromEntity(updated)); 
         } catch (SecurityException e) {
-            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
+
 
 
     // Delete review (must be logged in and review's owner)
