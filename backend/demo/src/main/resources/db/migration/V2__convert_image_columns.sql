@@ -20,3 +20,4 @@ DO $$
                     USING lo_get(profile_picture);
         END IF;
     END $$;
+

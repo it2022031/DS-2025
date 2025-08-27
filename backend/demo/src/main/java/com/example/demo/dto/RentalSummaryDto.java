@@ -4,7 +4,8 @@ import com.example.demo.Entities.Rental;
 import java.math.BigDecimal;
 
 public record RentalSummaryDto(
-        Long rentalId,        // <-- ΝΕΟ
+        // Όνομα πεδίων
+        Long rentalId,
         Long propertyId,
         String propertyName,
         String ownerName,
@@ -15,8 +16,10 @@ public record RentalSummaryDto(
         BigDecimal totalPrice
 ) {
     public static RentalSummaryDto fromEntity(Rental r) {
+
+        // Τιμές πεδίων από entity
         return new RentalSummaryDto(
-                r.getId(),                                // <-- ΝΕΟ
+                r.getId(),
                 r.getProperty().getId(),
                 r.getProperty().getName(),
                 r.getProperty().getOwner().getFirstName()

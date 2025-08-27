@@ -8,19 +8,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 
 public record RentalDto(
+        // Όνομα πεδίων
         Long id,
         String startDate,
         String endDate,
-        BigDecimal paymentAmount,   // υπάρχον
+        BigDecimal paymentAmount,
         @JsonProperty("TotalPrice")
-        BigDecimal totalPrice,     // νέο – ίσο με paymentAmount
+        BigDecimal totalPrice,
         String approvalStatus,
         Long propertyId,
-        String propertyName,        // νέο
+        String propertyName,
         Long userId,
-        String renterFirstName,     // νέο
-        String renterLastName,      // νέο
-        String renterUserName       // νέο
+        String renterFirstName,
+        String renterLastName,
+        String renterUserName
 ) {
     public static RentalDto fromEntity(Rental r) {
         Property p = r.getProperty();
@@ -28,6 +29,7 @@ public record RentalDto(
 
         BigDecimal amount = r.getPaymentAmount();
 
+        // Τιμές πεδίων από entity
         return new RentalDto(
                 r.getId(),
                 r.getStartDate() != null ? r.getStartDate().toString() : null,

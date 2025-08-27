@@ -12,5 +12,5 @@ public record PropertyPatchRequestDto(
         String postalCode,
         Double squareMeters ,
         BigDecimal price
-        // δεν περιλαμβάνουμε approvalStatus εδώ για user
+
 ) {}

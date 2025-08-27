@@ -11,7 +11,6 @@ public record PropertyCreateRequest(
         String street,
         String postalCode,
         Double squareMeters,
-        // αν ο admin θέλει να το αναθέσει εκτός από query param
         Long ownerId ,
         BigDecimal price
 ) {}

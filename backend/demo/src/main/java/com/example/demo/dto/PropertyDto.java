@@ -5,6 +5,7 @@ import com.example.demo.Entities.Property;
 import java.math.BigDecimal;
 
 public record PropertyDto(
+        // Όνομα πεδίων
         Long id,
         String name,
         String description,
@@ -21,6 +22,8 @@ public record PropertyDto(
         BigDecimal price
 ) {
     public static PropertyDto fromEntity(Property p) {
+
+        // Τιμές πεδίων
         return new PropertyDto(
                 p.getId(),
                 p.getName(),

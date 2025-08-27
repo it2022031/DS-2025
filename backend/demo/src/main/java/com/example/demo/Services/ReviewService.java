@@ -35,6 +35,7 @@ public class ReviewService {
         return reviewRepository.findByProperty(property);
     }
 
+    // Χωρίς rentalId
     public Review addReview(Long propertyId, Long userId, String content, int rating) {
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new IllegalArgumentException("Property not found"));
@@ -50,6 +51,7 @@ public class ReviewService {
         return reviewRepository.save(review);
     }
 
+    // Με rentalId
     public Review addReview(Long propertyId, Long userId, String content, int rating, Long rentalId) {
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("content is required");
@@ -71,9 +73,8 @@ public class ReviewService {
 
         LocalDate today = LocalDate.now();
 
-
         if (rentalId != null) {
-            // 1) Αν ήρθε rentalId, κάνε αυστηρούς ελέγχους
+            // Έλεγχοι, αν υπάρχει rentalId
             Rental rent = rentalRepository.findById(rentalId)
                     .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
 
@@ -91,14 +92,13 @@ public class ReviewService {
             }
             r.setRental(rent);
         } else {
-            // 2) Αλλιώς, βρες το πιο πρόσφατο ολοκληρωμένο APPROVED rental και σύνδεσέ το (αν υπάρχει)
-            // (Χωρίς νέο repo method: φιλτράρουμε τη λίστα rentals του χρήστη-ακινήτου)
+            // Αλλιώς, βρες το πιο πρόσφατο ολοκληρωμένο APPROVED rental και σύνδεσέ το (αν υπάρχει)
             List<Rental> userPropRentals = rentalRepository.findByPropertyIdAndUserId(propertyId, userId);
             userPropRentals.stream()
                     .filter(rx -> rx.getApprovalStatus() == ApprovalStatus.APPROVED && rx.getEndDate().isBefore(today))
                     .max(Comparator.comparing(Rental::getEndDate))
                     .ifPresent(r::setRental);
-            // Αν δεν βρεθεί, το αφήνουμε null (μια χαρά, δεν σπάει τα παλιά)
+            // Αν δεν βρεθεί, το αφήνουμε null
         }
 
         return reviewRepository.save(r);

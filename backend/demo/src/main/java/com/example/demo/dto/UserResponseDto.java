@@ -6,21 +6,23 @@ import com.example.demo.Security.Role;
 import java.util.List;
 
 public record UserResponseDto(
+        // Όνομα πεδίων
         Long id,
         String username,
         String email,
         String firstName,
         String lastName,
-        List<String> roles,         // λίστα με όλους τους ρόλους
+        List<String> roles, // λίστα με όλους τους ρόλους
         String passportNumber,
         String afm,
         String renterRequestStatus
 ) {
     public static UserResponseDto fromEntity(User u) {
         List<String> roleNames = u.getRoles().stream()
-                .map(Role::name)        // μετατρέπουμε τα enums σε String
+                .map(Role::name) // μετατρέπουμε τα enums σε String
                 .toList();
 
+        // Τιμές πεδίων από entity
         return new UserResponseDto(
                 u.getId(),
                 u.getUsername(),

@@ -3,6 +3,7 @@ package com.example.demo.dto;
 import com.example.demo.Entities.Review;
 
 public record ReviewDto(
+        // Όνομα πεδίων
         Long id,
         String content,
         int rating,
@@ -28,6 +29,7 @@ public record ReviewDto(
 
         Long rentalId = (r.getRental() != null) ? r.getRental().getId() : null;
 
+        // Τιμές πεδίων από entity
         return new ReviewDto(
                 r.getId(),
                 r.getContent(),

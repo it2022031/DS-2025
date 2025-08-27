@@ -63,16 +63,12 @@ public class PropertyService {
         return propertyRepository.save(prop);
     }
 
-    /** Admin: διαγραφή οποιουδήποτε property */
+    // Admin: διαγραφή οποιουδήποτε property
     @Transactional
     public void adminDeleteProperty(Long propertyId) {
         Property p = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new IllegalArgumentException("Property not found: " + propertyId));
-
-        // εδώ μπορείς προαιρετικά να κάνεις validations (π.χ. να μην έχει ενεργά rentals)
-        // if (rentalRepository.existsByPropertyIdAndStatusActive(propertyId)) throw new ...
-
-        propertyRepository.delete(p); // ενεργοποιεί cascade/orphanRemoval προς bookings/rentals
+        propertyRepository.delete(p);
     }
 
     public List<Property> getRejectedProperties() {
@@ -86,7 +82,7 @@ public class PropertyService {
 
     @Transactional(readOnly = true)
     public List<DateRange> getClosedDateRanges(Long propertyId) {
-        // βεβαιώσου ότι υπάρχει το property (προαιρετικό)
+        // βεβαιώσου ότι υπάρχει το property
         propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new IllegalArgumentException("Property not found"));
 
@@ -97,24 +93,23 @@ public class PropertyService {
         );
 
 
-        // μετατροπή σε ranges (clip το start στο today αν είναι παρελθόν)
+        // μετατροπή σε ranges
         List<DateRange> raw = new ArrayList<>();
         for (var r : rentals) {
             LocalDate start = r.getStartDate().isBefore(today) ? today : r.getStartDate();
-            LocalDate end   = r.getEndDate();
+            LocalDate end = r.getEndDate();
             if (!end.isBefore(start)) {
                 raw.add(new DateRange(start.toString(), end.toString()));
             }
         }
 
-        // merge overlapping/adjacent ranges
+        // merge overlapping ranges
         return mergeRanges(raw);
     }
 
-    /**
-     * Επιστρέφει flat λίστα με όλες τις μεμονωμένες ημερομηνίες (yyyy-MM-dd)
-     * που είναι κλειστό το property, με βάση τα merged ranges.
-     */
+
+    // Επιστρέφει flat λίστα με όλες τις μεμονωμένες ημερομηνίες (yyyy-MM-dd)
+    // που είναι κλειστό το property, με βάση τα merged ranges.
     @Transactional(readOnly = true)
     public List<String> getClosedDatesFlat(Long propertyId) {
         List<DateRange> ranges = getClosedDateRanges(propertyId);
@@ -129,7 +124,6 @@ public class PropertyService {
         return days;
     }
 
-    // ---- helpers ----
 
     private List<DateRange> mergeRanges(List<DateRange> ranges) {
         if (ranges.isEmpty()) return ranges;
@@ -140,56 +134,23 @@ public class PropertyService {
 
         List<DateRange> merged = new ArrayList<>();
         LocalDate curStart = LocalDate.parse(sorted.get(0).startDate());
-        LocalDate curEnd   = LocalDate.parse(sorted.get(0).endDate());
+        LocalDate curEnd = LocalDate.parse(sorted.get(0).endDate());
 
         for (int i = 1; i < sorted.size(); i++) {
             LocalDate s = LocalDate.parse(sorted.get(i).startDate());
             LocalDate e = LocalDate.parse(sorted.get(i).endDate());
 
-            // overlap ή ακριβώς συνεχόμενα (curEnd.plusDays(1).isAfterOrEquals(s))
+            // overlap ή ακριβώς συνεχόμενα
             if (!s.isAfter(curEnd.plusDays(1))) {
                 if (e.isAfter(curEnd)) curEnd = e;
             } else {
                 merged.add(new DateRange(curStart.toString(), curEnd.toString()));
                 curStart = s;
-                curEnd   = e;
+                curEnd = e;
             }
         }
         merged.add(new DateRange(curStart.toString(), curEnd.toString()));
         return merged;
     }
 
-
-
-//    @Transactional
-//    public PropertyPhoto replacePhoto(Long photoId, MultipartFile file, User caller, boolean isAdmin) throws IOException {
-//        if (file == null || file.isEmpty()) {
-//            throw new IllegalArgumentException("No file provided");
-//        }
-//        // basic validation
-//        long maxSize = 5L * 1024 * 1024; // 5MB
-//        if (file.getSize() > maxSize) {
-//            throw new IllegalArgumentException("File too large (max 5MB)");
-//        }
-//        String ct = file.getContentType();
-//        if (ct == null || !(ct.startsWith("image/"))) {
-//            throw new IllegalArgumentException("Only image/* content types are allowed");
-//        }
-//
-//        PropertyPhoto photo = photoRepo.findById(photoId)
-//                .orElseThrow(() -> new IllegalArgumentException("Photo not found"));
-//
-//        // owner or admin check
-//        Long ownerId = photo.getProperty().getOwner().getId();
-//        if (!isAdmin && !ownerId.equals(caller.getId())) {
-//            throw new SecurityException("Not allowed to modify this photo");
-//        }
-//
-//        // update bytes + metadata
-//        photo.setImage(file.getBytes());                 // byte[]/@Lob field
-//        photo.setContentType(ct);
-//        photo.setFilename(file.getOriginalFilename());
-//
-//        return photoRepo.save(photo);
-//    }
 }

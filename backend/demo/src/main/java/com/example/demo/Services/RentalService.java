@@ -77,44 +77,6 @@ public class RentalService {
     }
 
 
-
-//    @Transactional
-//    public Rental createRental(Long propertyId, Long userId,
-//                               LocalDate startDate, LocalDate endDate,
-//                               Double paymentAmount) {
-//        if (startDate == null || endDate == null) {
-//            throw new IllegalArgumentException("Start and end dates are required");
-//        }
-//        if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
-//            throw new IllegalArgumentException("End date must be after start date");
-//        }
-//        if (paymentAmount == null || paymentAmount < 0) {
-//            throw new IllegalArgumentException("Payment amount must be non-negative");
-//        }
-//
-//        Property property = propertyRepository.findById(propertyId)
-//                .orElseThrow(() -> new IllegalArgumentException("Property not found with id " + propertyId));
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
-//
-//        // Έλεγχος για overlap
-//        List<Rental> overlapping = rentalRepository.findActiveOverlapping(propertyId, startDate, endDate);
-//        if (!overlapping.isEmpty()) {
-//            throw new IllegalStateException("Property is already rented in the given period");
-//        }
-//
-//        Rental rental = new Rental();
-//        rental.setProperty(property);
-//        rental.setUser(user);
-//        rental.setStartDate(startDate);
-//        rental.setEndDate(endDate);
-//        rental.setPaymentAmount(paymentAmount);
-//        rental.setStatus(true); // ενεργό
-//
-//        return rentalRepository.save(rental);
-//    }
-
-
     @Transactional
     public Rental createRental(Long propertyId,
                                Long userId,
@@ -123,7 +85,6 @@ public class RentalService {
         if (startDate == null || endDate == null) {
             throw new IllegalArgumentException("startDate and endDate are required");
         }
-        // ✅ ίδιος έλεγχος κι εδώ για σιγουριά
         if (startDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Start date cannot be in the past");
         }
@@ -141,26 +102,26 @@ public class RentalService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Έλεγχος επικάλυψης
+        // Έλεγχος overlap
         List<Rental> overlapping = rentalRepository.findOverlappingActiveRentals(
                 propertyId, startDate, endDate);
         if (!overlapping.isEmpty()) {
             throw new IllegalStateException("Property already has an active overlapping rental");
         }
 
-        long days = ChronoUnit.DAYS.between(startDate, endDate); // 20–25 => 5 μέρες
+        long days = ChronoUnit.DAYS.between(startDate, endDate);
         if (days <= 0) {
             throw new IllegalArgumentException("Rental must be at least 1 day");
         }
 
-        BigDecimal amount = property.getPrice()                       // BigDecimal
+        BigDecimal amount = property.getPrice()
                 .multiply(BigDecimal.valueOf(days))
                 .setScale(2, RoundingMode.HALF_UP);
 
         Rental rental = new Rental();
         rental.setStartDate(startDate);
         rental.setEndDate(endDate);
-        rental.setPaymentAmount(amount);                              // BigDecimal στο entity
+        rental.setPaymentAmount(amount);
         rental.setApprovalStatus(ApprovalStatus.PENDING);
         rental.setProperty(property);
         rental.setUser(user);
@@ -190,7 +151,6 @@ public class RentalService {
         Rental rental = rentalRepository.findById(rentalId)
                 .orElseThrow(() -> new IllegalArgumentException("Rental not found: " + rentalId));
 
-        // Αν χρειάζεσαι validations (π.χ. Nα μην είναι ήδη πληρωμένο), βάλε εδώ
         rentalRepository.delete(rental);
     }
 
@@ -220,7 +180,5 @@ public class RentalService {
     public int rejectExpiredPendingRentalsToday() {
         return rejectExpiredPendingRentals(LocalDate.now());
     }
-
-
 
 }

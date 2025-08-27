@@ -50,6 +50,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // Δεν χρησιμοποιείται πλέον (μπήκαν τα Dto)
     public List<Map<String, Object>> getUserRelations() {
         List<Object[]> rows = userRepository.fetchUserPropertyAndRentalIds();
         List<Map<String, Object>> result = new ArrayList<>();
@@ -107,20 +108,7 @@ public class UserService {
         return result;
     }
 
-//    // Ξεχωριστά: rentals του χρήστη με βάση το userId
-//    public List<Rental> getRentalsForUserId(Long userId) {
-//        // αν θέλεις να εξακριβώσεις ότι υπάρχει user
-//        userRepository.findById(userId)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
-//        return userRepository.findRentalsByUserId(userId);
-//    }
 
-    // Ξεχωριστά: properties του χρήστη με βάση το userId
-//    public List<Property> getPropertiesForUserId(Long userId) {
-//        userRepository.findById(userId)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
-//        return userRepository.findPropertiesByOwnerId(userId);
-//    }
     public List<Property> getPropertiesForUserId(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
@@ -131,13 +119,11 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    // Υπάρχει ήδη, και πρέπει να ελέγχει ότι ο user υπάρχει:
     public List<Rental> getRentalsForUserId(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id " + userId));
-        return rentalRepository.findRentalsByUserId(userId); // ή όποια μέθοδο έχεις για να φέρνεις τα rentals
+        return rentalRepository.findRentalsByUserId(userId);
     }
-
 
     public User updateUserPartial(Long userId, Map<String, Object> updates) {
         User user = userRepository.findById(userId)
@@ -159,7 +145,7 @@ public class UserService {
                 if (userRepository.existsByEmailAndIdNot(newEmail, userId)) {
                     throw new IllegalArgumentException("Email already in use");
                 }
-                // απλός έλεγχος μορφής (μπορείς να βάλεις πιο αυστηρό ή validator)
+
                 if (!newEmail.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
                     throw new IllegalArgumentException("Invalid email format");
                 }
@@ -201,7 +187,7 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    /** Ορίζει την αίτηση του χρήστη σε PENDING. */
+    // Ορίζει την αίτηση του χρήστη σε PENDING
     @Transactional
     public User requestRenter(String username) {
         User u = userRepository.findByUsername(username)
@@ -210,10 +196,9 @@ public class UserService {
         return userRepository.save(u);
     }
 
-    /**
-     * Ο admin καλεί αυτό για να εγκρίνει ή να απορρίψει την αίτηση.
-     * Αν status==APPROVED, αλλάζει και τον ρόλο σε RENTER.
-     */
+
+     // Ο admin καλεί αυτό για να εγκρίνει ή να απορρίψει την αίτηση.
+     // Αν status==APPROVED, αλλάζει και τον ρόλο σε RENTER.
     @Transactional
     public User handleRenterRequest(Long userId, ApprovalStatus newStatus) {
         User u = userRepository.findById(userId)
@@ -225,7 +210,6 @@ public class UserService {
         return userRepository.save(u);
     }
 
-    /** (Προαιρετικό) Γενική μέθοδος αλλαγής ρόλου. */
     @Transactional
     public User updateUserRole(Long userId, Role newRole) {
         User u = userRepository.findById(userId)
@@ -234,16 +218,12 @@ public class UserService {
         return userRepository.save(u);
     }
 
-    /**
-     * Επιστρέφει όλους τους χρήστες που έχουν renterRequestStatus == PENDING
-     */
+    // Επιστρέφει όλους τους χρήστες που έχουν renterRequestStatus == PENDING
     public List<User> findAllRenterRequests() {
         return userRepository.findByRenterRequestStatus(ApprovalStatus.PENDING);
     }
 
-    /**
-     * Επίσης, μέθοδος για να εγκρίνει ή να απορρίψει το αίτημα
-     */
+    // Μέθοδος για να εγκρίνει ή να απορρίψει το αίτημα
     public User processRenterRequest(Long userId, boolean approve) {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -265,9 +245,7 @@ public class UserService {
         User toDelete = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + targetUserId));
 
-        // (προαιρετικό) αν δεν θέλεις να σβήνονται άλλοι admins, βάλε εδώ έλεγχο ρόλου
-
-        userRepository.delete(toDelete); // ενεργοποιεί cascade/orphanRemoval προς properties/rentals
+        userRepository.delete(toDelete);
     }
 
     @Transactional
@@ -294,6 +272,7 @@ public class UserService {
         return userRepository.save(target);
     }
 
+    // Μέθοδος για επιβεβαίωση ρόλων
     private Set<Role> toRoleSet(List<String> names) {
         Set<Role> out = new HashSet<>();
         for (String n : names) {
