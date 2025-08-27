@@ -3,5 +3,8 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/demo/src/main/resources/db/migration/V2__convert_image_columns.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/demo/src/main/resources/db/migration/V2__users_add_flags.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/demo/src/main/resources/db/migration/load_photos.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/demo/src/main/resources/db/migration/photos.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/demo/src/main/resources/db/migration/test_dedomena.sql" dialect="PostgreSQL" />
   </component>
 </project>

@@ -29,3 +29,5 @@ CREATE TABLE property_photos (
                                  property_id BIGINT REFERENCES properties(id),
                                  image BYTEA
 );
+
+--

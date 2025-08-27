@@ -161,4 +161,4 @@ ORDER BY c.table_name, c.ordinal_position;
 
 --
 SELECT *
-FROM bookings;
+FROM users;
