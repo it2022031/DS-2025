@@ -40,7 +40,7 @@ public class RentalController {
         this.propertyService = propertyService;
     }
 
-    /** 1) List all rentals — admin only **/
+    // List all rentals — admin only
     @GetMapping("/all")
     public ResponseEntity<?> getAllRentals(Authentication authentication) {
         boolean isAdmin = authentication != null &&
@@ -58,7 +58,6 @@ public class RentalController {
 
         return ResponseEntity.ok(dto);
     }
-
 
     @GetMapping("/by-renter/{renterId}")
     public ResponseEntity<?> getRentalsByRenter(
@@ -87,14 +86,14 @@ public class RentalController {
         return ResponseEntity.ok(result);
     }
 
-    /** 2) Get a single rental by ID (no auth) **/
+    // Get a single rental by ID (no auth)
     @GetMapping("/{id}")
     public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {
         Rental rental = rentalService.getRentalWithRelations(id);
         return ResponseEntity.ok(RentalDto.fromEntity(rental));
     }
 
-    /** 3) Create a new rental **/
+    // Create a new rental
     @PostMapping("/add")
     public ResponseEntity<?> createRental(
             @Valid @RequestBody RentalCreateRequest req,
@@ -149,14 +148,13 @@ public class RentalController {
             LocalDate start = LocalDate.parse(req.startDate());
             LocalDate end   = LocalDate.parse(req.endDate());
 
-            // ✅ ΝΕΟΣ ΕΛΕΓΧΟΣ: startDate δεν μπορεί να είναι στο παρελθόν
+            // startDate δεν μπορεί να είναι στο παρελθόν
             LocalDate today = LocalDate.now();
             if (start.isBefore(today)) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Start date cannot be in the past"));
             }
 
-            // (Το service ήδη ελέγχει ότι end > start κτλ.)
             Rental created = rentalService.createRental(
                     req.propertyId(),
                     finalUserId,
@@ -179,10 +177,7 @@ public class RentalController {
     }
 
 
-
-
-
-    // helper to grab username
+    // Helper to get username
     private String extractUsername(Authentication authentication) {
         Object principal = authentication.getPrincipal();
         if (principal instanceof UserDetails ud) {
@@ -191,12 +186,11 @@ public class RentalController {
         return principal.toString();
     }
 
-    // helper to check admin role
+    // Helper to check admin role
     private boolean isAdmin(Authentication authentication) {
         return authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
-
 
     @GetMapping("/owner")
     public ResponseEntity<?> getMyPropertyRentals(Authentication auth) {
@@ -211,7 +205,7 @@ public class RentalController {
         List<Rental> rentals = rentalService.getRentalsForOwner(owner.getId());
         return ResponseEntity.ok(
                 rentals.stream()
-                        .map(RentalDto::fromEntity)    // χρησιμοποιείς το ήδη υπάρχον DTO
+                        .map(RentalDto::fromEntity)
                         .collect(Collectors.toList())
         );
     }
@@ -237,7 +231,7 @@ public class RentalController {
         return ResponseEntity.ok(RentalDto.fromEntity(updated));
     }
 
-    /**  Reject **/
+    // Reject
     @PostMapping("/{rentalId}/reject")
     public ResponseEntity<?> rejectRental(@PathVariable Long rentalId,
                                           Authentication authentication) {
@@ -257,13 +251,6 @@ public class RentalController {
         Rental updated = rentalService.setApprovalStatus(rentalId, ApprovalStatus.REJECTED);
         return ResponseEntity.ok(RentalDto.fromEntity(updated));
     }
-
-
-//    private String extractUsername(Authentication auth) {
-//        if (auth == null) return null;
-//        Object p = auth.getPrincipal();
-//        return (p instanceof UserDetails ud) ? ud.getUsername() : p.toString();
-//    }
 
     private Long getCallerId(Authentication auth) {
         String uname = extractUsername(auth);

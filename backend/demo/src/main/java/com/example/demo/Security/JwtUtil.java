@@ -24,7 +24,7 @@ public class JwtUtil {
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration:3600000}") long expirationMillis
+            @Value("${jwt.expiration:3600000}") long expirationMillis // 1 hour
     ) {
         this.expirationMillis = expirationMillis;
         byte[] keyBytes;
@@ -43,16 +43,14 @@ public class JwtUtil {
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /**
-     * Δημιουργεί token με subject = username και claim "roles" από το UserDetails.
-     */
+
+   // Δημιουργεί token με subject = username και claim "roles" από το UserDetails
     public String generateToken(UserDetails userDetails) {
         return generateTokenWithExtraClaims(userDetails, Collections.emptyMap());
     }
 
-    /**
-     * Δημιουργεί token με επιπλέον claims αν χρειάζεται.
-     */
+
+    // Δημιουργεί token με επιπλέον claims αν χρειάζεται
     public String generateTokenWithExtraClaims(UserDetails userDetails, Map<String, Object> extraClaims) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMillis);
@@ -72,9 +70,8 @@ public class JwtUtil {
                 .compact();
     }
 
-    /**
-     * Εξάγει το username (subject) από το token, αν είναι έγκυρο.
-     */
+
+    // Εξάγει το username (subject) από το token, αν είναι έγκυρο
     public Optional<String> extractUsername(String token) {
         try {
             return Optional.ofNullable(parseClaims(token).getSubject());
@@ -84,9 +81,8 @@ public class JwtUtil {
         }
     }
 
-    /**
-     * Εξάγει τους ρόλους από το claim "roles".
-     */
+
+    // Εξάγει τους ρόλους από το claim "roles"
     public List<String> extractRoles(String token) {
         try {
             Claims claims = parseClaims(token);
@@ -103,9 +99,8 @@ public class JwtUtil {
         return Collections.emptyList();
     }
 
-    /**
-     * Ελέγχει αν το token έχει λήξει.
-     */
+
+    // Ελέγχει αν το token έχει λήξει
     public boolean isTokenExpired(String token) {
         try {
             return parseClaims(token).getExpiration().before(new Date());
@@ -114,9 +109,8 @@ public class JwtUtil {
         }
     }
 
-    /**
-     * Επικυρώνει ότι το token ταιριάζει στον userDetails και δεν έχει λήξει.
-     */
+
+    // Επικυρώνει ότι το token ταιριάζει στον userDetails και δεν έχει λήξει
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
             Claims claims = parseClaims(token);
@@ -130,10 +124,9 @@ public class JwtUtil {
         }
     }
 
-    /**
-     * Κεντρική μέθοδος για pars-άρισμα και επαλήθευση του JWT (signature + structure).
-     * Αν το token είναι άκυρο/κατεστραμμένο/ληγμένο θα πετάξει JwtException.
-     */
+
+    // Κεντρική μέθοδος για pars-άρισμα και επαλήθευση του JWT (signature + structure).
+    // Αν το token είναι άκυρο/κατεστραμμένο/ληγμένο θα πετάξει JwtException.
     private Claims parseClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(signingKey)

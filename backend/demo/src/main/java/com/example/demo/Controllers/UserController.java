@@ -39,7 +39,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    // 1. Το προφίλ του τρέχοντα χρήστη
+    // Το προφίλ του τρέχοντα χρήστη
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
         if (authentication == null) {
@@ -51,7 +51,7 @@ public class UserController {
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
 
-    // 2. Όλοι οι χρήστες — μόνο admin
+    // Όλοι οι χρήστες — μόνο admin
     @GetMapping
     public ResponseEntity<?> allUsers(Authentication authentication) {
         if (authentication == null || !isAdmin(authentication)) {
@@ -64,7 +64,7 @@ public class UserController {
         return ResponseEntity.ok(dtos);
     }
 
-    // 3. Get properties for user
+    // Get properties for user
     @GetMapping("/{id}/properties")
     public ResponseEntity<?> getPropertiesForUserId(@PathVariable Long id, Authentication authentication) {
         requireAuthenticated(authentication);
@@ -76,7 +76,7 @@ public class UserController {
 
         List<Property> props = userService.getPropertiesForUserId(id);
 
-        // ✅ αντί να επιστρέφεις entities → DTOs
+        // αντί να επιστρέφω entities -> DTOs
         List<PropertyDto> dto = props.stream()
                 .map(PropertyDto::fromEntity)
                 .toList();
@@ -85,7 +85,7 @@ public class UserController {
     }
 
 
-    // 4. Get rentals for user
+    // Get rentals for user
     @GetMapping("/{id}/rentals")
     public ResponseEntity<?> getRentalsForUserId(@PathVariable Long id, Authentication authentication) {
         requireAuthenticated(authentication);
@@ -97,7 +97,7 @@ public class UserController {
         return ResponseEntity.ok(rentals);
     }
 
-    // 5. Partial update του ιδίου χρήστη
+    // Partial update του ιδίου χρήστη
     @PatchMapping("/me")
     public ResponseEntity<?> patchMe(Authentication authentication,
                                      @RequestBody Map<String, Object> updates) {
@@ -113,7 +113,7 @@ public class UserController {
         }
     }
 
-    // 6. Partial update άλλου χρήστη (admin only)
+    // Partial update άλλου χρήστη (admin only)
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> patchUserById(@PathVariable Long id,
@@ -128,7 +128,7 @@ public class UserController {
         }
     }
 
-    // 7. Ο απλός user υποβάλλει αίτημα για να γίνει RENTER
+    // Ο απλός user υποβάλλει αίτημα για να γίνει RENTER
     @PostMapping("/become-renter")
     public ResponseEntity<?> requestRenter(Authentication authentication) {
         requireAuthenticated(authentication);
@@ -138,7 +138,7 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "Renter request submitted"));
     }
 
-    // 8. Ο admin εγκρίνει/απορρίπτει το αίτημα
+    // Ο admin εγκρίνει/απορρίπτει το αίτημα
     @PostMapping("/{id}/approve-renter")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> approveRenter(@PathVariable Long id) {
@@ -160,7 +160,7 @@ public class UserController {
         ));
     }
 
-    // 9. Get all outstanding renter requests (admin only)
+    // Get all outstanding renter requests (admin only)
     @GetMapping("/renter-requests")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<RenterRequestDto>> listRenterRequests() {
@@ -170,24 +170,7 @@ public class UserController {
         return ResponseEntity.ok(dtos);
     }
 
-    // βοηθητικά
-    private void requireAuthenticated(Authentication auth) {
-        if (auth == null) throw new RuntimeException("Unauthenticated");
-    }
-    private String extractUsername(Authentication auth) {
-        Object p = auth.getPrincipal();
-        return p instanceof UserDetails ud ? ud.getUsername() : p.toString();
-    }
-    private User getCaller(Authentication auth) {
-        String uname = extractUsername(auth);
-        return userRepository.findByUsername(uname)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-    private boolean isAdmin(Authentication auth) {
-        return auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-    }
-
+    // Επιστρέφει όλους τους ρόλους του χρήστη
     @GetMapping("/whoami")
     public ResponseEntity<?> whoami(Authentication auth) {
         return ResponseEntity.ok(
@@ -197,6 +180,7 @@ public class UserController {
         );
     }
 
+    // Διαγραφή χρήστη από admin
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUserAsAdmin(@PathVariable Long id, Authentication authentication) {
@@ -246,7 +230,6 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message","Photo uploaded successfully"));
     }
 
-
     @GetMapping("/{id}/photo")
     public ResponseEntity<?> getPhoto(@PathVariable Long id, Authentication authentication) {
         if (authentication == null) {
@@ -260,7 +243,7 @@ public class UserController {
         boolean isOwner = caller.getId().equals(id);
         boolean isAdmin = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(a -> a.equals("ROLE_ADMIN")); // <-- έλεγχος από authorities
+                .anyMatch(a -> a.equals("ROLE_ADMIN")); // έλεγχος από authorities
 
         if (!isOwner && !isAdmin) {
             return ResponseEntity.status(403).body(Map.of("error", "Forbidden"));
@@ -275,7 +258,7 @@ public class UserController {
         }
 
         return ResponseEntity.ok()
-                .header("Content-Type", "image/jpeg") // ή χρησιμοποίησε αποθηκευμένο contentType
+                .header("Content-Type", "image/jpeg")
                 .body(img);
     }
 
@@ -303,4 +286,23 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
+
+    // βοηθητικά
+    private void requireAuthenticated(Authentication auth) {
+        if (auth == null) throw new RuntimeException("Unauthenticated");
+    }
+    private String extractUsername(Authentication auth) {
+        Object p = auth.getPrincipal();
+        return p instanceof UserDetails ud ? ud.getUsername() : p.toString();
+    }
+    private User getCaller(Authentication auth) {
+        String uname = extractUsername(auth);
+        return userRepository.findByUsername(uname)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
 }

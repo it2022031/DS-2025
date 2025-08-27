@@ -45,7 +45,7 @@ public class PropertyController {
 
 
 
-    // 1. List all properties (admin only)
+    // List all properties (admin only)
     @GetMapping("/all")
     @PreAuthorize("hasAnyRole('ADMIN','RENTER')")
     public ResponseEntity<List<PropertyDto>> getAllProperties() {
@@ -55,7 +55,7 @@ public class PropertyController {
         return ResponseEntity.ok(dto);
     }
 
-    // 2. Create new property
+    // Create new property
     @PostMapping
     public ResponseEntity<?> createProperty(
             @RequestBody PropertyCreateRequest req,
@@ -99,14 +99,14 @@ public class PropertyController {
         p.setPostalCode(req.postalCode());
         p.setSquareMeters(req.squareMeters());
         p.setApprovalStatus(ApprovalStatus.PENDING);
-        p.setPrice(req.price());   // 👈 εδώ βάζουμε το price
+        p.setPrice(req.price());
 
         Property saved = propertyService.createWithOwner(finalOwnerId, p);
         return ResponseEntity.ok(PropertyDto.fromEntity(saved));
     }
 
 
-    // 3. Get property by id
+    // Get property by id
     @GetMapping("/{id}")
     public ResponseEntity<?> getPropertyById(@PathVariable Long id) {
         Property p = propertyService.findByIdOptional(id)
@@ -114,8 +114,7 @@ public class PropertyController {
         return ResponseEntity.ok(PropertyDto.fromEntity(p));
     }
 
-    // 4. Patch property (owner can update fields, admin can also change approval)
-    // 4. Patch property (owner can update fields, admin can also change approval)
+    // Patch property (owner can update fields, admin can also change approval)
     @PatchMapping("/{id}")
     public ResponseEntity<?> patchProperty(
             @PathVariable Long id,
@@ -125,7 +124,6 @@ public class PropertyController {
         Property prop = propertyService.findByIdOptional(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        // <-- πάρε username χωρίς helper
         String callerUsername = ((UserDetails) authentication.getPrincipal()).getUsername();
         User caller = userRepository.findByUsername(callerUsername)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
@@ -144,6 +142,7 @@ public class PropertyController {
                 "name", "description", "country", "city", "street",
                 "postalCode", "squareMeters", "price" // <-- price (BigDecimal)
         );
+
         // μόνο για admin
         Set<String> adminOnly = Set.of("approvalStatus");
 
@@ -182,7 +181,7 @@ public class PropertyController {
                         else prop.setSquareMeters(d);
                     }
 
-                    case "price" -> { // <-- BigDecimal
+                    case "price" -> {
                         BigDecimal bd = asBigDecimal(val);
                         if (bd == null || bd.compareTo(BigDecimal.ZERO) <= 0)
                             validationErrors.add("price must be > 0");
@@ -222,7 +221,7 @@ public class PropertyController {
         return ResponseEntity.ok(PropertyDto.fromEntity(saved));
     }
 
-    /** helpers **/
+    // Helpers
     private static String asString(Object v) {
         return v == null ? null : String.valueOf(v);
     }
@@ -240,7 +239,7 @@ public class PropertyController {
         catch (NumberFormatException e) { return null; }
     }
 
-    // 5. Approve / reject (admin only)
+    // Approve / reject (admin only)
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> approve(@PathVariable Long id) {
@@ -255,7 +254,7 @@ public class PropertyController {
         return ResponseEntity.ok(PropertyDto.fromEntity(updated));
     }
 
-    // helpers
+    // Helpers
     private String extractUsername(Authentication authentication) {
         if (authentication == null) return null;
         Object principal = authentication.getPrincipal();
@@ -302,7 +301,7 @@ public class PropertyController {
 
         // Κάνε το delete
         propertyService.adminDeleteProperty(id);
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.noContent().build();
     }
 
 
@@ -345,7 +344,7 @@ public class PropertyController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        // 🛑 Έλεγχος μέγιστου αριθμού φωτογραφιών
+        // Έλεγχος μέγιστου αριθμού φωτογραφιών
         long existingPhotos = propertyPhotoRepository.countByPropertyId(propertyId);
         if (existingPhotos >= 5 && !isAdmin) {
             return ResponseEntity.badRequest().body(
@@ -357,14 +356,14 @@ public class PropertyController {
             return ResponseEntity.badRequest().body(Map.of("error", "Empty file"));
         }
 
-        // 🛑 Έλεγχος μεγέθους αρχείου (μέχρι 10MB)
+        // Έλεγχος μεγέθους αρχείου (μέχρι 10MB)
         final long MAX_SIZE = 10L * 1024 * 1024; // 10 MB
         if (file.getSize() > MAX_SIZE) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Το αρχείο ξεπερνά το επιτρεπόμενο όριο των 10MB"));
         }
 
-        // ✅ Αποθήκευση φωτογραφίας
+        // Αποθήκευση φωτογραφίας
         PropertyPhoto photo = new PropertyPhoto();
         photo.setImage(file.getBytes());
         photo.setContentType(file.getContentType());
@@ -375,8 +374,6 @@ public class PropertyController {
 
         return ResponseEntity.ok(Map.of("message", "Photo uploaded successfully"));
     }
-
-
 
     @GetMapping("/photos/{photoId}")
     public ResponseEntity<?> getPropertyPhoto(@PathVariable Long photoId) {
@@ -428,11 +425,11 @@ public class PropertyController {
                     .body(Map.of("error", "Not authenticated"));
         }
 
-        // --- έλεγχος ρόλου admin ---
+        // έλεγχος ρόλου admin
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        // --- φόρτωσε το photo και βρες τον owner ---
+        // φόρτωσε το photo και βρες τον owner
         var photo = propertyPhotoRepository.findById(photoId)
                 .orElseThrow(() -> new RuntimeException("Photo not found"));
 
@@ -463,23 +460,22 @@ public class PropertyController {
     public ResponseEntity<?> getAllPropertyPhotos(@PathVariable Long propertyId) {
         List<PropertyPhoto> photos = propertyPhotoRepository.findByPropertyId(propertyId);
 
-        // Αν δεν έχει, καλύτερα 200 με [] αντί για 404 (πιο φιλικό για UI)
         if (photos.isEmpty()) {
             return ResponseEntity.ok(List.of());
         }
 
-        // Φτιάχνουμε URL προς το ήδη υπάρχον endpoint /api/properties/photos/{photoId}
+        // URL προς το ήδη υπάρχον endpoint /api/properties/photos/{photoId}
         List<Map<String, Object>> photoDtos = photos.stream()
                 .map(p -> {
                     String url = ServletUriComponentsBuilder
-                            .fromCurrentContextPath()                // π.χ. http://localhost:8080
+                            .fromCurrentContextPath()                // http://localhost:8080
                             .path("/api/properties/photos/")        // σταθερό μέρος
                             .path(p.getId().toString())             // το id
                             .toUriString();
 
                     Map<String, Object> m = new HashMap<>();
                     m.put("id", p.getId());
-                    m.put("url", url);                          // <-- μόνο URL, όχι bytes
+                    m.put("url", url);                          // μόνο URL, όχι bytes
                     m.put("contentType", p.getContentType());
                     m.put("filename", p.getFilename());
                     return m;
@@ -502,6 +498,5 @@ public class PropertyController {
             return ResponseEntity.ok(ranges);
         }
     }
-
 
 }

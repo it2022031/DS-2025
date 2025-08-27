@@ -41,7 +41,7 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    // --- DTOs για Register/Login ---
+    // DTOs για Register/Login
     public record RegistrationRequest(
             @NotBlank String username,
             @NotBlank @Size(min = 6) String password,
@@ -56,7 +56,7 @@ public class AuthController {
 
     public record AuthResponse(String token, UserResponseDto user) {}
 
-    // --- Εγγραφή νέου χρήστη ---
+    // Εγγραφή νέου χρήστη
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest req) {
         if (userRepository.existsByUsername(req.username())) {
@@ -74,8 +74,7 @@ public class AuthController {
         user.setLastName(req.lastName());
         user.setPassportNumber(req.passportNumber());
         user.setAfm(req.afm());
-        // Βάλε εδώ τον default ρόλο
-        user.addRole(Role.USER);
+        user.addRole(Role.USER); // default role
 
         User saved = userDetailsService.registerNewUser(user);
 
@@ -86,7 +85,7 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token, UserResponseDto.fromEntity(saved)));
     }
 
-    // --- Login υπάρχοντος χρήστη ---
+    // Login υπάρχοντος χρήστη
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest req) {
         try {
@@ -110,7 +109,7 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token, UserResponseDto.fromEntity(user)));
     }
 
-    // --- Επιστροφή στοιχείων τρέχοντος χρήστη ---
+    // Επιστροφή στοιχείων τρέχοντος χρήστη
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails ud)) {

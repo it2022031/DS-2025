@@ -62,7 +62,6 @@ public class UserPrincipal implements UserDetails {
         return user.isEnabled();
     }
 
-    // Προαιρετικά: getter για το underlying entity
     public User getUser() {
         return user;
     }

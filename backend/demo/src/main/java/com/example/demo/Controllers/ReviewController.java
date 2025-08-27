@@ -40,7 +40,8 @@ public class ReviewController {
         List<ReviewDto> all = reviewService.getAllReviews();
         return ResponseEntity.ok(all);
     }
-    // GET: reviews για συγκεκριμένο property
+
+    // Get reviews για συγκεκριμένο property
     @GetMapping("/{id}/reviews")
     public ResponseEntity<List<ReviewDto>> getReviewsForProperty(@PathVariable Long id) {
         List<ReviewDto> dto = reviewService.getReviewsForProperty(id)
@@ -50,8 +51,7 @@ public class ReviewController {
         return ResponseEntity.ok(dto);
     }
 
-    // POST: add review (must be logged in)
-    // POST: add review (must be logged in & rental completed)
+    // Add review (must be logged in & rental completed)
     @PostMapping("/{id}/reviews")
     public ResponseEntity<?> addReviewForProperty(@PathVariable Long id,
                                                   @RequestBody Map<String, Object> body,
@@ -65,7 +65,7 @@ public class ReviewController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Έλεγχος ότι έχει ολοκληρωμένο approved rental (όπως ήδη έχεις)
+        // Έλεγχος ότι έχει ολοκληρωμένο approved rental
         List<Rental> rentals = rentalRepository.findByPropertyIdAndUserId(id, user.getId());
         LocalDate now = LocalDate.now();
         boolean hasValidRental = rentals.stream().anyMatch(r ->
@@ -77,7 +77,6 @@ public class ReviewController {
                     .body(Map.of("error", "You can only leave a review after completing an approved rental"));
         }
 
-        // Διάβασε πεδία
         String content = (String) body.get("content");
         Number ratingNum = (Number) body.getOrDefault("rating", 0);
         int rating = ratingNum.intValue();
@@ -89,9 +88,8 @@ public class ReviewController {
 
         Review saved = reviewService.addReview(id, user.getId(), content, rating, rentalId);
         return ResponseEntity.ok(saved);
+
     }
-
-
 
 
     @PatchMapping("/reviews/{reviewId}")
@@ -124,7 +122,7 @@ public class ReviewController {
     }
 
 
-    // DELETE: delete review (must be logged in and owner)
+    // Delete review (must be logged in and review's owner)
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<?> deleteReview(@PathVariable Long reviewId,
                                           Authentication authentication) {
@@ -156,7 +154,7 @@ public class ReviewController {
         }
     }
 
-    // GET: όλα τα reviews ενός χρήστη
+    // Φέρε όλα τα reviews ενός χρήστη
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<ReviewDto>> getReviewsByUser(@PathVariable Long userId) {
         List<ReviewDto> dto = reviewService.getReviewsByUser(userId)

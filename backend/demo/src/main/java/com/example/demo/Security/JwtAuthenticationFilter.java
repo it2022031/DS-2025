@@ -28,27 +28,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Πάρε την Authorization header
         String header = request.getHeader("Authorization");
+
+        // Έλεγξε ότι υπάρχει και ξεκινά με "Bearer "
         if (header != null && header.startsWith("Bearer ")) {
+            // Κόψε το "Bearer " και κράτα μόνο το token
             String token = header.substring(7);
+
             try {
+                // Προσπάθησε να εξάγεις το username από το JWT (μπορεί να λείπει -> Optional)
                 Optional<String> usernameOpt = jwtUtil.extractUsername(token);
-                if (usernameOpt.isPresent() && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                // Αν βρέθηκε username ΚΑΙ δεν υπάρχει ήδη Authentication στο SecurityContext
+                if (usernameOpt.isPresent() &&
+                        SecurityContextHolder.getContext().getAuthentication() == null) {
+
                     String username = usernameOpt.get();
+
+                    // Φόρτωσε τα UserDetails (ρόλοι/δικαιώματα κλπ.) από το δικό σου service
                     UserDetails ud = userDetailsService.loadUserByUsername(username);
+
+                    // Επικύρωσε ότι το token είναι έγκυρο για τα συγκεκριμένα UserDetails
                     if (jwtUtil.validateToken(token, ud)) {
+
+                        // Δημιούργησε Authentication object με τα authorities του χρήστη
                         UsernamePasswordAuthenticationToken authToken =
                                 new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities());
+
+                        // Πρόσθεσε επιπλέον στοιχεία request (IP, session id κ.ά.) στο auth
                         authToken.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetailsSource()
                                 .buildDetails(request));
+
+                        // Πέρασε το Authentication στο SecurityContext ώστε τα επόμενα φίλτρα/controllers
+                        // να "βλέπουν" τον χρήστη ως authenticated
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
                 }
             } catch (JwtException e) {
-                // token άκυρο/λήξει κλπ. — μπορείς να κάνεις log αν θες
+                // Αν το token είναι άκυρο/ληγμένο/πειραγμένο, φτάνουμε εδώ.
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }
