@@ -12,16 +12,19 @@ public class Booking {
 
     private LocalDate bookedFrom;
     private LocalDate bookedTo;
-    private Boolean status;  // πχ αν η κράτηση είναι ενεργή ή ακυρωμένη
+    private Boolean status; // πάντα True
+
+    // Σχέσεις
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id")
     private Property property;
 
-    // constructors, getters, setters
 
     public Booking() {
     }
+
+    // Getters, setters
 
     public Long getId() {
         return id;

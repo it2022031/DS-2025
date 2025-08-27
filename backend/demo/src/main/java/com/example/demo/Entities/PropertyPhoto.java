@@ -12,7 +12,6 @@ public class PropertyPhoto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "image", columnDefinition = "bytea", nullable = false)
     @JdbcTypeCode(SqlTypes.BINARY)   // αναγκάζει Hibernate να το χειριστεί ως bytea/binary
@@ -23,6 +22,8 @@ public class PropertyPhoto {
 
     @Column(name = "filename")
     private String filename;
+
+    // ΣΧέσεις
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id", nullable = false)

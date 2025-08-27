@@ -21,7 +21,7 @@ public class Rental {
     private BigDecimal paymentAmount;
 
 
-
+    // Σχέσεις
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
@@ -45,10 +45,9 @@ public class Rental {
         this.startDate = startDate;
         this.id = id;
     }
-// Getters & Setters
 
 
-
+    // Getters & Setters
 
     public Long getId() {
         return id;

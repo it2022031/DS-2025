@@ -50,15 +50,15 @@ public class User {
     @Column(name = "passport_number")
     private String passportNumber;
 
-    private String afm;  // Greek Tax Identification Number
+    private String afm;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="user_roles", joinColumns=@JoinColumn(name="user_id"))
     @Column(name="role")
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) // παίρνει μια ή παραπάνω από τις 3 τιμές του enum roles στο security
     private Set<Role> roles = new HashSet<>();
 
-    // Κατάσταση λογαριασμού (μπορείς να τις επεκτείνεις/χρήσεις στο μέλλον)
+    // Κατάσταση λογαριασμού (δεν χρησιμοποιείται ακόμα)
     private boolean enabled = true;
     private boolean accountNonLocked = true;
 
@@ -75,12 +75,10 @@ public class User {
     @Column(nullable = false)
     private ApprovalStatus renterRequestStatus = ApprovalStatus.REJECTED;
 
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "user-reviews")
     private List<Review> reviews = new ArrayList<>();
 
-    // μην βάζεις @Lob εδώ
     @Basic(fetch = FetchType.LAZY) // προαιρετικό
     @Column(name = "profile_picture", columnDefinition = "bytea")
     private byte[] profilePicture;
@@ -93,7 +91,6 @@ public class User {
 
     public User() {}
 
-    // constructor για registration / δημιουργία
     public User(String username,
                 String password,
                 String email,
@@ -109,7 +106,6 @@ public class User {
         this.lastName       = lastName;
         this.passportNumber = passportNumber;
         this.afm            = afm;
-        // ensure at least USER if null
         this.roles.clear();
         this.roles.add(initialRole != null ? initialRole : Role.USER);
     }
@@ -229,9 +225,6 @@ public class User {
         }
     }
 
-    /**
-     * Revoke a role.
-     */
     public void removeRole(Role role) {
         if (role != null) {
             this.roles.remove(role);
@@ -270,7 +263,7 @@ public class User {
         this.rentals = rentals;
     }
 
-    // βοηθητικά για σχέσεις
+
     public void addProperty(Property property) {
         properties.add(property);
         property.setOwner(this);

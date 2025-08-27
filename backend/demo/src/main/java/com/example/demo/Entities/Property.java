@@ -27,6 +27,8 @@ public class Property {
     @Enumerated(EnumType.STRING)
     private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
+    // ΣΧέσεις
+
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Booking> bookings;
 
@@ -38,12 +40,10 @@ public class Property {
     @JoinColumn(name = "user_id")
     @JsonBackReference(value = "user-properties")
     private User owner;
-    // constructors, getters, setters
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "property-reviews")
     private List<Review> reviews = new ArrayList<>();
-
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PropertyPhoto> photos = new ArrayList<>();

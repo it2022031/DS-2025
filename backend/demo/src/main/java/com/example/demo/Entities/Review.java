@@ -21,6 +21,8 @@ public class Review {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    // Σχέσεις
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference(value = "user-reviews")
@@ -31,13 +33,13 @@ public class Review {
     @JsonBackReference(value = "property-reviews")
     private Property property;
 
-    // ΝΕΟ: δεσμός με ενοικίαση
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rental_id")                  // αρχικά nullable
+    @JoinColumn(name = "rental_id") // αρχικά nullable
     private Rental rental;
 
 
     // Getters & Setters
+
     public Long getId() { return id; }
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
