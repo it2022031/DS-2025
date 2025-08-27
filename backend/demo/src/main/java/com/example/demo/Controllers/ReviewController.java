@@ -123,7 +123,7 @@ public class ReviewController {
 
         try {
             Review updated = reviewService.updateReview(reviewId, user.getId(), content, rating);
-            return ResponseEntity.ok(ReviewDto.fromEntity(updated)); 
+            return ResponseEntity.ok(ReviewDto.fromEntity(updated));
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", e.getMessage()));
