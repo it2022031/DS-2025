@@ -33,8 +33,6 @@
       </div>
 
 
-
-
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
       <div v-else-if="filteredProperties.length === 0" class="text-center text-white">No properties found.</div>
@@ -64,7 +62,7 @@
 
             <div class="property-actions mt-3 d-flex align-items-center" v-if="canModerate(property)">
               <button
-                  v-if="property.approvalStatus === 'PENDING' || property.approvalStatus === 'REJECTED'"
+                  v-if="property.approvalStatus === 'PENDING'"
                   @click="approveProperty(property.id)"
                   class="btn btn-sm btn-success mr-2"
               >
@@ -72,13 +70,14 @@
               </button>
 
               <button
-                  v-if="property.approvalStatus === 'PENDING' || property.approvalStatus === 'APPROVED'"
+                  v-if="property.approvalStatus === 'PENDING'"
                   @click="rejectProperty(property.id)"
                   class="btn btn-sm btn-outline-danger"
               >
                 ❌ Reject
               </button>
             </div>
+
           </div>
         </li>
       </ul>
@@ -177,6 +176,7 @@ export default {
 
     async approveProperty(propertyId) {
       const token = localStorage.getItem("token");
+      if (!confirm("Are you sure you want to approve this property?")) return;
       try {
         await axios.post(
             `http://localhost:8080/api/properties/${propertyId}/approve`,
@@ -193,6 +193,7 @@ export default {
 
     async rejectProperty(propertyId) {
       const token = localStorage.getItem("token");
+      if (!confirm("Are you sure you want to reject this property?")) return;
       try {
         await axios.post(
             `http://localhost:8080/api/properties/${propertyId}/reject`,
