@@ -1,0 +1,107 @@
+classDiagram
+direction TB
+
+class Users {
+%% REST
++ GET_api_users_id()
++ GET_api_users()
++ GET_api_users_me()
++ POST_api_users()
++ PATCH_api_users_id()
++ PATCH_api_users_id_roles()
++ DELETE_api_users_id()
+
+%% Service
++ updateUserPartial(id, fields)
++ updateUserRoles(id, add, remove)
+
+%% Repository
++ findByUsername(u)
++ existsByEmail(e)
+}
+
+class Properties {
+%% REST
++ GET_api_properties_id()
++ GET_api_properties()
++ POST_api_properties()
++ PATCH_api_properties_id()
++ DELETE_api_properties_id()
++ GET_api_properties_id_closedDates()
++ GET_api_properties_id_photos_photoId()
++ POST_api_properties_id_photos()
++ PATCH_api_properties_id_photos_photoId()
++ DELETE_api_properties_id_photos_photoId()
++ GET_api_users_userId_properties()
+
+%% Service
++ findByIdOptional(id)
++ getClosedDateRanges(propertyId)
++ getClosedDatesFlat(propertyId)
+
+%% Repository
++ findByOwnerId(ownerId)
++ findByApprovalStatus(status)
+}
+
+class Rentals {
+%% REST
++ POST_api_rentals_add()
++ GET_api_rentals_all()
++ GET_api_rentals_byRenter_renterId()
++ PATCH_api_rentals_id_approve()
++ PATCH_api_rentals_id_reject()
+
+%% Service
++ createRental(propertyId, userId, start, end)
++ getAllRentalData()
++ getRentalsByRenter(renterId)
++ rejectExpiredPendingRentalsToday()
+
+%% Repository
++ findOverlappingByStatusIn(propertyId, start, end, statuses)
++ findByPropertyIdAndApprovalStatusInAndEndDateGreaterThanEqual(...)
+}
+
+class Reviews {
+%% REST
++ POST_api_properties_propertyId_reviews()
++ PATCH_api_reviews_reviewId()
++ DELETE_api_reviews_reviewId()
++ GET_api_properties_propertyId_reviews()
++ GET_api_reviews_user_userId()
++ GET_api_reviews()
+
+%% Service
++ addReview(propertyId, userId, content, rating)
++ updateReview(reviewId, userId, content, rating)
++ deleteReview(reviewId, userId)
++ adminDeleteReview(reviewId)
++ getReviewsForProperty(propertyId)
++ getReviewsByUser(userId)
+
+%% Repository
++ findByPropertyId(id)
++ findByUserId(id)
+}
+
+class PropertyPhotos {
+%% Repository
++ findByIdAndPropertyId(photoId, propertyId)
++ countByPropertyId(propertyId)
+}
+
+class ApprovalStatus {
+%% REST (optional)
++ GET_api_approvalStatus()
+}
+
+%% Associations (χωρίς Bookings πλέον)
+Users --> Properties
+Users --> Rentals
+Users --> Reviews
+Properties --> PropertyPhotos
+Properties --> Rentals
+Properties --> Reviews
+Rentals --> Reviews
+
