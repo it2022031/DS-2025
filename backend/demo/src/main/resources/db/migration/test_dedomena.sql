@@ -13,7 +13,6 @@ TRUNCATE TABLE users RESTART IDENTITY CASCADE;
 -- password: "pass123" (bcrypt)
 -- ============
 -- bcrypt("pass123") generated once & reused for all:
--- $2a$10$WzEwXy9kY3lYN1kzM2EuLi5zdGF0aWNIYXNoLjEuLi5nZW5lcmF0ZWQ=
 -- Χρησιμοποίησε αυτό που ήδη δουλεύει στο project σου αν έχεις διαφορετικό format.
 -- Παρακάτω σου βάζω ένα κλασικό έγκυρο bcrypt για "pass123":
 -- $2a$10$9e2E0h0Jm4u4cYwz0pM1WOMm2qJmP8uU0s8m2o2k1c8QqQFv2oJrS
