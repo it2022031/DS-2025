@@ -1,120 +1,137 @@
 <template>
-  <div class="home-page py-5">
-    <!-- Hero section -->
-    <section class="hero text-center mb-5">
-      <h1 class="display-4 fw-bold">🏠 Καλώς ήρθες στην πλατφόρμα μας!</h1>
-      <p class="lead mt-3">Βρες το ιδανικό ακίνητο ή διαχειρίσου τα δικά σου εύκολα και γρήγορα.</p>
+  <div class="home-page">
+    <!-- Featured property banner -->
+    <section class="hero-banner">
+      <img src="/img/home_featured_photo.jpg" alt="Featured Property" class="hero-img" />
+      <div class="hero-overlay">
+        <h1 class="hero-title">All You Need About Real Estate</h1>
+        <p class="hero-subtitle">Rent unique properties, or register your own</p>
+      </div>
     </section>
 
-    <!-- Actions section -->
-    <section class="actions container">
-      <div class="row justify-content-center g-4">
-        <!-- Rentals List -->
-        <div class="col-md-4">
-          <router-link to="/rentals" class="card text-decoration-none text-dark h-100 shadow-sm hover-card">
-            <div class="card-body text-center">
-              <div class="icon mb-3">📃</div>
-              <h5 class="card-title">Rentals List</h5>
-              <p class="card-text">Δες όλα τα διαθέσιμα ακίνητα και τις λεπτομέρειές τους.</p>
-            </div>
-          </router-link>
-        </div>
+    <!-- Awards section -->
+    <section class="awards text-center">
+      <h2 class="fw-bold">Why to trust us</h2>
+      <p class="lead mb-4">Recognized by top organizations in the real estate industry</p>
 
-        <!-- Rent a Property -->
-        <div class="col-md-4">
-          <router-link to="/approved-properties" class="card text-decoration-none text-dark h-100 shadow-sm hover-card">
-            <div class="card-body text-center">
-              <div class="icon mb-3">📅</div>
-              <h5 class="card-title">Rent a Property</h5>
-              <p class="card-text">Κλείσε εύκολα τις ημερομηνίες που σε ενδιαφέρουν.</p>
-            </div>
-          </router-link>
-        </div>
-
-        <!-- Add Property (owners/admins only) -->
-        <div v-if="isOwnerOrAdmin" class="col-md-4">
-          <router-link to="/properties/add" class="card text-decoration-none text-dark h-100 shadow-sm hover-card">
-            <div class="card-body text-center">
-              <div class="icon mb-3">➕</div>
-              <h5 class="card-title">Add Property</h5>
-              <p class="card-text">Δημιούργησε ένα νέο ακίνητο και διαχειρίσου το εύκολα.</p>
-            </div>
-          </router-link>
-        </div>
-
-        <!-- List Users (admins only) -->
-        <div v-if="isAdmin" class="col-md-4">
-          <router-link to="/users" class="card text-decoration-none text-dark h-100 shadow-sm hover-card">
-            <div class="card-body text-center">
-              <div class="icon mb-3">👥</div>
-              <h5 class="card-title">List Users</h5>
-              <p class="card-text">Δες και διαχειρίσου όλους τους χρήστες της πλατφόρμας.</p>
-            </div>
-          </router-link>
-        </div>
-
-        <!-- About us -->
-        <div class="col-md-4">
-          <router-link to="/about" class="card text-decoration-none text-dark h-100 shadow-sm hover-card">
-            <div class="card-body text-center">
-              <div class="icon mb-3">ℹ️</div>
-              <h5 class="card-title">About Us</h5>
-              <p class="card-text">Μάθε περισσότερα για την πλατφόρμα και τους στόχους μας.</p>
-            </div>
-          </router-link>
+      <div class="awards-grid">
+        <div class="award-item">
+          <img src="/img/design-awards-2025.svg" alt="Award 1" />
+          <p>Best Real Estate Platform 2025</p>
         </div>
       </div>
     </section>
+
   </div>
 </template>
 
 <script>
 export default {
   name: "Home",
-  computed: {
-    userRole() {
-      return (localStorage.getItem("userRole") || "").toLowerCase();
-    },
-    isOwnerOrAdmin() {
-      return this.userRole === "owner" || this.userRole === "admin";
-    },
-    isAdmin() {
-      return this.userRole === "admin";
-    }
-  }
 };
 </script>
 
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  background-color: #f5f6fa;
 }
 
-.hero {
-  background-color: #fff;
-  padding: 50px 20px;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+/* Banner with image */
+.hero-banner {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.actions .card {
-  border-radius: 15px;
-  transition: transform 0.2s, box-shadow 0.2s;
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.actions .card:hover,
-.actions .hover-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.1));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2rem;
+  color: #fff;
 }
 
-.actions .icon {
+.hero-title {
   font-size: 2.5rem;
+  font-weight: 700;
 }
 
-.actions .card-title {
-  font-weight: 600;
+.hero-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+
+/* Intro section */
+.intro {
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+.intro h2 {
+  color: #343a40;
+  margin-bottom: 1rem;
+}
+
+.intro p {
+  color: #6c757d;
+}
+
+.awards {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+.awards h2 {
+  color: #343a40;
   margin-bottom: 0.5rem;
 }
+
+.awards p.lead {
+  color: #6c757d;
+  margin-bottom: 2rem;
+}
+
+.awards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.award-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 150px;
+}
+
+.award-item img {
+  width: 120px;
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.award-item p {
+  font-size: 0.9rem;
+  color: #495057;
+}
+
 </style>

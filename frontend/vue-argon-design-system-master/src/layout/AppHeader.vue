@@ -26,54 +26,54 @@
 
         <!-- Ενοικίαση: μόνο logged in -->
         <li v-if="isLoggedIn && (hasRole('RENTER'))  && (!hasRole('ADMIN'))" class="nav-item">
-          <router-link to="/approved-properties" class="nav-link">Ενοικίαση</router-link>
+          <router-link to="/approved-properties" class="nav-link">Rent A Property</router-link>
         </li>
 
         <li v-if="isLoggedIn && (!hasRole('ADMIN') && !hasRole('RENTER'))" class="nav-item">
-          <router-link to="/request-renter" class="nav-link">Ενοικίαση</router-link>
+          <router-link to="/request-renter" class="nav-link">Rent A Property</router-link>
         </li>
 
         <!-- Νέα Αγγελία: OWNER ή ADMIN -->
         <li v-if="isLoggedIn && hasRole('USER') && (!hasRole('ADMIN'))" class="nav-item">
-          <router-link to="/properties/add" class="nav-link">Νέα Αγγελία</router-link>
+          <router-link to="/properties/add" class="nav-link">Register A Property</router-link>
         </li>
 
         <!-- Λίστα Ακινήτων: OWNER ή ADMIN -->
         <li v-if="isLoggedIn && hasRole('USER', 'RENTER') && (!hasRole('ADMIN'))" class="nav-item">
-          <router-link to="/list-properties" class="nav-link">Λίστα Ακινήτων</router-link>
+          <router-link to="/list-properties" class="nav-link">My Properties</router-link>
         </li>
 
         <!-- Λίστα Χρηστών: μόνο ADMIN -->
         <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
-          <router-link to="/users" class="nav-link">Λίστα Χρηστών</router-link>
+          <router-link to="/users" class="nav-link">Users</router-link>
         </li>
 
         <!-- Λίστα Ενοικιάσεων: μόνο logged in -->
         <li v-if="isLoggedIn && hasRole('USER') && (!hasRole('ADMIN'))" class="nav-item">
-          <router-link to="/rentals" class="nav-link">Λίστα Ενοικιάσεων</router-link>
+          <router-link to="/rentals" class="nav-link">My Rentals</router-link>
         </li>
 
         <!-- Λίστα ΚΡΑΤΗΣΕΩΝ: μόνο logged in -->
         <li v-if="isLoggedIn && hasRole('RENTER') && (!hasRole('ADMIN'))" class="nav-item">
-          <router-link to="/list-bookings" class="nav-link">Λίστα Κρατήσεων</router-link>
+          <router-link to="/list-bookings" class="nav-link">My Bookings</router-link>
         </li>
 
         <!-- Λίστα ΚΡΑΤΗΣΕΩΝ: μόνο logged in -->
         <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
-          <router-link to="/approve-reject-properties" class="nav-link">Λίστα Pending Properties</router-link>
+          <router-link to="/approve-reject-properties" class="nav-link">Properties</router-link>
         </li>
 
         <!-- Λίστα ΚΡΑΤΗΣΕΩΝ: μόνο logged in -->
         <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
-          <router-link to="/approve-reject-renters" class="nav-link">Λίστα Approve To Be Renters</router-link>
+          <router-link to="/approve-reject-renters" class="nav-link">Renter Requests</router-link>
         </li>
 
         <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
-          <router-link to="/delete-reviews-admin" class="nav-link">See All Reviews</router-link>
+          <router-link to="/delete-reviews-admin" class="nav-link">Reviews</router-link>
         </li>
 
         <li v-if="isLoggedIn && hasRole('ADMIN')" class="nav-item">
-          <router-link to="/delete-rentals-admin" class="nav-link">See All Rentals</router-link>
+          <router-link to="/delete-rentals-admin" class="nav-link">Rentals</router-link>
         </li>
 
       </ul>
