@@ -1,7 +1,7 @@
 <template>
   <section class="list-rentals section bg-secondary py-5">
     <div class="container">
-      <h2 class="text-center mb-4" style="color: #343a40;">📖 Rentals List</h2>
+      <h2 class="text-center mb-4" style="color: #343a40;">📖 My Rentals</h2>
 
       <!-- 🔍 Search + Filter -->
       <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
@@ -24,7 +24,7 @@
 
       <div v-if="loading" class="text-center text-white">Loading rentals...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load rentals.</div>
-      <div v-else-if="filteredRentals.length === 0" class="text-center text-white">No rentals found.</div>
+      <div v-else-if="filteredRentals.length === 0" class="text-center">No rentals found.</div>
 
       <ul v-else class="rental-list">
         <li v-for="rental in filteredRentals" :key="rental.id" class="rental-card">

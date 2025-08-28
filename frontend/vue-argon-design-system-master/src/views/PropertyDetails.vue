@@ -23,108 +23,109 @@
 
         <!-- Info -->
         <div class="col-md-6">
-          <h2>{{ property.name }}</h2>
-          <p><strong>Owner:</strong> 👤 {{ property.ownerFirstName }} {{ property.ownerLastName }}</p>
-          <p>{{ property.description }}</p>
-          <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
-          <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
+          <div class="property-card mb-3">
+            <h2 class="mb-3">{{ property.name }}</h2>
+            <p><strong>Owner:</strong> 👤 {{ property.ownerFirstName }} {{ property.ownerLastName }}</p>
+            <p>{{ property.description }}</p>
+            <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
+            <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
 
-          <!-- Address + Google Maps -->
-          <p class="mb-2">
-            <strong>Address:</strong>
-            <a
+            <!-- Address + Google Maps -->
+            <p class="mb-2">
+              <strong>Address:</strong>
+              <a
+                  v-if="mapsUrl"
+                  :href="mapsUrl"
+                  target="_blank"
+                  rel="noopener"
+                  class="address-link"
+                  :title="`Open in Google Maps: ${fullAddress}`"
+              >
+                {{ fullAddress }}
+              </a>
+              <span v-else>{{ fullAddress }}</span>
+            </p>
+            <button
                 v-if="mapsUrl"
-                :href="mapsUrl"
-                target="_blank"
-                rel="noopener"
-                class="address-link"
-                :title="`Open in Google Maps: ${fullAddress}`"
+                type="button"
+                class="btn btn-outline-secondary btn-sm mb-3"
+                @click="openMaps"
             >
-              {{ fullAddress }}
-            </a>
-            <span v-else>{{ fullAddress }}</span>
-          </p>
-          <button
-              v-if="mapsUrl"
-              type="button"
-              class="btn btn-outline-secondary btn-sm mb-3"
-              @click="openMaps"
-          >
-            📍 Open in Google Maps
-          </button>
+              📍 Open in Google Maps
+            </button>
 
-          <p><strong>Price per day:</strong> {{ property.price }} €</p>
-
-          <!-- Date range picker -->
-          <div class="form-group mb-2">
-            <label class="form-label">Select dates</label>
-            <flat-pickr
-                v-model="dateRange"
-                :config="flatpickrConfig"
-                class="form-control"
-                placeholder="Choose check-in and check-out"
-            />
-            <small class="text-muted d-block mt-1">
-              Οι γκρι ημερομηνίες στο ημερολόγιο είναι κλειστές/μη διαθέσιμες.
-            </small>
+            <p><strong>Price per day:</strong> {{ property.price }} €</p>
           </div>
 
-          <!-- Derived dates -->
-          <div class="row">
-            <div class="col">
-              <div class="form-group mb-2">
-                <label>Check-in Date</label>
-                <input type="date" class="form-control" :value="checkinDate" readonly />
-              </div>
+          <!-- Booking card -->
+          <div class="property-card mb-3">
+            <h4 class="mb-3">Book your stay</h4>
+            <div class="form-group mb-2">
+              <label class="form-label">Select dates</label>
+              <flat-pickr
+                  v-model="dateRange"
+                  :config="flatpickrConfig"
+                  class="form-control"
+                  placeholder="Choose check-in and check-out"
+              />
+              <small class="text-muted d-block mt-1">
+                Οι γκρι ημερομηνίες στο ημερολόγιο είναι κλειστές/μη διαθέσιμες.
+              </small>
             </div>
-            <div class="col">
-              <div class="form-group mb-2">
-                <label>Check-out Date</label>
-                <input type="date" class="form-control" :value="checkoutDate" readonly />
+
+            <div class="row">
+              <div class="col">
+                <div class="form-group mb-2">
+                  <label>Check-in Date</label>
+                  <input type="date" class="form-control" :value="checkinDate" readonly />
+                </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Availability -->
-          <div v-if="checkinDate && checkoutDate" class="mt-2">
-            <span v-if="isAvailable(property.id, checkinDate, checkoutDate)" class="text-success">
-              ✅ Available for your dates
-            </span>
-            <span v-else class="text-danger">❌ Not available for your dates</span>
-          </div>
-
-          <!-- Total -->
-          <div v-if="nights > 0" class="mt-2 total-box">
-            <div><strong>Nights:</strong> {{ nights }}</div>
-            <div><strong>Price/night:</strong> {{ property.price }} €</div>
-            <div class="h5 m-0"><strong>Total:</strong> {{ totalPrice }} €</div>
-          </div>
-
-          <!-- Action -->
-          <button
-              class="btn btn-primary mt-3"
-              :disabled="nights <= 0 || !isAvailable(property.id, checkinDate, checkoutDate)"
-              @click="bookProperty"
-          >
-            Book Now<span v-if="totalPrice"> – {{ totalPrice }} €</span>
-          </button>
-
-          <!-- Reviews -->
-          <div class="reviews mt-4">
-            <h4>Reviews</h4>
-            <div v-if="reviews.length === 0">No reviews yet.</div>
-            <div v-else>
-              <div v-for="review in reviews" :key="review.id" class="card mb-2">
-                <div class="card-body">
-                  <p class="card-text">{{ review.content }}</p>
-                  <small class="text-muted">Rating: {{ review.rating }}/5</small><br />
-                  <small class="text-muted">By renter #{{ review.renterId }} on {{ formatDate(review.createdAt) }}</small>
+              <div class="col">
+                <div class="form-group mb-2">
+                  <label>Check-out Date</label>
+                  <input type="date" class="form-control" :value="checkoutDate" readonly />
                 </div>
               </div>
             </div>
+
+            <div v-if="checkinDate && checkoutDate" class="mt-2">
+      <span v-if="isAvailable(property.id, checkinDate, checkoutDate)" class="text-success">
+        ✅ Available for your dates
+      </span>
+              <span v-else class="text-danger">❌ Not available for your dates</span>
+            </div>
+
+            <div v-if="nights > 0" class="mt-3 total-box">
+              <div><strong>Nights:</strong> {{ nights }}</div>
+              <div><strong>Price/night:</strong> {{ property.price }} €</div>
+              <div class="h5 m-0"><strong>Total:</strong> {{ totalPrice }} €</div>
+            </div>
+
+            <button
+                class="btn btn-primary mt-3 w-100"
+                :disabled="nights <= 0 || !isAvailable(property.id, checkinDate, checkoutDate)"
+                @click="bookProperty"
+            >
+              Book Now<span v-if="totalPrice"> – {{ totalPrice }} €</span>
+            </button>
           </div>
 
+          <!-- Reviews card -->
+          <div class="property-card">
+            <h4>Reviews</h4>
+            <div v-if="reviews.length === 0">No reviews yet.</div>
+            <div v-else>
+              <div v-for="review in reviews" :key="review.id" class="review-card">
+                <p class="mb-1">{{ review.content }}</p>
+                <small class="text-muted">⭐ {{ review.rating }}/5</small><br />
+                <small class="text-muted">By renter #{{ review.renterId }} on {{ formatDate(review.createdAt) }}</small>
+              </div>
+            </div>
+          </div>
         </div>
+
+
+      </div>
       </div>
     </div>
   </section>
@@ -379,4 +380,43 @@ img { max-height: 350px; object-fit: cover; }
 
 .address-link { text-decoration: underline; }
 .address-link:hover { text-decoration: underline; opacity: 0.9; }
+
+/* Generic card style (matches homepage rounded look) */
+.property-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 1.5rem;
+}
+
+/* Review item style */
+.review-card {
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Total price box stays distinct but softer */
+.total-box {
+  background: #f5f6fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.75rem;
+  padding: 0.8rem 1rem;
+}
+
+/* Thumbnail hover */
+.thumbnail {
+  width: 70px; height: 70px;
+  object-fit: cover;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.thumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
 </style>

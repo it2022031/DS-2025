@@ -1,155 +1,99 @@
 <template>
   <section class="edit-property section bg-light py-5">
     <div class="container">
-      <h2 class="mb-4">Edit Property #{{ property && property.id }}</h2>
+      <div class="card edit-card shadow-sm p-4">
+        <h2 class="mb-4 text-center">Edit Property #{{ property && property.id }}</h2>
 
-      <div v-if="loading">Loading...</div>
-      <div v-else-if="error" class="text-danger">Failed to load property.</div>
-      <div v-else-if="property">
-        <!-- Property Edit Form -->
-        <form @submit.prevent="saveProperty">
-          <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input v-model="property.name" type="text" class="form-control" required />
-          </div>
+        <div v-if="loading" class="text-center">Loading...</div>
+        <div v-else-if="error" class="text-danger text-center">Failed to load property.</div>
+        <div v-else-if="property">
+          <!-- Property Edit Form -->
+          <form @submit.prevent="saveProperty">
+            <div class="mb-3">
+              <label class="form-label">Name</label>
+              <input v-model="property.name" type="text" class="form-control rounded-input" required />
+            </div>
 
-          <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea v-model="property.description" class="form-control" rows="4"></textarea>
-          </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea v-model="property.description" class="form-control rounded-input" rows="4"></textarea>
+            </div>
 
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">City</label>
-              <input v-model="property.city" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Country</label>
-              <input v-model="property.country" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Street</label>
-              <input v-model="property.street" type="text" class="form-control" />
-            </div>
-          </div>
-
-          <div class="row g-3 mt-3">
-            <div class="col-md-4">
-              <label class="form-label">Postal Code</label>
-              <input v-model="property.postalCode" type="text" class="form-control" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Square Meters</label>
-              <input v-model.number="property.squareMeters" type="number" class="form-control" min="0" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Price Per Day</label>
-              <input v-model.number="property.price" type="number" class="form-control" min="0" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Approval Status</label>
-
-              <select v-if="userRole === 'ADMIN'" v-model="property.approvalStatus" class="form-select">
-                <option value="PENDING">Pending</option>
-                <option value="APPROVED">Approved</option>
-                <option value="REJECTED">Rejected</option>
-              </select>
-
-              <div v-else class="form-control-plaintext">
-                {{ property.approvalStatus }}
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">City</label>
+                <input v-model="property.city" type="text" class="form-control rounded-input" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Country</label>
+                <input v-model="property.country" type="text" class="form-control rounded-input" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Street</label>
+                <input v-model="property.street" type="text" class="form-control rounded-input" />
               </div>
             </div>
-          </div>
 
-          <div class="mt-3">
-            <label class="form-label">Profile (Cover) Photo</label>
-            <div class="form-control-plaintext" v-if="coverId">
-              Displaying photo <strong>#{{ coverId }}</strong> as the property’s cover
-              <small class="text-muted">(if no explicit cover from backend, it’s the first photo)</small>
-            </div>
-            <div class="text-muted" v-else>Not set yet</div>
-          </div>
-
-          <div class="mt-4 d-flex justify-content-end">
-            <router-link to="/list-properties" class="btn btn-link me-3">Cancel</router-link>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-          </div>
-        </form>
-
-        <!-- Photo Upload Section -->
-        <div class="mt-4">
-          <label class="form-label">Upload Property Photos</label>
-          <input type="file" multiple accept="image/*" @change="handlePhotoChange" class="form-control mb-2" />
-          <button class="btn btn-secondary" @click="uploadPhotos" :disabled="!selectedPhotos.length">
-            Upload Photos
-          </button>
-
-          <!-- Preview selected images -->
-          <div class="mt-3" v-if="previewPhotos.length">
-            <h6>Selected Photos:</h6>
-            <div class="d-flex flex-wrap">
-              <div v-for="(src, index) in previewPhotos" :key="index" class="me-2 mb-2">
-                <img :src="src" alt="preview" width="100" height="100" class="border rounded" />
+            <div class="row g-3 mt-3">
+              <div class="col-md-4">
+                <label class="form-label">Postal Code</label>
+                <input v-model="property.postalCode" type="text" class="form-control rounded-input" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Square Meters</label>
+                <input v-model.number="property.squareMeters" type="number" class="form-control rounded-input" min="0" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Price Per Day</label>
+                <input v-model.number="property.price" type="number" class="form-control rounded-input" min="0" />
+              </div>
+              <div class="col-md-4 mt-2">
+                <label class="form-label">Approval Status</label>
+                <select v-if="userRole === 'ADMIN'" v-model="property.approvalStatus" class="form-select rounded-input">
+                  <option value="PENDING">Pending</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Rejected</option>
+                </select>
+                <div v-else class="form-control-plaintext">{{ property.approvalStatus }}</div>
               </div>
             </div>
-          </div>
+
+            <!-- Photo upload sections remain mostly unchanged, just cardify -->
+            <div class="mt-4">
+              <label class="form-label">Upload Property Photos</label>
+              <input type="file" multiple accept="image/*" @change="handlePhotoChange" class="form-control rounded-input mb-2" />
+              <button class="btn btn-secondary rounded-btn" @click="uploadPhotos" :disabled="!selectedPhotos.length">
+                Upload Photos
+              </button>
+            </div>
+
+            <!-- Existing Photos -->
+            <div class="mt-4" v-if="photos.length">
+              <h6>Existing Photos:</h6>
+              <div class="d-flex flex-wrap">
+                <div v-for="(photo, idx) in photos" :key="photo.id" class="photo-card position-relative me-2 mb-2 shadow-sm rounded">
+                  <img :src="photo.url" :alt="photo.filename" width="100" height="100" class="rounded" />
+                  <span v-if="photo.id === coverId || (!property.coverPhotoId && idx === 0)" class="cover-badge">Cover</span>
+                  <div class="photo-actions">
+                    <button @click="triggerEditPhoto(photo.id)" class="btn btn-sm btn-warning" title="Replace photo">✏️</button>
+                    <button @click="deletePhoto(photo.id)" class="btn btn-sm btn-danger" title="Delete photo">🗑</button>
+                  </div>
+                  <div v-if="replacingId === photo.id" class="overlay">Updating…</div>
+                  <input type="file" :ref="`editInput_${photo.id}`" accept="image/*" class="d-none" @change="handleEditPhotoChange($event, photo.id)" />
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end">
+              <router-link to="/list-properties" class="btn btn-light me-3 rounded-btn">Cancel</router-link>
+              <button type="submit" class="btn btn-primary rounded-btn">Save Changes</button>
+            </div>
+          </form>
         </div>
-
-        <!-- Existing Photos Section -->
-        <div class="mt-4" v-if="photos.length">
-          <h6>Existing Photos:</h6>
-          <div class="d-flex flex-wrap">
-            <div
-                v-for="(photo, idx) in photos"
-                :key="photo.id"
-                class="me-2 mb-2 photo-card position-relative"
-            >
-              <img
-                  :src="photo.url"
-                  :alt="photo.filename"
-                  width="100"
-                  height="100"
-                  class="border rounded"
-              />
-
-              <!-- Only visual badge; no API calls -->
-              <span v-if="photo.id === coverId || (!property.coverPhotoId && idx === 0)" class="cover-badge">
-                Cover
-              </span>
-
-              <!-- actions toolbar (only edit/delete) -->
-              <div class="photo-actions">
-                <button
-                    @click="triggerEditPhoto(photo.id)"
-                    class="btn btn-sm btn-warning"
-                    title="Replace photo"
-                >✏️</button>
-
-                <button
-                    @click="deletePhoto(photo.id)"
-                    class="btn btn-sm btn-danger"
-                    title="Delete photo"
-                >🗑</button>
-              </div>
-
-              <!-- loading overlay on replace -->
-              <div v-if="replacingId === photo.id" class="overlay">Updating…</div>
-
-              <!-- Hidden file input just for this photo -->
-              <input
-                  type="file"
-                  :ref="`editInput_${photo.id}`"
-                  accept="image/*"
-                  class="d-none"
-                  @change="handleEditPhotoChange($event, photo.id)"
-              />
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   </section>
+
 </template>
 
 <script>
@@ -403,4 +347,53 @@ img { object-fit: cover; }
 }
 
 .d-none { display: none; }
+
+.edit-card {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.rounded-input {
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rounded-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.15);
+}
+
+.rounded-btn {
+  border-radius: 25px;
+  padding: 0.6rem 1.5rem;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.rounded-btn:hover {
+  transform: translateY(-2px);
+}
+
+.photo-card {
+  width: 100px;
+  height: 100px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.photo-card:hover {
+  transform: scale(1.05);
+}
+
 </style>

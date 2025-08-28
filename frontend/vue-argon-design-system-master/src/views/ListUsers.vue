@@ -15,7 +15,7 @@
 
       <div v-if="loading" class="text-center text-white">Loading users...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load users.</div>
-      <div v-else-if="filteredUsers.length === 0" class="text-center text-white">No users found.</div>
+      <div v-else-if="filteredUsers.length === 0" class="text-center">No users found.</div>
 
       <div v-else>
         <ul class="user-list">

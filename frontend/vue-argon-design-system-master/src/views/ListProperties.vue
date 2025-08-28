@@ -1,7 +1,7 @@
 <template>
   <section class="list-properties section bg-secondary py-5">
     <div class="container">
-      <h2 class="text-center mb-4" style="color: #343a40;">🏠 Properties List</h2>
+      <h2 class="text-center mb-4" style="color: #343a40;">🏠 My Properties</h2>
 
       <!-- 🔍 Search + Filter -->
       <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
@@ -24,7 +24,7 @@
 
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
-      <div v-else-if="filteredProperties.length === 0" class="text-center text-white">No properties found.</div>
+      <div v-else-if="filteredProperties.length === 0" class="text-center">No properties found.</div>
 
       <ul v-else class="property-list">
         <li v-for="property in filteredProperties" :key="property.id" class="property-card">

@@ -1,7 +1,7 @@
 <template>
   <section class="list-reviews section bg-secondary py-5">
     <div class="container">
-      <h2 class="text-center mb-4" style="color: #343a40;">📝 All Reviews</h2>
+      <h2 class="text-center mb-4" style="color: #343a40;">📝 Reviews List</h2>
 
       <div v-if="loading" class="text-center text-white">Loading reviews...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load reviews.</div>
@@ -32,7 +32,7 @@
         </div>
 
         <!-- Empty states -->
-        <div v-if="filteredReviews.length === 0" class="text-center text-white mt-3">
+        <div v-if="filteredReviews.length === 0" class="text-center mt-3">
           {{ searchQuery ? 'No results for your search.' : 'No reviews found.' }}
         </div>
 

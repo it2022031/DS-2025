@@ -35,7 +35,7 @@
 
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
-      <div v-else-if="filteredProperties.length === 0" class="text-center text-white">No properties found.</div>
+      <div v-else-if="filteredProperties.length === 0" class="text-center">No properties found.</div>
 
       <ul v-else class="property-list">
         <li v-for="property in filteredProperties" :key="property.id" class="property-card">

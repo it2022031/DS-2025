@@ -1,25 +1,28 @@
 <template>
-  <section class="section bg-light py-5">
-    <div class="container text-center">
-      <h2>Request Renter Role</h2>
-      <p>If you want to rent properties, you need to request the Renter role.</p>
+  <section class="section bg-light py-5 d-flex align-items-center">
+    <div class="container">
+      <div class="card request-card mx-auto p-5 shadow-sm" style="max-width: 500px;">
+        <h2 class="mb-3 text-center">Request Renter Role</h2>
+        <p class="text-center text-muted mb-4">
+          If you want to rent properties, you need to request the Renter role.
+        </p>
 
-      <div v-if="error" class="text-danger mb-3">{{ error }}</div>
+        <div v-if="error" class="text-danger mb-3 text-center">{{ error }}</div>
 
-      <div v-if="renterRequestStatus === 'PENDING'" class="text-warning mb-3">
-        Your request to become a renter is pending.
+        <div v-if="renterRequestStatus === 'PENDING'" class="text-warning mb-3 text-center">
+          Your request to become a renter is pending.
+        </div>
+
+        <div v-else class="text-center">
+          <button class="btn btn-primary rounded-btn" @click="sendRequest">
+            Send Request
+          </button>
+        </div>
       </div>
-
-      <button
-          v-else
-          class="btn btn-primary"
-          @click="sendRequest"
-      >
-        Send Request
-      </button>
     </div>
   </section>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -75,4 +78,27 @@ export default {
 section {
   min-height: 60vh;
 }
+
+.request-card {
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.request-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.rounded-btn {
+  border-radius: 25px;
+  padding: 0.6rem 1.8rem;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.rounded-btn:hover {
+  transform: translateY(-2px);
+}
+
 </style>

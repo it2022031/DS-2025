@@ -5,7 +5,7 @@
 
       <div v-if="loading" class="text-center text-white">Loading renter requests...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load requests.</div>
-      <div v-else-if="users.length === 0" class="text-center text-white">No pending requests found.</div>
+      <div v-else-if="users.length === 0" class="text-center">No pending requests found.</div>
 
       <ul v-else class="user-list">
         <li v-for="user in users" :key="user.id" class="user-card">
