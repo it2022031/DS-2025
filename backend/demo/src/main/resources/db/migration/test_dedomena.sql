@@ -23,17 +23,17 @@ WITH pwd AS (
     SELECT '$2a$10$BorzpQK2bWX51uHQA28Z5uaoCbKgVBqs2vK.OjgF0nVs6ufLR11AW'::varchar AS p
 )
 INSERT INTO users(id, username, password, email, first_name, last_name, passport_number, afm, enabled, account_non_locked, renter_request_status)
-SELECT 1,'admin',''||p,'admin@example.com','Alice','Admin','P000001','AFM000001',true,true,'APPROVED' FROM pwd UNION ALL
-SELECT 2,'owner1',''||p,'owner1@example.com','Bob','Owner','P000002','AFM000002',true,true,'APPROVED' FROM pwd UNION ALL
-SELECT 3,'owner2',''||p,'owner2@example.com','Carol','Owner','P000003','AFM000003',true,true,'APPROVED' FROM pwd UNION ALL
-SELECT 4,'renter1',''||p,'renter1@example.com','Dave','Renter','P000004','AFM000004',true,true,'APPROVED' FROM pwd UNION ALL
-SELECT 5,'renter2',''||p,'renter2@example.com','Eve','Renter','P000005','AFM000005',true,true,'APPROVED' FROM pwd UNION ALL
-SELECT 6,'user1',''||p,'user1@example.com','Frank','User','P000006','AFM000006',true,true,'REJECTED' FROM pwd UNION ALL
-SELECT 7,'user2',''||p,'user2@example.com','Grace','User','P000007','AFM000007',true,true,'PENDING' FROM pwd UNION ALL
-SELECT 8,'owner3',''||p,'owner3@example.com','Hank','Owner','P000008','AFM000008',true,true,'APPROVED' FROM pwd UNION ALL
-SELECT 9,'renter3',''||p,'renter3@example.com','Ivy','Renter','P000009','AFM000009',true,true,'APPROVED' FROM pwd UNION ALL
-SELECT 10,'user3',''||p,'user3@example.com','John','User','P000010','AFM000010',true,true,'REJECTED' FROM pwd;
-
+SELECT  1,'admin'  ,p,'admin@example.com'  ,'Alice','Papadaki'    ,'P000001','AFM000001',true,true,'APPROVED' FROM pwd UNION ALL
+SELECT  2,'owner1' ,p,'owner1@example.com' ,'Bob'  ,'Nikolaidis'  ,'P000002','AFM000002',true,true,'APPROVED' FROM pwd UNION ALL
+SELECT  3,'owner2' ,p,'owner2@example.com' ,'Carol','Spanou'      ,'P000003','AFM000003',true,true,'APPROVED' FROM pwd UNION ALL
+SELECT  4,'renter1',p,'renter1@example.com','Dave' ,'Kouris'      ,'P000004','AFM000004',true,true,'APPROVED' FROM pwd UNION ALL
+SELECT  5,'renter2',p,'renter2@example.com','Eve'  ,'Vlachou'     ,'P000005','AFM000005',true,true,'APPROVED' FROM pwd UNION ALL
+SELECT  6,'user1'  ,p,'user1@example.com'  ,'Frank','Georgiou'    ,'P000006','AFM000006',true,true,'REJECTED' FROM pwd UNION ALL
+SELECT  7,'user2'  ,p,'user2@example.com'  ,'Grace','Papanikolaou','P000007','AFM000007',true,true,'PENDING'  FROM pwd UNION ALL
+SELECT  8,'owner3' ,p,'owner3@example.com' ,'Hank' ,'Christou'    ,'P000008','AFM000008',true,true,'APPROVED' FROM pwd UNION ALL
+SELECT  9,'renter3',p,'renter3@example.com','Ivy'  ,'Karveli'     ,'P000009','AFM000009',true,true,'APPROVED' FROM pwd UNION ALL
+SELECT 10,'user3'  ,p,'user3@example.com'  ,'John' ,'Mavridis'    ,'P000010','AFM000010',true,true,'REJECTED' FROM pwd
+ON CONFLICT (id) DO NOTHING;
 -- ============
 -- USER_ROLES (πολλοί-πολλοί μέσω ElementCollection)
 -- ============
