@@ -113,3 +113,11 @@ INSERT INTO reviews(id, content, rating, created_at, user_id, property_id, renta
                                                                                           (11, 'Καλό WiFi, κεντρικό.', 4, NOW() - INTERVAL '20 days', 5, 2, 2),
                                                                                           (12, 'Τζάκι και ατμόσφαιρα.', 5, NOW() - INTERVAL '25 days', 9, 4, 3);
 
+-- Ρυθμίζει τις sequences να "πιάσουν" το MAX(id) κάθε πίνακα.
+-- Δουλεύει τόσο για SERIAL όσο και για IDENTITY.
+
+SELECT setval(pg_get_serial_sequence('users','id'),           COALESCE((SELECT MAX(id) FROM users), 0), true);
+SELECT setval(pg_get_serial_sequence('properties','id'),      COALESCE((SELECT MAX(id) FROM properties), 0), true);
+SELECT setval(pg_get_serial_sequence('rentals','id'),         COALESCE((SELECT MAX(id) FROM rentals), 0), true);
+SELECT setval(pg_get_serial_sequence('reviews','id'),         COALESCE((SELECT MAX(id) FROM reviews), 0), true);
+SELECT setval(pg_get_serial_sequence('property_photos','id'), COALESCE((SELECT MAX(id) FROM property_photos), 0), true);
