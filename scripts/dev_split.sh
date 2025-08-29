@@ -20,7 +20,20 @@ mkdir -p "$ROOT_DIR/scripts"
 BACK_CMD="$ROOT_DIR/scripts/.run_backend.sh"
 FRONT_CMD="$ROOT_DIR/scripts/.run_frontend.sh"
 
-# -------- DB check & (optional) docker compose up --------
+# -------- detect docker compose flavor --------
+DCMD=""
+if command -v docker >/dev/null 2>&1; then
+  # Try plugin syntax first
+  if docker compose version >/dev/null 2>&1; then
+    DCMD="docker compose"
+  fi
+fi
+# Fallback to legacy docker-compose binary
+if [[ -z "$DCMD" ]] && command -v docker-compose >/dev/null 2>&1; then
+  DCMD="docker-compose"
+fi
+
+# -------- DB check & (optional) compose up --------
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 
@@ -45,9 +58,14 @@ else
   done
 
   if [[ -n "$COMPOSE_FILE" ]]; then
-    echo "🟡 DB down — ξεκινάω docker compose: $COMPOSE_FILE"
-    # Αν έχεις όνομα service (π.χ. 'db' ή 'postgres'), μπορείς να βάλεις: ... up -d db
-    docker compose -f "$COMPOSE_FILE" up -d
+    if [[ -z "$DCMD" ]]; then
+      echo "❌ Δεν βρέθηκε Docker Compose (ούτε plugin 'docker compose' ούτε binary 'docker-compose')."
+      echo "   Εγκατέστησε Docker Compose και ξανατρέξε το script."
+      exit 1
+    fi
+    echo "🟡 DB down — ξεκινάω $DCMD με file: $COMPOSE_FILE"
+    # Αν έχεις service name, μπορείς: "$DCMD" -f "$COMPOSE_FILE" up -d db
+    $DCMD -f "$COMPOSE_FILE" up -d
 
     echo "⏳ Περιμένω τη βάση να ανοίξει στο ${DB_HOST}:${DB_PORT}..."
     for i in {1..40}; do
