@@ -1,7 +1,7 @@
 <template>
   <footer class="footer">
     <div class="footer-content">
-      <p>© {{ year }} RealEstateApp. All rights reserved. Group-15</p>
+      <p>© {{ year }} Rental App. All rights reserved. Group-15</p>
       <p>
         <a href="#">Privacy Policy</a> |
         <a href="#">Terms of Service</a>
@@ -27,10 +27,7 @@ export default {
   color: #f5f6fa;
   text-align: center;
   padding: 2rem 1rem;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  margin-top: 3rem;
 }
 
 .footer a {

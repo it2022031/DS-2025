@@ -22,6 +22,14 @@
     <section class="mb-5">
       <h3>Επικοινωνία</h3>
       <p>📧 Μπορείτε να επικοινωνήσετε μαζί μας στο <a href="mailto:support@myapp.com">support@myapp.com</a></p>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
     </section>
   </div>
 </template>
@@ -33,8 +41,10 @@ export default {
 </script>
 
 <style scoped>
+
 ul {
   list-style-type: disc;
   padding-left: 1.5rem;
 }
+
 </style>

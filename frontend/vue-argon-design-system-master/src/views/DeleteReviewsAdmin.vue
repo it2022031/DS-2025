@@ -12,7 +12,7 @@
               v-model="searchQuery"
               type="search"
               class="form-control"
-              placeholder="Search by id, renterId, rating, content, propertyId, date…"
+              placeholder="Search by anything..."
           />
           <button
               v-if="searchQuery"

@@ -1,8 +1,7 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape shape-style-1 bg-gradient-default">
-      <span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span>
+    <div class="container d-flex flex-column">
+      <h2 class="text-center mb-4" style="color: #343a40;">🏠 Register A Property</h2>
     </div>
 
     <div class="container pt-lg-md">
@@ -12,9 +11,6 @@
                 header-classes="bg-white pb-5"
                 body-classes="px-lg-5 py-lg-5"
                 class="border-0">
-            <div class="text-center text-muted mb-4">
-              <large>Add a New Property</large>
-            </div>
 
             <form @submit.prevent="submitForm" role="form">
               <base-input alternative class="mb-3"

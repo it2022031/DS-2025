@@ -34,7 +34,7 @@ export default {
 <style scoped>
 .home-page {
   min-height: 100vh;
-  background-color: #f5f6fa;
+  background-color: white;
 }
 
 /* Banner with image */

@@ -1,6 +1,6 @@
 <template>
   <section class="section section-shaped section-lg my-0">
-    <div class="shape shape-style-1 bg-gradient-default">
+    <div class="shape shape-style-1 bg-gradient-default" >
       <span></span><span></span><span></span><span></span>
       <span></span><span></span><span></span><span></span>
     </div>
@@ -58,6 +58,14 @@
               </div>
               <div class="col-6 text-right">
                 <router-link to="/register" class="text-light"><small>Create new account</small></router-link>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
               </div>
             </template>
 
@@ -176,4 +184,5 @@ input {
   border-radius: 25px !important;
   padding: 10px 20px;
 }
+
 </style>
