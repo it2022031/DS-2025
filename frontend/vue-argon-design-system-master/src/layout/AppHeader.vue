@@ -2,8 +2,8 @@
   <header class="header-global">
     <base-nav ref="nav" class="navbar-main" transparent effect="light" expand>
       <!-- Λογότυπο -->
-      <router-link slot="brand" class="navbar-brand mr-lg-5" to="/">
-        <img src="img/brand/white.png" alt="logo" />
+      <router-link slot="brand" class="navbar-brand " to="/">
+        <img src="img/brand/logo_font.png" alt="logo" />
       </router-link>
 
       <!-- Mobile menu header -->
