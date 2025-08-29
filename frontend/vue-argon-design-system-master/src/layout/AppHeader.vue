@@ -182,7 +182,7 @@ export default {
 
 <style scoped>
 .header-global {
-  background-color: #343a40;
+  background-color: #5e72e4;
   color: white;
   min-height: 100px;
 }

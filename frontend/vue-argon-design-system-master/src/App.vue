@@ -21,6 +21,6 @@ export default {
 
 <style scoped>
 .header-global {
-  background-color: #343a40 !important;
+  background-color: #343a40;
 }
 </style>
