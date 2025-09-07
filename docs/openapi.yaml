@@ -1,0 +1,1271 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /api/users/{id}/upload-photo:
+    post:
+      tags:
+      - user-controller
+      operationId: uploadPhoto
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/{id}/reject-renter:
+    post:
+      tags:
+      - user-controller
+      operationId: rejectRenter
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/{id}/approve-renter:
+    post:
+      tags:
+      - user-controller
+      operationId: approveRenter
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/become-renter:
+    post:
+      tags:
+      - user-controller
+      operationId: requestRenter
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/{rentalId}/reject:
+    post:
+      tags:
+      - rental-controller
+      operationId: rejectRental
+      parameters:
+      - name: rentalId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/{rentalId}/approve:
+    post:
+      tags:
+      - rental-controller
+      operationId: approveRental
+      parameters:
+      - name: rentalId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/maintenance/reject-expired-pending:
+    post:
+      tags:
+      - rental-controller
+      operationId: rejectExpiredPendingManually
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/add:
+    post:
+      tags:
+      - rental-controller
+      operationId: createRental
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RentalCreateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties:
+    post:
+      tags:
+      - property-controller
+      operationId: createProperty
+      parameters:
+      - name: ownerId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyCreateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/{propertyId}/photos:
+    get:
+      tags:
+      - property-controller
+      operationId: getAllPropertyPhotos
+      parameters:
+      - name: propertyId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    post:
+      tags:
+      - property-controller
+      operationId: uploadPropertyPhoto
+      parameters:
+      - name: propertyId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/{id}/reviews:
+    get:
+      tags:
+      - review-controller
+      operationId: getReviewsForProperty
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReviewDto"
+    post:
+      tags:
+      - review-controller
+      operationId: addReviewForProperty
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/{id}/reject:
+    post:
+      tags:
+      - property-controller
+      operationId: reject
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/{id}/approve:
+    post:
+      tags:
+      - property-controller
+      operationId: approve
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/auth/register:
+    post:
+      tags:
+      - auth-controller
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/auth/login:
+    post:
+      tags:
+      - auth-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/{id}:
+    delete:
+      tags:
+      - user-controller
+      operationId: deleteUserAsAdmin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - user-controller
+      operationId: patchUserById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/{id}/roles:
+    patch:
+      tags:
+      - user-controller
+      operationId: updateUserRoles
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRolesRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/me:
+    get:
+      tags:
+      - user-controller
+      operationId: me
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - user-controller
+      operationId: patchMe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/{id}:
+    get:
+      tags:
+      - property-controller
+      operationId: getPropertyById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    delete:
+      tags:
+      - property-controller
+      operationId: deleteProperty
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - property-controller
+      operationId: patchProperty
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/reviews/{reviewId}:
+    delete:
+      tags:
+      - review-controller
+      operationId: deleteReview
+      parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - review-controller
+      operationId: updateReview
+      parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/photos/{photoId}:
+    get:
+      tags:
+      - property-controller
+      operationId: getPropertyPhoto
+      parameters:
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    delete:
+      tags:
+      - property-controller
+      operationId: deletePropertyPhoto
+      parameters:
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - property-controller
+      operationId: replacePhoto
+      parameters:
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users:
+    get:
+      tags:
+      - user-controller
+      operationId: allUsers
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/{id}/rentals:
+    get:
+      tags:
+      - user-controller
+      operationId: getRentalsForUserId
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/{id}/properties:
+    get:
+      tags:
+      - user-controller
+      operationId: getPropertiesForUserId
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/{id}/photo:
+    get:
+      tags:
+      - user-controller
+      operationId: getPhoto
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/whoami:
+    get:
+      tags:
+      - user-controller
+      operationId: whoami
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/users/renter-requests:
+    get:
+      tags:
+      - user-controller
+      operationId: listRenterRequests
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RenterRequestDto"
+  /api/rentals/{id}:
+    get:
+      tags:
+      - rental-controller
+      operationId: getRentalById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RentalDto"
+    delete:
+      tags:
+      - rental-controller
+      operationId: deleteRentalAsAdmin
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/status/rejected:
+    get:
+      tags:
+      - rental-controller
+      operationId: getAllRejectedRentals
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rental"
+    delete:
+      tags:
+      - rental-controller
+      operationId: deleteAllRejectedRentals
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/owner:
+    get:
+      tags:
+      - rental-controller
+      operationId: getMyPropertyRentals
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/by-renter/{renterId}:
+    get:
+      tags:
+      - rental-controller
+      operationId: getRentalsByRenter
+      parameters:
+      - name: renterId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/rentals/all:
+    get:
+      tags:
+      - rental-controller
+      operationId: getAllRentals
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/{id}/closed-dates:
+    get:
+      tags:
+      - property-controller
+      operationId: getClosedDates
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: flatten
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/user/{userId}:
+    get:
+      tags:
+      - review-controller
+      operationId: getReviewsByUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReviewDto"
+  /api/properties/status/rejected:
+    get:
+      tags:
+      - property-controller
+      operationId: getAllRejectedProperties
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+    delete:
+      tags:
+      - property-controller
+      operationId: deleteAllRejectedProperties
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/properties/reviews/all:
+    get:
+      tags:
+      - review-controller
+      operationId: getAllReviews
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReviewDto"
+  /api/properties/all:
+    get:
+      tags:
+      - property-controller
+      operationId: getAllProperties
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PropertyDto"
+  /api/auth/me:
+    get:
+      tags:
+      - auth-controller
+      operationId: me_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+components:
+  schemas:
+    RentalCreateRequest:
+      required:
+      - endDate
+      - propertyId
+      - startDate
+      type: object
+      properties:
+        propertyId:
+          type: integer
+          format: int64
+        startDate:
+          pattern: "\\d{4}-\\d{2}-\\d{2}"
+          type: string
+        endDate:
+          pattern: "\\d{4}-\\d{2}-\\d{2}"
+          type: string
+        userId:
+          type: integer
+          format: int64
+    PropertyCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        street:
+          type: string
+        postalCode:
+          type: string
+        squareMeters:
+          type: number
+          format: double
+        ownerId:
+          type: integer
+          format: int64
+        price:
+          type: number
+    RegistrationRequest:
+      required:
+      - email
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          maxLength: 2147483647
+          minLength: 6
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        passportNumber:
+          type: string
+        afm:
+          type: string
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    UpdateUserRolesRequest:
+      type: object
+      properties:
+        set:
+          type: array
+          items:
+            type: string
+        add:
+          type: array
+          items:
+            type: string
+        remove:
+          type: array
+          items:
+            type: string
+    RenterRequestDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+    RentalDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+        endDate:
+          type: string
+        paymentAmount:
+          type: number
+        TotalPrice:
+          type: number
+        approvalStatus:
+          type: string
+        propertyId:
+          type: integer
+          format: int64
+        propertyName:
+          type: string
+        userId:
+          type: integer
+          format: int64
+        renterFirstName:
+          type: string
+        renterLastName:
+          type: string
+        renterUserName:
+          type: string
+    Property:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        street:
+          type: string
+        postalCode:
+          type: string
+        squareMeters:
+          type: number
+          format: double
+        approvalStatus:
+          type: string
+          enum:
+          - PENDING
+          - APPROVED
+          - REJECTED
+        owner:
+          $ref: "#/components/schemas/User"
+        reviews:
+          type: array
+          items:
+            $ref: "#/components/schemas/Review"
+        price:
+          type: number
+    Rental:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        paymentAmount:
+          type: number
+        user:
+          $ref: "#/components/schemas/User"
+        property:
+          $ref: "#/components/schemas/Property"
+        approvalStatus:
+          type: string
+          enum:
+          - PENDING
+          - APPROVED
+          - REJECTED
+    Review:
+      required:
+      - content
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        content:
+          type: string
+        rating:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          $ref: "#/components/schemas/User"
+        property:
+          $ref: "#/components/schemas/Property"
+        rental:
+          $ref: "#/components/schemas/Rental"
+    User:
+      required:
+      - email
+      - password
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          maxLength: 50
+          minLength: 3
+          type: string
+        password:
+          maxLength: 2147483647
+          minLength: 6
+          type: string
+          writeOnly: true
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        passportNumber:
+          type: string
+        afm:
+          type: string
+        roles:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            enum:
+            - USER
+            - ADMIN
+            - RENTER
+        enabled:
+          type: boolean
+        accountNonLocked:
+          type: boolean
+        properties:
+          type: array
+          items:
+            $ref: "#/components/schemas/Property"
+        renterRequestStatus:
+          type: string
+          enum:
+          - PENDING
+          - APPROVED
+          - REJECTED
+        reviews:
+          type: array
+          items:
+            $ref: "#/components/schemas/Review"
+        profilePicture:
+          type: array
+          items:
+            type: string
+            format: byte
+        profilePictureContentType:
+          type: string
+        profilePictureFilename:
+          type: string
+        fullName:
+          type: string
+    ReviewDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        content:
+          type: string
+        rating:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+        propertyId:
+          type: integer
+          format: int64
+        renterId:
+          type: integer
+          format: int64
+        rentalId:
+          type: integer
+          format: int64
+    PropertyDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        street:
+          type: string
+        postalCode:
+          type: string
+        squareMeters:
+          type: number
+          format: double
+        approvalStatus:
+          type: string
+        ownerId:
+          type: integer
+          format: int64
+        ownerFirstName:
+          type: string
+        ownerLastName:
+          type: string
+        ownerUsername:
+          type: string
+        price:
+          type: number
