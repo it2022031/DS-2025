@@ -19,6 +19,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.Services.email.EmailService;
+
 import java.util.Map;
 
 @RestController
@@ -30,15 +32,18 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final EmailService emailService; // 👈 ΝΕΟ
 
     public AuthController(CustomUserDetailsService userDetailsService,
                           JwtUtil jwtUtil,
                           AuthenticationManager authenticationManager,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          EmailService emailService) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.emailService = emailService; // 👈 ΝΕΟ
     }
 
     // DTOs για Register/Login
@@ -78,12 +83,16 @@ public class AuthController {
 
         User saved = userDetailsService.registerNewUser(user);
 
+        // ✉️ ΕΔΩ στέλνουμε email ενημέρωσης εγγραφής
+        emailService.sendRegistrationEmail(saved.getEmail(), saved.getUsername());
+
         // μετά την εγγραφή, κάνουμε και login token
         UserDetails ud = userDetailsService.loadUserByUsername(saved.getUsername());
         String token = jwtUtil.generateToken(ud);
 
         return ResponseEntity.ok(new AuthResponse(token, UserResponseDto.fromEntity(saved)));
     }
+
 
     // Login υπάρχοντος χρήστη
     @PostMapping("/login")
