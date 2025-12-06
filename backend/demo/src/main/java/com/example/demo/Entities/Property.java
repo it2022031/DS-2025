@@ -27,6 +27,11 @@ public class Property {
     @Enumerated(EnumType.STRING)
     private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
+    // --- PDF document fields (MinIO) ---
+    private String documentPdfKey;         // το "κλειδί" στο MinIO
+    private String documentPdfName;        // original filename
+    private String documentPdfContentType; // για πληρότητα (application/pdf)
+
     // ΣΧέσεις
 
 
@@ -149,5 +154,29 @@ public class Property {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public String getDocumentPdfKey() {
+        return documentPdfKey;
+    }
+
+    public void setDocumentPdfKey(String documentPdfKey) {
+        this.documentPdfKey = documentPdfKey;
+    }
+
+    public String getDocumentPdfName() {
+        return documentPdfName;
+    }
+
+    public void setDocumentPdfName(String documentPdfName) {
+        this.documentPdfName = documentPdfName;
+    }
+
+    public String getDocumentPdfContentType() {
+        return documentPdfContentType;
+    }
+
+    public void setDocumentPdfContentType(String documentPdfContentType) {
+        this.documentPdfContentType = documentPdfContentType;
     }
 }

@@ -27,6 +27,11 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.example.demo.Services.file.FileStorageService;
+import org.springframework.http.MediaType;
+import java.io.InputStream;
+
+
 @RestController
 @RequestMapping("/api/properties")
 @CrossOrigin
@@ -36,11 +41,13 @@ public class PropertyController {
     private final UserRepository userRepository;
     private final PropertyRepository propertyRepository;
     private final PropertyPhotoRepository propertyPhotoRepository;
-    public PropertyController(PropertyService propertyService, UserRepository userRepository, PropertyRepository propertyRepository, PropertyPhotoRepository propertyPhotoRepository) {
+    private final FileStorageService fileStorageService; //
+    public PropertyController(PropertyService propertyService, UserRepository userRepository, PropertyRepository propertyRepository, PropertyPhotoRepository propertyPhotoRepository, FileStorageService fileStorageService) {
         this.propertyService = propertyService;
         this.userRepository = userRepository;
         this.propertyRepository = propertyRepository;
         this.propertyPhotoRepository = propertyPhotoRepository;
+        this.fileStorageService = fileStorageService; //
     }
 
 
@@ -498,5 +505,90 @@ public class PropertyController {
             return ResponseEntity.ok(ranges);
         }
     }
+
+    @PostMapping(value = "/{propertyId}/document",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadPropertyDocument(
+            @PathVariable Long propertyId,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Not authenticated"));
+        }
+
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        // Έλεγχος ιδιοκτήτη / admin (ίδιο στυλ όπως στις φωτογραφίες)
+        User caller = userRepository.findByUsername(
+                ((UserDetails) authentication.getPrincipal()).getUsername()
+        ).orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isOwner = property.getOwner().getId().equals(caller.getId());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isOwner && !isAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You are not allowed to upload document for this property"));
+        }
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Empty file"));
+        }
+
+        // Μόνο PDF
+        if (!"application/pdf".equalsIgnoreCase(file.getContentType())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Το αρχείο πρέπει να είναι PDF"));
+        }
+
+        try {
+            String objectKey = fileStorageService.uploadPdf(file);
+
+            property.setDocumentPdfKey(objectKey);
+            property.setDocumentPdfName(file.getOriginalFilename());
+            property.setDocumentPdfContentType(file.getContentType());
+
+            propertyRepository.save(property);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "PDF uploaded successfully",
+                    "fileKey", objectKey
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to upload PDF"));
+        }
+    }
+
+    @GetMapping("/{propertyId}/document")
+    public ResponseEntity<?> getPropertyDocument(@PathVariable Long propertyId) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        if (property.getDocumentPdfKey() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try (InputStream is = fileStorageService.getPdf(property.getDocumentPdfKey())) {
+            byte[] bytes = is.readAllBytes();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + property.getDocumentPdfName() + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(bytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to load PDF"));
+        }
+    }
+
 
 }
