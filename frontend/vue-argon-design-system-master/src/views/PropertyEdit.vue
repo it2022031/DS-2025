@@ -58,14 +58,27 @@
               </div>
             </div>
 
-            <!-- Photo upload sections remain mostly unchanged, just cardify -->
             <div class="mt-4">
-              <label class="form-label">Upload Property Photos</label>
-              <input type="file" multiple accept="image/*" @change="handlePhotoChange" class="form-control rounded-input mb-2" />
-              <button class="btn btn-secondary rounded-btn" @click="uploadPhotos" :disabled="!selectedPhotos.length">
+              <label class="form-label">Upload Property Media</label>
+
+              <!-- Photos -->
+              <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  @change="handlePhotoChange"
+                  class="form-control rounded-input mb-2"
+              />
+              <button
+                  class="btn btn-outline-primary rounded-btn"
+                  @click="uploadPhotos"
+                  :disabled="!selectedPhotos.length"
+              >
                 Upload Photos
               </button>
+
             </div>
+
 
             <!-- Existing Photos -->
             <div class="mt-4" v-if="photos.length">
@@ -83,6 +96,45 @@
                 </div>
               </div>
             </div>
+
+            <div class="mt-4">
+              <label class="form-label">Property Document (PDF)</label>
+
+              <!-- IF NO PDF YET -->
+              <div v-if="!document">
+                <input
+                    type="file"
+                    accept="application/pdf"
+                    class="form-control rounded-input mb-2"
+                    @change="handlePdfChange"
+                />
+
+                <button
+                    class="btn btn-primary rounded-btn"
+                    @click="uploadPdf"
+                    :disabled="!selectedPdf"
+                >
+                  Upload PDF
+                </button>
+              </div>
+
+              <!-- IF PDF EXISTS -->
+              <div v-else class="d-flex align-items-center gap-3">
+                <div class="form-control rounded-input bg-light">
+                  📄 {{ document.filename }}
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-primary rounded-btn"
+                    @click="viewPdf"
+                >
+                  View PDF
+                </button>
+
+              </div>
+            </div>
+
 
             <div class="mt-4 d-flex justify-content-end">
               <router-link to="/list-properties" class="btn btn-light me-3 rounded-btn">Cancel</router-link>
@@ -109,7 +161,9 @@ export default {
       selectedPhotos: [],
       previewPhotos: [],
       photos: [],
-      replacingId: null
+      replacingId: null,
+      selectedPdf: null,
+      document: null // { fileKey, filename, url }
     };
   },
   computed: {
@@ -137,6 +191,8 @@ export default {
       this.property = response.data;
 
       await this.fetchPhotos();
+      await this.fetchDocument();
+
     } catch (err) {
       console.error('Error loading property:', err.response ? err.response.status : err.message);
       this.error = true;
@@ -294,7 +350,105 @@ export default {
       } finally {
         this.replacingId = null;
       }
-    }
+    },
+
+    handlePdfChange(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      if (file.type !== "application/pdf") {
+        alert("Please select a PDF file.");
+        event.target.value = "";
+        return;
+      }
+
+      this.selectedPdf = file;
+    },
+
+    async uploadPdf() {
+      if (!this.selectedPdf || this.document) return;
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", this.selectedPdf);
+
+      try {
+        const response = await axios.post(
+            `http://localhost:8080/api/properties/${this.property.id}/document`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
+              }
+            }
+        );
+
+        const fileKey = response.data.fileKey;
+        const filename = fileKey.split("_").slice(1).join("_");
+
+        this.document = {
+          filename,
+          url: `http://localhost:8080/api/properties/${this.property.id}/document`
+        };
+
+        this.selectedPdf = null;
+      } catch (err) {
+        alert("Failed to upload PDF.");
+      }
+    },
+
+
+    async fetchDocument() {
+      const token = localStorage.getItem("token");
+
+      try {
+        await axios.get(
+            `http://localhost:8080/api/properties/${this.property.id}/document`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              responseType: "blob" // 👈 important
+            }
+        );
+
+        // If we reached here → document exists
+        this.document = {
+          filename: this.document?.filename || "Document Already Uploaded",
+          url: `http://localhost:8080/api/properties/${this.property.id}/document`
+        };
+      } catch (err) {
+        // 404 → no document uploaded yet
+        this.document = null;
+      }
+    },
+
+    async viewPdf() {
+      const token = localStorage.getItem("token");
+
+      try {
+        const response = await axios.get(
+            `http://localhost:8080/api/properties/${this.property.id}/document`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              responseType: "blob" // 👈 REQUIRED
+            }
+        );
+
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+
+        window.open(url, "_blank");
+
+        // optional cleanup
+        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+      } catch (err) {
+        console.error("Error opening PDF:", err);
+        alert("Unable to open PDF.");
+      }
+    },
+
+
+
   }
 };
 </script>
