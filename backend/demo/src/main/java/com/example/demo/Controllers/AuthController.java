@@ -1,6 +1,7 @@
 package com.example.demo.Controllers;
 
 import com.example.demo.Entities.User;
+import com.example.demo.Repositories.AccountActivationTokenRepository;
 import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Security.JwtUtil;
 import com.example.demo.Security.Role;
@@ -32,18 +33,20 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final EmailService emailService; // 👈 ΝΕΟ
-
+    private final EmailService emailService;
+    private final AccountActivationTokenRepository activationTokenRepository;
     public AuthController(CustomUserDetailsService userDetailsService,
                           JwtUtil jwtUtil,
                           AuthenticationManager authenticationManager,
                           UserRepository userRepository,
-                          EmailService emailService) {
+                          EmailService emailService,
+                          AccountActivationTokenRepository activationTokenRepository) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
-        this.emailService = emailService; // 👈 ΝΕΟ
+        this.emailService = emailService;
+        this.activationTokenRepository = activationTokenRepository;
     }
 
     // DTOs για Register/Login
@@ -79,18 +82,14 @@ public class AuthController {
         user.setLastName(req.lastName());
         user.setPassportNumber(req.passportNumber());
         user.setAfm(req.afm());
-        user.addRole(Role.USER); // default role
+        user.addRole(Role.USER);
 
-        User saved = userDetailsService.registerNewUser(user);
+        User saved = userDetailsService.registerNewUser(user); // εδώ γίνεται enabled=false + token + email
 
-        // ✉️ ΕΔΩ στέλνουμε email ενημέρωσης εγγραφής
-        emailService.sendRegistrationEmail(saved.getEmail(), saved.getUsername());
-
-        // μετά την εγγραφή, κάνουμε και login token
-        UserDetails ud = userDetailsService.loadUserByUsername(saved.getUsername());
-        String token = jwtUtil.generateToken(ud);
-
-        return ResponseEntity.ok(new AuthResponse(token, UserResponseDto.fromEntity(saved)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "Registration successful. Please check your email to activate your account.",
+                "user", UserResponseDto.fromEntity(saved)
+        ));
     }
 
 
@@ -130,4 +129,22 @@ public class AuthController {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
+    @GetMapping("/activate")
+    public ResponseEntity<?> activate(@RequestParam String token) {
+        var at = activationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid activation token"));
+
+        if (at.getExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Token expired"));
+        }
+
+        User user = at.getUser();
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        activationTokenRepository.delete(at);
+
+        return ResponseEntity.ok(Map.of("message", "Account activated successfully"));
+    }
+
 }

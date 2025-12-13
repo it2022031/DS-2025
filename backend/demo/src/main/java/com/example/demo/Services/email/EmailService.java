@@ -33,4 +33,26 @@ public class EmailService {
                 + "Η ομάδα της Rental App";
     }
 
+    public void sendActivationEmail(String to, String username, String token) {
+
+        String activationLink = "http://localhost:8080/api/auth/activate?token=" + token;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setFrom(from);
+        message.setSubject("Ενεργοποίηση λογαριασμού");
+        message.setText(buildActivationBody(username, activationLink));
+
+        mailSender.send(message);
+    }
+
+    private String buildActivationBody(String username, String link) {
+        return "Γεια σου " + username + "!\n\n"
+                + "Για να ενεργοποιήσεις τον λογαριασμό σου στην Rental App, "
+                + "πάτησε στο παρακάτω link:\n\n"
+                + link + "\n\n"
+                + "Το link ισχύει για 24 ώρες.\n\n"
+                + "Αν δεν έκανες εσύ την εγγραφή, αγνόησε αυτό το email.\n\n"
+                + "Η ομάδα της Rental App";
+    }
 }

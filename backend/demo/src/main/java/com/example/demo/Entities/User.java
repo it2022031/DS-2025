@@ -59,7 +59,7 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     // Κατάσταση λογαριασμού (δεν χρησιμοποιείται ακόμα)
-    private boolean enabled = true;
+    private boolean enabled = false;
     private boolean accountNonLocked = true;
 
     // Σχέσεις

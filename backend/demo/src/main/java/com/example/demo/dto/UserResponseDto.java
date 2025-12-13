@@ -5,17 +5,19 @@ import com.example.demo.Security.Role;
 
 import java.util.List;
 
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.enabled;
+
 public record UserResponseDto(
-        // Όνομα πεδίων
         Long id,
         String username,
         String email,
         String firstName,
         String lastName,
-        List<String> roles, // λίστα με όλους τους ρόλους
+        List<String> roles,
         String passportNumber,
         String afm,
-        String renterRequestStatus
+        String renterRequestStatus,
+        boolean enabled
 ) {
     public static UserResponseDto fromEntity(User u) {
         List<String> roleNames = u.getRoles().stream()
@@ -32,7 +34,8 @@ public record UserResponseDto(
                 roleNames,
                 u.getPassportNumber(),
                 u.getAfm(),
-                u.getRenterRequestStatus() != null ? u.getRenterRequestStatus().name() : null
+                u.getRenterRequestStatus() != null ? u.getRenterRequestStatus().name() : null,
+                u.isEnabled()
         );
     }
 }
