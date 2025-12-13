@@ -17,19 +17,26 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
-  # 🔥➕ Προσθέτουμε το MinIO εδώ — ΔΕΝ αφαιρούμε τίποτα
   minio:
     image: minio/minio
     container_name: minio
     ports:
-      - "9000:9000"     # API (backend μιλάει εδώ)
-      - "9001:9001"     # Web UI (εσύ για browsing)
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin123
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
+
+  # ✅ MailHog (Fake email server)
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
 
 volumes:
   db-data:
