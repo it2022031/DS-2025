@@ -76,6 +76,16 @@ public class Config {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // ✅ allow static pages used by activation redirect
+                        .requestMatchers(
+                                "/account-activated.html",
+                                "/activation-expired.html",
+                                "/favicon.ico",
+                                "/error",
+                                "/static/**", "/css/**", "/js/**", "/images/**"
+                        ).permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/properties/*/photos").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/properties/photos/*").permitAll()
                         .anyRequest().authenticated()
