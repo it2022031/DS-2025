@@ -121,11 +121,11 @@
               </div>
             </form>
 
-            <div v-if="success" class="text-center my-3">
-              <base-button type="success" disabled>
-                ✔️ Account created successfully!
-              </base-button>
-            </div>
+<!--            <div v-if="success" class="text-center my-3">-->
+<!--              <base-button type="success" >-->
+<!--                ✔️ Account created successfully!-->
+<!--              </base-button>-->
+<!--            </div>-->
 
           </card>
         </div>
@@ -247,11 +247,33 @@ export default {
           afm: this.taxNumber
         });
 
-        // 2. Auto-login to get token
-        const loginResp = await axios.post(`${API_BASE}/api/auth/login`, {
-          username: this.username,
-          password: this.password
-        });
+// 2. Try auto-login (may fail if account not activated)
+        let loginResp = null;
+        try {
+          loginResp = await axios.post(`${API_BASE}/api/auth/login`, {
+            username: this.username,
+            password: this.password
+          });
+        } catch (loginErr) {
+          const msg =
+              loginErr.response?.data?.error ||
+              loginErr.response?.data ||
+              '';
+
+          if (
+              typeof msg === 'string' &&
+              msg.toLowerCase().includes('disabled')
+          ) {
+            // ✅ Registration succeeded but account not activated
+            this.success = true;
+            this.errorMessage = '';
+            alert('Registration successful. Please check your email to activate your account.');
+            return;
+          }
+
+          throw loginErr; // other login errors still matter
+        }
+
 
         const token = loginResp.data.token;
         if (!token) {
@@ -285,7 +307,8 @@ export default {
           } else {
             this.errorMessage = JSON.stringify(err.response.data);
           }
-        } else if (err.message) {
+        }
+        else if (err.message) {
           this.errorMessage = err.message;
         } else {
           this.errorMessage = "Registration failed.";
