@@ -119,20 +119,41 @@
               </div>
 
               <!-- IF PDF EXISTS -->
-              <div v-else class="d-flex align-items-center gap-3">
-                <div class="form-control rounded-input bg-light">
-                  📄 {{ document.filename }}
+              <div v-else class="mt-2">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                  <div class="form-control rounded-input bg-light">
+                    📄 {{ document.filename }}
+                  </div>
+
+                  <button
+                      type="button"
+                      class="btn btn-outline-primary rounded-btn"
+                      @click="viewPdf"
+                  >
+                    View PDF
+                  </button>
                 </div>
 
-                <button
-                    type="button"
-                    class="btn btn-outline-primary rounded-btn"
-                    @click="viewPdf"
-                >
-                  View PDF
-                </button>
+                <!-- Replace PDF -->
+                <div class="d-flex align-items-center gap-2">
+                  <input
+                      type="file"
+                      accept="application/pdf"
+                      class="form-control rounded-input"
+                      @change="handlePdfChange"
+                  />
 
+                  <button
+                      type="button"
+                      class="btn btn-warning rounded-btn"
+                      :disabled="!selectedPdf"
+                      @click="uploadPdf"
+                  >
+                    Replace PDF
+                  </button>
+                </div>
               </div>
+
             </div>
 
 
@@ -366,7 +387,7 @@ export default {
     },
 
     async uploadPdf() {
-      if (!this.selectedPdf || this.document) return;
+      if (!this.selectedPdf) return;
 
       const token = localStorage.getItem("token");
       const formData = new FormData();
@@ -393,11 +414,10 @@ export default {
         };
 
         this.selectedPdf = null;
-      } catch (err) {
+      } catch {
         alert("Failed to upload PDF.");
       }
     },
-
 
     async fetchDocument() {
       const token = localStorage.getItem("token");
