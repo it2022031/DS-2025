@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:15
@@ -21,6 +19,7 @@ services:
   minio:
     image: minio/minio
     container_name: minio
+    restart: always
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -34,12 +33,14 @@ services:
   mailhog:
     image: mailhog/mailhog
     container_name: mailhog
+    restart: always
     ports:
       - "1025:1025"
       - "8025:8025"
 
   frontend:
     image: node:18
+    restart: always
     working_dir: /app
     volumes:
       - ../../frontend/vue-argon-design-system-master:/app
@@ -51,23 +52,29 @@ services:
       npx vue-cli-service serve --host 0.0.0.0 --port 8081"
 
   backend:
-    build: ../../backend/demo        # εκεί που είναι pom.xml + Dockerfile
+    build: ../../backend/demo
     container_name: backend
+    restart: always
     depends_on:
       - db
       - minio
       - mailhog
     environment:
+      # DB (docker network)
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/demo_db
       SPRING_DATASOURCE_USERNAME: demo_user
       SPRING_DATASOURCE_PASSWORD: demo_pass
 
-      MINIO_ENDPOINT: http://minio:9000
+      # MailHog (docker network)
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: "1025"
+
+      # MinIO (docker network) -> map to minio.* properties
+      MINIO_URL: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
-
-      SPRING_MAIL_HOST: mailhog
-      SPRING_MAIL_PORT: 1025
+      MINIO_BUCKET: property-docs
+      MINIO_SECURE: "false"
     ports:
       - "8080:8080"
 
