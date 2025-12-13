@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.Services.email.EmailService;
 
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -130,12 +132,15 @@ public class AuthController {
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
     @GetMapping("/activate")
-    public ResponseEntity<?> activate(@RequestParam String token) {
+    public void activate(@RequestParam String token,
+                         HttpServletResponse response) throws IOException {
+
         var at = activationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid activation token"));
 
         if (at.getExpiresAt().isBefore(java.time.LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Token expired"));
+            response.sendRedirect("/activation-expired.html");
+            return; // 👈 απλό return; ΟΧΙ return κάτι
         }
 
         User user = at.getUser();
@@ -144,7 +149,7 @@ public class AuthController {
 
         activationTokenRepository.delete(at);
 
-        return ResponseEntity.ok(Map.of("message", "Account activated successfully"));
+        response.sendRedirect("/account-activated.html");
     }
 
 }
