@@ -6,14 +6,21 @@
     project_dir: /opt/DS-2025
 
   tasks:
-#    - name: Install required packages (Docker + git)
-#      apt:
-#        name:
-#          - docker.io
-#          - docker-compose-plugin
-#          - git
-#        state: present
-#        update_cache: yes
+    - name: Install required packages (Docker + git)
+      apt:
+        name:
+          #- docker.io
+          - docker-compose-plugin
+          - git
+        state: present
+        update_cache: yes
+
+
+    - name: Stop existing docker compose
+      command: docker compose down
+      args:
+        chdir: "{{ project_dir }}/DevOps/Docker"
+      ignore_errors: yes
 
     - name: Ensure docker service is running
       service:

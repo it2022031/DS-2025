@@ -18,7 +18,7 @@ services:
 
   minio:
     image: minio/minio
-    container_name: minio
+    #container_name: minio
     restart: always
     ports:
       - "9000:9000"
@@ -32,7 +32,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog
-    container_name: mailhog
+    #container_name: mailhog
     restart: always
     ports:
       - "1025:1025"
