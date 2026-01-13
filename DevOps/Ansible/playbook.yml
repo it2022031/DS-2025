@@ -9,15 +9,14 @@
     - name: Install required packages (Docker + git)
       apt:
         name:
-          #- docker.io
-          - docker-compose-plugin
+          - docker.io
+          - docker-compose
           - git
         state: present
         update_cache: yes
 
-
     - name: Stop existing docker compose
-      command: docker compose down
+      command: docker-compose down
       args:
         chdir: "{{ project_dir }}/DevOps/Docker"
       ignore_errors: yes
@@ -40,10 +39,10 @@
       git:
         repo: "https://github.com/it2022031/DS-2025.git"
         dest: "{{ project_dir }}"
-        version: main-branch   # ή master αν έτσι λέγεται το branch σου
+        version: main-branch
         update: yes
 
     - name: Run docker compose (build & up)
-      command: docker compose up -d --build
+      command: docker-compose up -d --build
       args:
         chdir: "{{ project_dir }}/DevOps/Docker"
