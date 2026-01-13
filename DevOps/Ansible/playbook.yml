@@ -1,5 +1,5 @@
 - name: Deploy DS-2025 rental app
-  hosts: app_server
+  hosts: local
   become: true
 
   vars:

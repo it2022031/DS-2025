@@ -1,0 +1,58 @@
+- name: Deploy DS-2025 rental app
+  hosts: all
+  become: false
+
+  vars:
+    # Στο VM γράφει στο /opt, στο local στο home
+    project_dir: "{{ '/opt/DS-2025' if 'vm' in group_names else ansible_env.HOME ~ '/DS-2025' }}"
+
+  tasks:
+    # ---------- VM ONLY ----------
+    - name: Install required packages (Docker + git) [VM only]
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - git
+        state: present
+        update_cache: yes
+      become: true
+      when: "'vm' in group_names"
+
+    - name: Ensure docker service is running [VM only]
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: true
+      when: "'vm' in group_names"
+
+    # ---------- BOTH (local + vm) ----------
+    - name: Create project directory
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: "{{ ansible_user | default('root') }}"
+        group: "{{ ansible_user | default('root') }}"
+        mode: "0755"
+
+    - name: Clone / update git repository
+      git:
+        repo: "https://github.com/it2022031/DS-2025.git"
+        dest: "{{ project_dir }}"
+        version: main-branch
+        update: yes
+
+    # ---------- VM ONLY ----------
+    - name: Stop existing docker compose [VM only]
+      command: docker-compose down
+      args:
+        chdir: "{{ project_dir }}/DevOps/Docker"
+      ignore_errors: yes
+      when: "'vm' in group_names"
+
+    - name: Run docker compose (build & up) [VM only]
+      command: docker-compose up -d --build
+      args:
+        chdir: "{{ project_dir }}/DevOps/Docker"
+      when: "'vm' in group_names"
