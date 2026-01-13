@@ -9,7 +9,7 @@
     - name: Install required packages (Docker + git)
       apt:
         name:
-          - docker.io
+          #- docker.io
           - docker-compose
           - git
         state: present
