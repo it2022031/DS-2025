@@ -1,0 +1,21 @@
+- name: DS-2025 local (clone only)
+  hosts: local
+  become: false
+
+  vars:
+    project_dir: "{{ ansible_env.HOME }}/DS-2025"
+
+  tasks:
+    - name: Create project directory (local)
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Clone / update git repository (local)
+      git:
+        repo: "https://github.com/it2022031/DS-2025.git"
+        dest: "{{ project_dir }}"
+        version: main-branch
+        update: yes
+        force: yes
