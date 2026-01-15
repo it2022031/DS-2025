@@ -18,7 +18,7 @@ public class EmailService {
     //  Base URL used to generate links in emails
     // Local: http://localhost:8080
     // VM: set APP_PUBLIC_BASE_URL=http://127.0.0.1:8090 (or 8088)
-    @Value("${app.public.base-url}")
+    @Value("${APP_PUBLIC_BASE_URL:http://localhost:8080}")
     private String publicBaseUrl;
 
     public void sendRegistrationEmail(String to, String username) {

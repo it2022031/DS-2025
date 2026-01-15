@@ -6,11 +6,14 @@ import com.example.demo.Repositories.UserRepository;
 import com.example.demo.Security.JwtUtil;
 import com.example.demo.Security.Role;
 import com.example.demo.Services.CustomUserDetailsService;
+import com.example.demo.Services.email.EmailService;
 import com.example.demo.dto.UserResponseDto;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -20,10 +23,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.Services.email.EmailService;
-
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
@@ -37,6 +38,10 @@ public class AuthController {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final AccountActivationTokenRepository activationTokenRepository;
+
+    @Value("${APP_PUBLIC_BASE_URL:http://localhost:8080}")
+    private String publicBaseUrl;
+
     public AuthController(CustomUserDetailsService userDetailsService,
                           JwtUtil jwtUtil,
                           AuthenticationManager authenticationManager,
@@ -63,7 +68,6 @@ public class AuthController {
     ) {}
 
     public record AuthRequest(String username, String password) {}
-
     public record AuthResponse(String token, UserResponseDto user) {}
 
     // Εγγραφή νέου χρήστη
@@ -86,14 +90,13 @@ public class AuthController {
         user.setAfm(req.afm());
         user.addRole(Role.USER);
 
-        User saved = userDetailsService.registerNewUser(user); // εδώ γίνεται enabled=false + token + email
+        User saved = userDetailsService.registerNewUser(user); // enabled=false + token + email
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "message", "Registration successful. Please check your email to activate your account.",
                 "user", UserResponseDto.fromEntity(saved)
         ));
     }
-
 
     // Login υπάρχοντος χρήστη
     @PostMapping("/login")
@@ -126,21 +129,31 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Unauthenticated"));
         }
+
         String username = ud.getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
+
+    //  Account activation (redirects to frontend)
     @GetMapping("/activate")
     public void activate(@RequestParam String token,
                          HttpServletResponse response) throws IOException {
 
-        var at = activationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid activation token"));
+        String base = normalizeBaseUrl(publicBaseUrl);
 
-        if (at.getExpiresAt().isBefore(java.time.LocalDateTime.now())) {
-            response.sendRedirect("/activation-expired.html");
-            return; // 👈 απλό return; ΟΧΙ return κάτι
+        var atOpt = activationTokenRepository.findByToken(token);
+        if (atOpt.isEmpty()) {
+            response.sendRedirect(base + "/#/login?activated=false&reason=invalid");
+            return;
+        }
+
+        var at = atOpt.get();
+
+        if (at.getExpiresAt().isBefore(LocalDateTime.now())) {
+            response.sendRedirect(base + "/#/login?activated=false&reason=expired");
+            return;
         }
 
         User user = at.getUser();
@@ -149,7 +162,11 @@ public class AuthController {
 
         activationTokenRepository.delete(at);
 
-        response.sendRedirect("/account-activated.html");
+        response.sendRedirect(base + "/#/login?activated=true");
     }
 
+    private String normalizeBaseUrl(String url) {
+        if (url == null || url.isBlank()) return "http://localhost:8080";
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
 }
