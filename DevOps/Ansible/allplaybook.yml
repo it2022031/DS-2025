@@ -1,9 +1,0 @@
-- name: Deploy DS-2025 (master)
-  hosts: all
-  gather_facts: false
-  tasks:
-    - name: Run local playbook
-      import_playbook: local_playbook.yml
-
-    - name: Run vagrant VM playbook
-      import_playbook: vagrant_vm_playbook.yml

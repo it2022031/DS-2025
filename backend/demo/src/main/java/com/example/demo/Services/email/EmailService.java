@@ -15,6 +15,12 @@ public class EmailService {
     @Value("${app.mail.from}")
     private String from;
 
+    //  Base URL used to generate links in emails
+    // Local: http://localhost:8080
+    // VM: set APP_PUBLIC_BASE_URL=http://127.0.0.1:8090 (or 8088)
+    @Value("${app.public.base-url}")
+    private String publicBaseUrl;
+
     public void sendRegistrationEmail(String to, String username) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -34,8 +40,8 @@ public class EmailService {
     }
 
     public void sendActivationEmail(String to, String username, String token) {
-
-        String activationLink = "http://localhost:8080/api/auth/activate?token=" + token;
+        String base = normalizeBaseUrl(publicBaseUrl);
+        String activationLink = base + "/api/auth/activate?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -54,5 +60,11 @@ public class EmailService {
                 + "Το link ισχύει για 24 ώρες.\n\n"
                 + "Αν δεν έκανες εσύ την εγγραφή, αγνόησε αυτό το email.\n\n"
                 + "Η ομάδα της Rental App";
+    }
+
+    private String normalizeBaseUrl(String url) {
+        if (url == null || url.isBlank()) return "http://localhost:8080";
+        // remove trailing slash to avoid double slashes
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 }
