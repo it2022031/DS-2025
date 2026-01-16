@@ -120,4 +120,8 @@ SELECT setval(pg_get_serial_sequence('users','id'),           COALESCE((SELECT M
 SELECT setval(pg_get_serial_sequence('properties','id'),      COALESCE((SELECT MAX(id) FROM properties), 0), true);
 SELECT setval(pg_get_serial_sequence('rentals','id'),         COALESCE((SELECT MAX(id) FROM rentals), 0), true);
 SELECT setval(pg_get_serial_sequence('reviews','id'),         COALESCE((SELECT MAX(id) FROM reviews), 0), true);
-SELECT setval(pg_get_serial_sequence('property_photos','id'), COALESCE((SELECT MAX(id) FROM property_photos), 0), true);
+SELECT setval(
+               pg_get_serial_sequence('property_photos','id'),
+               CASE WHEN (SELECT COUNT(*) FROM property_photos)=0 THEN 1 ELSE (SELECT MAX(id) FROM property_photos) END,
+               CASE WHEN (SELECT COUNT(*) FROM property_photos)=0 THEN false ELSE true END
+       );
