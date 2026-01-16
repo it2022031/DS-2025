@@ -137,8 +137,8 @@ public class AuthController {
 
     // ✅ ACTIVATE → REDIRECT ΣΤΟ VUE
     @GetMapping("/activate")
-    public void activate(@RequestParam String token,
-                         HttpServletResponse response) throws IOException {
+    public void activate(@RequestParam String token, HttpServletResponse response) throws IOException {
+        response.setHeader("X-ACTIVATE-RETRY", "v1");
 
         String front = normalize(frontendUrl);
 
@@ -148,6 +148,8 @@ public class AuthController {
         if (opt.isEmpty()) {
             try {
                 Thread.sleep(300);
+                response.setHeader("X-ACTIVATE-RETRY-SLEPT", "yes");
+
             } catch (InterruptedException ignored) {}
 
             opt = activationTokenRepository.findByToken(token);
