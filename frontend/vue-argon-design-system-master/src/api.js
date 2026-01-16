@@ -1,15 +1,25 @@
 // src/api.js
 import axios from "axios";
 
-// Φτιάχνουμε instance
+/**
+ * API base URL strategy:
+ * - In production behind nginx: use "/api" (relative) so it keeps the same origin (http://127.0.0.1:8090)
+ * - In dev: you can set VUE_APP_API_BASE_URL in .env / .env.production
+ */
+const API_BASE =
+    (process.env.VUE_APP_API_BASE_URL && process.env.VUE_APP_API_BASE_URL.trim()) ||
+    "/api";
+
 const api = axios.create({
-    baseURL: "http://localhost:8080/api", // βάλε εδώ το backend URL σου
+    baseURL: API_BASE,
     headers: {
         "Content-Type": "application/json",
     },
+    // If you use cookies/sessions, enable this. For Bearer token only, not required.
+    // withCredentials: true,
 });
 
-// Interceptor για να βάζει token
+// Interceptor: attach Bearer token if valid
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");
@@ -18,11 +28,9 @@ api.interceptors.request.use(
         if (token && expiry && Date.now() < Number(expiry)) {
             config.headers["Authorization"] = `Bearer ${token}`;
         } else {
-            // Αν δεν υπάρχει ή έχει λήξει, καθάρισμα storage
             localStorage.removeItem("token");
             localStorage.removeItem("token_expiry");
         }
-
         return config;
     },
     (error) => Promise.reject(error)
