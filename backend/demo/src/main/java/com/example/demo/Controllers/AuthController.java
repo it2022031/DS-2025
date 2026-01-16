@@ -39,8 +39,9 @@ public class AuthController {
     private final EmailService emailService;
     private final AccountActivationTokenRepository activationTokenRepository;
 
-    @Value("${APP_PUBLIC_BASE_URL:http://localhost:8080}")
-    private String publicBaseUrl;
+    // ✅ URL ΤΟΥ FRONTEND (ΟΧΙ backend)
+    @Value("${APP_FRONTEND_URL:http://localhost:8081}")
+    private String frontendUrl;
 
     public AuthController(CustomUserDetailsService userDetailsService,
                           JwtUtil jwtUtil,
@@ -56,7 +57,7 @@ public class AuthController {
         this.activationTokenRepository = activationTokenRepository;
     }
 
-    // DTOs για Register/Login
+    // DTOs
     public record RegistrationRequest(
             @NotBlank String username,
             @NotBlank @Size(min = 6) String password,
@@ -70,9 +71,10 @@ public class AuthController {
     public record AuthRequest(String username, String password) {}
     public record AuthResponse(String token, UserResponseDto user) {}
 
-    // Εγγραφή νέου χρήστη
+    // Register
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest req) {
+
         if (userRepository.existsByUsername(req.username())) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
         }
@@ -82,7 +84,7 @@ public class AuthController {
 
         User user = new User();
         user.setUsername(req.username());
-        user.setPassword(req.password()); // θα κωδικοποιηθεί μέσα στο service
+        user.setPassword(req.password());
         user.setEmail(req.email());
         user.setFirstName(req.firstName());
         user.setLastName(req.lastName());
@@ -90,7 +92,7 @@ public class AuthController {
         user.setAfm(req.afm());
         user.addRole(Role.USER);
 
-        User saved = userDetailsService.registerNewUser(user); // enabled=false + token + email
+        User saved = userDetailsService.registerNewUser(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "message", "Registration successful. Please check your email to activate your account.",
@@ -98,19 +100,17 @@ public class AuthController {
         ));
     }
 
-    // Login υπάρχοντος χρήστη
+    // Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest req) {
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.username(), req.password())
             );
-        } catch (BadCredentialsException | DisabledException | LockedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid credentials or account disabled/locked"));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Authentication failed"));
+                    .body(Map.of("error", "Invalid credentials or account disabled"));
         }
 
         UserDetails ud = userDetailsService.loadUserByUsername(req.username());
@@ -122,38 +122,36 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token, UserResponseDto.fromEntity(user)));
     }
 
-    // Επιστροφή στοιχείων τρέχοντος χρήστη
+    // Me
     @GetMapping("/me")
     public ResponseEntity<?> me(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails ud)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthenticated"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = ud.getUsername();
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(ud.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         return ResponseEntity.ok(UserResponseDto.fromEntity(user));
     }
 
-    //  Account activation (redirects to frontend)
+    // ✅ ACTIVATE → REDIRECT ΣΤΟ VUE
     @GetMapping("/activate")
     public void activate(@RequestParam String token,
                          HttpServletResponse response) throws IOException {
 
-        String base = normalizeBaseUrl(publicBaseUrl);
+        String front = normalize(frontendUrl); // π.χ. http://localhost:8081
 
-        var atOpt = activationTokenRepository.findByToken(token);
-        if (atOpt.isEmpty()) {
-            response.sendRedirect(base + "/#/login?activated=true");
+        var opt = activationTokenRepository.findByToken(token);
+        if (opt.isEmpty()) {
+            response.sendRedirect(front + "/#/login?activated=false&reason=invalid");
             return;
         }
 
-        var at = atOpt.get();
+        var at = opt.get();
 
         if (at.getExpiresAt().isBefore(LocalDateTime.now())) {
-            response.sendRedirect(base + "/#/login?activated=false&reason=expired");
-
+            response.sendRedirect(front + "/#/login?activated=false&reason=expired");
             return;
         }
 
@@ -163,12 +161,11 @@ public class AuthController {
 
         activationTokenRepository.delete(at);
 
-        response.sendRedirect(base + "/#/login?activated=false&reason=invalid");
+        response.sendRedirect(front + "/#/login?activated=true");
     }
 
-
-    private String normalizeBaseUrl(String url) {
-        if (url == null || url.isBlank()) return "http://localhost:8080";
+    private String normalize(String url) {
+        if (url == null || url.isBlank()) return "http://localhost:8081";
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 }

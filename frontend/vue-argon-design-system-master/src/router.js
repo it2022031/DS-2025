@@ -28,7 +28,9 @@ import DeleteRentalsAdmin from "@/views/DeleteRentalsAdmin.vue";
 Vue.use(Router);
 
 export default new Router({
+  mode: "hash",
   linkExactActiveClass: "active",
+
   routes: [
     {
       path: "/",
