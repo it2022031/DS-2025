@@ -140,9 +140,19 @@ public class AuthController {
     public void activate(@RequestParam String token,
                          HttpServletResponse response) throws IOException {
 
-        String front = normalize(frontendUrl); // π.χ. http://localhost:8081
+        String front = normalize(frontendUrl);
 
         var opt = activationTokenRepository.findByToken(token);
+
+        // 🔁 retry once (race-condition fix)
+        if (opt.isEmpty()) {
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException ignored) {}
+
+            opt = activationTokenRepository.findByToken(token);
+        }
+
         if (opt.isEmpty()) {
             response.sendRedirect(front + "/#/login?activated=false&reason=invalid");
             return;
@@ -163,6 +173,7 @@ public class AuthController {
 
         response.sendRedirect(front + "/#/login?activated=true");
     }
+
 
     private String normalize(String url) {
         if (url == null || url.isBlank()) return "http://localhost:8081";
