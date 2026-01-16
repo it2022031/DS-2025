@@ -145,14 +145,14 @@ public class AuthController {
 
         var atOpt = activationTokenRepository.findByToken(token);
         if (atOpt.isEmpty()) {
-            response.sendRedirect(base + "/#/login?activated=false&reason=invalid");
+            response.sendRedirect(base + "/activation-invalid.html");
             return;
         }
 
         var at = atOpt.get();
 
         if (at.getExpiresAt().isBefore(LocalDateTime.now())) {
-            response.sendRedirect(base + "/#/login?activated=false&reason=expired");
+            response.sendRedirect(base + "/activation-expired.html");
             return;
         }
 
@@ -162,8 +162,9 @@ public class AuthController {
 
         activationTokenRepository.delete(at);
 
-        response.sendRedirect(base + "/#/login?activated=true");
+        response.sendRedirect(base + "/account-activated.html");
     }
+
 
     private String normalizeBaseUrl(String url) {
         if (url == null || url.isBlank()) return "http://localhost:8080";
