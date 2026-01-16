@@ -17,6 +17,12 @@
               <small>Sign in with your credentials</small>
             </div>
 
+            <!-- ✅ Activation feedback -->
+            <div v-if="activationMessage" class="small text-center mb-3"
+                 :class="activationType === 'success' ? 'text-success' : 'text-danger'">
+              {{ activationMessage }}
+            </div>
+
             <form @submit.prevent="handleSignIn" role="form">
               <base-input alternative
                           class="mb-3"
@@ -58,14 +64,7 @@
               </div>
               <div class="col-6 text-right">
                 <router-link to="/register" class="text-light"><small>Create new account</small></router-link>
-                <br>
-                <br>
-                <br>
-                <br>
-                <br>
-                <br>
-                <br>
-                <br>
+                <br><br><br><br><br><br><br><br>
               </div>
             </template>
 
@@ -95,7 +94,11 @@ export default {
       rememberMe: false,
       loading: false,
       error: null,
-      isLoggedIn: false
+      isLoggedIn: false,
+
+      // ✅ activation feedback
+      activationMessage: "",
+      activationType: "" // "success" | "error"
     };
   },
   created() {
@@ -108,6 +111,25 @@ export default {
     } else {
       localStorage.clear();
       this.isLoggedIn = false;
+    }
+  },
+  mounted() {
+    // ✅ Read activation flags from redirect: /#/login?activated=true|false&reason=...
+    const q = (this.$route && this.$route.query) ? this.$route.query : {};
+
+    if (q.activated === "true") {
+      this.activationType = "success";
+      this.activationMessage = "✅ Ο λογαριασμός ενεργοποιήθηκε! Μπορείς τώρα να συνδεθείς.";
+    } else if (q.activated === "false") {
+      this.activationType = "error";
+      const reason = q.reason || "unknown";
+      if (reason === "expired") {
+        this.activationMessage = "⏳ Το link ενεργοποίησης έληξε. Κάνε ξανά εγγραφή για νέο link.";
+      } else if (reason === "invalid") {
+        this.activationMessage = "❌ Μη έγκυρο link ενεργοποίησης (ίσως χρησιμοποιήθηκε ήδη).";
+      } else {
+        this.activationMessage = "❌ Αποτυχία ενεργοποίησης.";
+      }
     }
   },
   methods: {
@@ -161,8 +183,7 @@ export default {
       } finally {
         this.loading = false;
       }
-    }
-,
+    },
     logout() {
       localStorage.clear();
       delete api.defaults.headers.common["Authorization"];
@@ -184,5 +205,4 @@ input {
   border-radius: 25px !important;
   padding: 10px 20px;
 }
-
 </style>
