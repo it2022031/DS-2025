@@ -5,7 +5,6 @@
 
       <!-- 🔍 Search + Filter -->
       <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
-        <!-- Search bar -->
         <input
             type="text"
             v-model="searchQuery"
@@ -13,7 +12,6 @@
             class="form-control search-input"
         />
 
-        <!-- Dropdown filter -->
         <select v-model="selectedStatus" class="form-control filter-select">
           <option value="ALL">All</option>
           <option value="PENDING">Pending</option>
@@ -30,10 +28,11 @@
         <li v-for="property in filteredProperties" :key="property.id" class="property-card">
           <!-- Display first photo or placeholder -->
           <img
-              :src="property.photos && property.photos.length ? property.photos[0].url : '/default-property.jpg'"
+              :src="property.imageUrl || '/default-property.jpg'"
               :alt="property.name"
               class="property-image"
           />
+
           <div class="property-info">
             <h3>{{ property.name }}</h3>
             <p>{{ property.description }}</p>
@@ -87,13 +86,12 @@
           </div>
         </li>
       </ul>
+
     </div>
   </section>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "ListProperties",
   data() {
@@ -101,8 +99,8 @@ export default {
       properties: [],
       loading: false,
       error: false,
-      searchQuery: "",       // 🔍 new
-      selectedStatus: "ALL", // ⬇️ new
+      searchQuery: "",
+      selectedStatus: "ALL",
     };
   },
   computed: {
@@ -136,34 +134,33 @@ export default {
           return "";
       }
     },
+
     async fetchProperties() {
       this.loading = true;
       this.error = false;
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-            `http://localhost:8080/api/users/${this.userId}/properties`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-        );
 
-        this.properties = response.data;
+      try {
+        // this.$api already has baseURL="/api" and token interceptor
+        const response = await this.$api.get(`/users/${this.userId}/properties`);
+        this.properties = response.data || [];
 
         // fetch photos for each property
         await Promise.all(
             this.properties.map(async (property) => {
               try {
-                const photosRes = await axios.get(
-                    `http://localhost:8080/api/properties/${property.id}/photos`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                property.photos = photosRes.data.map((photo) => ({
+                const photosRes = await this.$api.get(`/properties/${property.id}/photos`);
+                const photos = (photosRes.data || []).map((photo) => ({
                   ...photo,
+                  // IMPORTANT: Always route image through nginx /api (keeps correct port/origin)
+                  url: `/api/properties/photos/${photo.id}`,
                 }));
+
+                property.photos = photos;
+                property.imageUrl = photos[0]?.url || "/default-property.jpg";
               } catch (err) {
                 console.error(`Error fetching photos for property ${property.id}:`, err);
                 property.photos = [];
+                property.imageUrl = "/default-property.jpg";
               }
             })
         );
@@ -179,13 +176,8 @@ export default {
       if (!confirm("Are you sure you want to delete this property?")) return;
 
       try {
-        const token = localStorage.getItem("token");
-        await axios.delete(`http://localhost:8080/api/properties/${propertyId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
+        await this.$api.delete(`/properties/${propertyId}`);
         this.properties = this.properties.filter((p) => p.id !== propertyId);
-
         alert(`Property ${propertyId} deleted 🗑`);
       } catch (err) {
         console.error(`Error deleting property ${propertyId}:`, err);
