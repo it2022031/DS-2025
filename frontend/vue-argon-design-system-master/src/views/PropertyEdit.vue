@@ -6,8 +6,8 @@
 
         <div v-if="loading" class="text-center">Loading...</div>
         <div v-else-if="error" class="text-danger text-center">Failed to load property.</div>
+
         <div v-else-if="property">
-          <!-- Property Edit Form -->
           <form @submit.prevent="saveProperty">
             <div class="mb-3">
               <label class="form-label">Name</label>
@@ -61,7 +61,6 @@
             <div class="mt-4">
               <label class="form-label">Upload Property Media</label>
 
-              <!-- Photos -->
               <input
                   type="file"
                   multiple
@@ -69,38 +68,57 @@
                   @change="handlePhotoChange"
                   class="form-control rounded-input mb-2"
               />
+
               <button
+                  type="button"
                   class="btn btn-outline-primary rounded-btn"
                   @click="uploadPhotos"
                   :disabled="!selectedPhotos.length"
               >
                 Upload Photos
               </button>
-
             </div>
-
 
             <!-- Existing Photos -->
             <div class="mt-4" v-if="photos.length">
               <h6>Existing Photos:</h6>
               <div class="d-flex flex-wrap">
-                <div v-for="(photo, idx) in photos" :key="photo.id" class="photo-card position-relative me-2 mb-2 shadow-sm rounded">
+                <div
+                    v-for="(photo, idx) in photos"
+                    :key="photo.id"
+                    class="photo-card position-relative me-2 mb-2 shadow-sm rounded"
+                >
                   <img :src="photo.url" :alt="photo.filename" width="100" height="100" class="rounded" />
-                  <span v-if="photo.id === coverId || (!property.coverPhotoId && idx === 0)" class="cover-badge">Cover</span>
+                  <span v-if="photo.id === coverId || (!property.coverPhotoId && idx === 0)" class="cover-badge">
+                    Cover
+                  </span>
+
                   <div class="photo-actions">
-                    <button @click="triggerEditPhoto(photo.id)" class="btn btn-sm btn-warning" title="Replace photo">✏️</button>
-                    <button @click="deletePhoto(photo.id)" class="btn btn-sm btn-danger" title="Delete photo">🗑</button>
+                    <button type="button" @click="triggerEditPhoto(photo.id)" class="btn btn-sm btn-warning" title="Replace photo">
+                      ✏️
+                    </button>
+                    <button type="button" @click="deletePhoto(photo.id)" class="btn btn-sm btn-danger" title="Delete photo">
+                      🗑
+                    </button>
                   </div>
+
                   <div v-if="replacingId === photo.id" class="overlay">Updating…</div>
-                  <input type="file" :ref="`editInput_${photo.id}`" accept="image/*" class="d-none" @change="handleEditPhotoChange($event, photo.id)" />
+
+                  <input
+                      type="file"
+                      :ref="`editInput_${photo.id}`"
+                      accept="image/*"
+                      class="d-none"
+                      @change="handleEditPhotoChange($event, photo.id)"
+                  />
                 </div>
               </div>
             </div>
 
+            <!-- PDF -->
             <div class="mt-4">
               <label class="form-label">Property Document (PDF)</label>
 
-              <!-- IF NO PDF YET -->
               <div v-if="!document">
                 <input
                     type="file"
@@ -110,6 +128,7 @@
                 />
 
                 <button
+                    type="button"
                     class="btn btn-primary rounded-btn"
                     @click="uploadPdf"
                     :disabled="!selectedPdf"
@@ -118,23 +137,17 @@
                 </button>
               </div>
 
-              <!-- IF PDF EXISTS -->
               <div v-else class="mt-2">
                 <div class="d-flex align-items-center gap-3 mb-2">
                   <div class="form-control rounded-input bg-light">
                     📄 {{ document.filename }}
                   </div>
 
-                  <button
-                      type="button"
-                      class="btn btn-outline-primary rounded-btn"
-                      @click="viewPdf"
-                  >
+                  <button type="button" class="btn btn-outline-primary rounded-btn" @click="viewPdf">
                     View PDF
                   </button>
                 </div>
 
-                <!-- Replace PDF -->
                 <div class="d-flex align-items-center gap-2">
                   <input
                       type="file"
@@ -153,12 +166,12 @@
                   </button>
                 </div>
               </div>
-
             </div>
 
-
             <div class="mt-4 d-flex justify-content-end">
-              <router-link to="/list-properties" class="btn btn-light me-3 rounded-btn">Cancel</router-link>
+              <router-link to="/list-properties" class="btn btn-light me-3 rounded-btn">
+                Cancel
+              </router-link>
               <button type="submit" class="btn btn-primary rounded-btn">Save Changes</button>
             </div>
           </form>
@@ -166,25 +179,25 @@
       </div>
     </div>
   </section>
-
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
-  name: 'PropertyEdit',
+  name: "PropertyEdit",
   data() {
     return {
       property: { approvalStatus: "" },
       loading: false,
       error: false,
+
       selectedPhotos: [],
       previewPhotos: [],
+
       photos: [],
       replacingId: null,
+
       selectedPdf: null,
-      document: null // { fileKey, filename, url }
+      document: null, // { filename, url }
     };
   },
   computed: {
@@ -194,36 +207,37 @@ export default {
     userId() {
       return Number(localStorage.getItem("userId"));
     },
-    // Visual-only cover id:
-    // - if backend provides property.coverPhotoId, use that
-    // - else: first photo in list (if exists)
     coverId() {
       return this.property.coverPhotoId || (this.photos[0] && this.photos[0].id) || null;
-    }
+    },
   },
   async mounted() {
     this.loading = true;
     const id = this.$route.params.id;
-    const token = localStorage.getItem('token');
+
     try {
-      const response = await axios.get(`http://localhost:8080/api/properties/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await this.$api.get(`/properties/${id}`);
       this.property = response.data;
 
       await this.fetchPhotos();
       await this.fetchDocument();
-
     } catch (err) {
-      console.error('Error loading property:', err.response ? err.response.status : err.message);
+      console.error("Error loading property:", err);
       this.error = true;
     } finally {
       this.loading = false;
     }
   },
   methods: {
+    // keep the correct port/origin always (e.g. :8090)
+    photoUrl(photoId) {
+      return `${window.location.origin}/api/properties/photos/${photoId}`;
+    },
+    documentUrl() {
+      return `${window.location.origin}/api/properties/${this.property.id}/document`;
+    },
+
     async saveProperty() {
-      const token = localStorage.getItem("token");
       const payload = {
         name: this.property.name,
         price: this.property.price,
@@ -232,15 +246,11 @@ export default {
         country: this.property.country,
         street: this.property.street,
         postalCode: this.property.postalCode,
-        squareMeters: this.property.squareMeters
-        // δεν στέλνουμε coverPhotoId εδώ, αφού δεν το υποστηρίζεις στο backend
+        squareMeters: this.property.squareMeters,
       };
+
       try {
-        const response = await axios.patch(
-            `http://localhost:8080/api/properties/${this.property.id}`,
-            payload,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await this.$api.patch(`/properties/${this.property.id}`, payload);
         this.property = response.data;
         alert("Property updated successfully!");
       } catch (err) {
@@ -250,33 +260,26 @@ export default {
     },
 
     handlePhotoChange(event) {
-      this.selectedPhotos = Array.from(event.target.files);
+      this.selectedPhotos = Array.from(event.target.files || []);
       this.previewPhotos = [];
-      this.selectedPhotos.forEach(file => {
+      this.selectedPhotos.forEach((file) => {
         const reader = new FileReader();
-        reader.onload = e => this.previewPhotos.push(e.target.result);
+        reader.onload = (e) => this.previewPhotos.push(e.target.result);
         reader.readAsDataURL(file);
       });
     },
 
     async uploadPhotos() {
       if (!this.selectedPhotos.length) return;
-      const token = localStorage.getItem("token");
-      if (!token) return this.$router.push("/login");
+
       const formData = new FormData();
-      this.selectedPhotos.forEach(file => formData.append("file", file));
+      this.selectedPhotos.forEach((file) => formData.append("file", file));
 
       try {
-        await axios.post(
-            `http://localhost:8080/api/properties/${this.property.id}/photos`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data"
-              }
-            }
-        );
+        await this.$api.post(`/properties/${this.property.id}/photos`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
         this.selectedPhotos = [];
         this.previewPhotos = [];
         alert("✅ Photos uploaded successfully!");
@@ -288,16 +291,12 @@ export default {
     },
 
     async fetchPhotos() {
-      const token = localStorage.getItem("token");
       try {
-        const response = await axios.get(
-            `http://localhost:8080/api/properties/${this.property.id}/photos`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        this.photos = response.data.map(file => ({
+        const response = await this.$api.get(`/properties/${this.property.id}/photos`);
+        this.photos = (response.data || []).map((file) => ({
           ...file,
-          baseUrl: `http://localhost:8080/api/properties/photos/${file.id}`,
-          url: `http://localhost:8080/api/properties/photos/${file.id}`
+          baseUrl: this.photoUrl(file.id),
+          url: this.photoUrl(file.id),
         }));
       } catch (err) {
         console.error("Error fetching photos:", err);
@@ -307,12 +306,9 @@ export default {
 
     async deletePhoto(photoId) {
       if (!confirm("Are you sure you want to delete this photo?")) return;
-      const token = localStorage.getItem("token");
+
       try {
-        await axios.delete(
-            `http://localhost:8080/api/properties/photos/${photoId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await this.$api.delete(`/properties/photos/${photoId}`);
         alert("Photo deleted ✅");
         await this.fetchPhotos();
       } catch (err) {
@@ -321,7 +317,6 @@ export default {
       }
     },
 
-    // Replace photo – instant refresh (no full fetch)
     triggerEditPhoto(photoId) {
       const ref = this.$refs[`editInput_${photoId}`];
       const el = Array.isArray(ref) ? ref[0] : ref;
@@ -332,33 +327,24 @@ export default {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
 
-      const token = localStorage.getItem("token");
-      if (!token) return this.$router.push("/login");
-
       const formData = new FormData();
       formData.append("file", file);
 
       this.replacingId = photoId;
-      try {
-        await axios.patch(
-            `http://localhost:8080/api/properties/photos/${photoId}`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-              },
-            }
-        );
 
-        // refresh μόνο αυτής της εικόνας (cache bust)
-        const idx = this.photos.findIndex(p => p.id === photoId);
+      try {
+        await this.$api.patch(`/properties/photos/${photoId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        // cache bust on this specific image
+        const idx = this.photos.findIndex((p) => p.id === photoId);
         if (idx !== -1) {
-          const base = this.photos[idx].baseUrl || this.photos[idx].url;
+          const base = this.photos[idx].baseUrl || this.photos[idx].url || this.photoUrl(photoId);
           this.$set(this.photos, idx, {
             ...this.photos[idx],
             baseUrl: base,
-            url: `${base}?t=${Date.now()}`
+            url: `${base}?t=${Date.now()}`,
           });
         } else {
           await this.fetchPhotos();
@@ -382,94 +368,69 @@ export default {
         event.target.value = "";
         return;
       }
-
       this.selectedPdf = file;
     },
 
     async uploadPdf() {
       if (!this.selectedPdf) return;
 
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("file", this.selectedPdf);
 
       try {
-        const response = await axios.post(
-            `http://localhost:8080/api/properties/${this.property.id}/document`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data"
-              }
-            }
-        );
+        const response = await this.$api.post(`/properties/${this.property.id}/document`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
 
-        const fileKey = response.data.fileKey;
-        const filename = fileKey.split("_").slice(1).join("_");
+        const fileKey = response.data?.fileKey || "";
+        const filename = fileKey ? fileKey.split("_").slice(1).join("_") : "Document Uploaded";
 
         this.document = {
           filename,
-          url: `http://localhost:8080/api/properties/${this.property.id}/document`
+          url: this.documentUrl(),
         };
 
         this.selectedPdf = null;
-      } catch {
+      } catch (err) {
+        console.error("Failed to upload PDF:", err);
         alert("Failed to upload PDF.");
       }
     },
 
     async fetchDocument() {
-      const token = localStorage.getItem("token");
-
       try {
-        await axios.get(
-            `http://localhost:8080/api/properties/${this.property.id}/document`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              responseType: "blob" // 👈 important
-            }
-        );
+        // if exists, backend returns blob
+        await this.$api.get(`/properties/${this.property.id}/document`, {
+          responseType: "blob",
+        });
 
-        // If we reached here → document exists
         this.document = {
           filename: this.document?.filename || "Document Already Uploaded",
-          url: `http://localhost:8080/api/properties/${this.property.id}/document`
+          url: this.documentUrl(),
         };
       } catch (err) {
-        // 404 → no document uploaded yet
+        // 404 -> no document
         this.document = null;
       }
     },
 
     async viewPdf() {
-      const token = localStorage.getItem("token");
-
       try {
-        const response = await axios.get(
-            `http://localhost:8080/api/properties/${this.property.id}/document`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              responseType: "blob" // 👈 REQUIRED
-            }
-        );
+        const response = await this.$api.get(`/properties/${this.property.id}/document`, {
+          responseType: "blob",
+        });
 
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
-
         window.open(url, "_blank");
 
-        // optional cleanup
         setTimeout(() => window.URL.revokeObjectURL(url), 1000);
       } catch (err) {
         console.error("Error opening PDF:", err);
         alert("Unable to open PDF.");
       }
     },
-
-
-
-  }
+  },
 };
 </script>
 
@@ -478,10 +439,6 @@ export default {
 img { object-fit: cover; }
 
 .position-relative { position: relative; }
-.position-absolute { position: absolute; }
-.top-0 { top: 0; }
-.end-0 { right: 0; }
-
 .border { border: 1px solid #ccc; }
 .rounded { border-radius: 4px; }
 .me-2 { margin-right: 0.5rem; }
@@ -497,12 +454,11 @@ img { object-fit: cover; }
   gap: 6px;
 }
 
-/* Visual-only Cover badge (bottom-left) */
 .cover-badge {
   position: absolute;
   left: 6px;
-  bottom: 6px;   /* 👈 από top σε bottom */
-  background: #198754; /* bootstrap success */
+  bottom: 6px;
+  background: #198754;
   color: #fff;
   font-size: 0.65rem;
   padding: 2px 6px;
@@ -569,5 +525,4 @@ img { object-fit: cover; }
 .photo-card:hover {
   transform: scale(1.05);
 }
-
 </style>

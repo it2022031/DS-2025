@@ -5,7 +5,6 @@
 
       <!-- 🔍 Search + Filter -->
       <div class="filters mb-4 d-flex justify-content-center gap-3 flex-wrap">
-        <!-- Search bar -->
         <input
             type="text"
             v-model="searchQuery"
@@ -13,7 +12,6 @@
             class="form-control search-input"
         />
 
-        <!-- Dropdown filter -->
         <select v-model="selectedStatus" class="form-control filter-select">
           <option value="ALL">All</option>
           <option value="PENDING">Pending</option>
@@ -21,7 +19,6 @@
           <option value="REJECTED">Rejected</option>
         </select>
 
-        <!-- 🚀 Delete All Rejected Button (Admin only) -->
         <button
             @click="deleteAllRejected"
             class="btn btn-danger"
@@ -29,9 +26,7 @@
         >
           🗑️ Delete All Rejected
         </button>
-
       </div>
-
 
       <div v-if="loading" class="text-center text-white">Loading properties...</div>
       <div v-else-if="error" class="text-center text-danger">Failed to load properties.</div>
@@ -46,13 +41,13 @@
           />
           <div class="property-info">
             <h3>{{ property.name }}</h3>
-            <p><strong>Owner:</strong> 👤{{ property.ownerFirstName}} {{ property.ownerLastName}}</p>
+            <p><strong>Owner:</strong> 👤{{ property.ownerFirstName }} {{ property.ownerLastName }}</p>
             <p>{{ property.description }}</p>
             <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
             <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
             <p><strong>Size:</strong> {{ property.squareMeters }} m²</p>
             <p><strong>Price:</strong> {{ property.price }} €</p>
-            <!-- 🟢 Status with color -->
+
             <p>
               <strong>Status:</strong>
               <span :class="['status-badge', getStatusClass(property.approvalStatus)]">
@@ -86,25 +81,20 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
-  name: "ListProperties",
+  name: "ApproveRejectProperties",
   data() {
     return {
       properties: [],
       loading: false,
       error: false,
       searchQuery: "",
-      selectedStatus: "ALL", // <-- new state
+      selectedStatus: "ALL",
     };
   },
   computed: {
     userRole() {
       return (localStorage.getItem("userRole") || "").toUpperCase();
-    },
-    userId() {
-      return Number(localStorage.getItem("userId"));
     },
     filteredProperties() {
       return this.properties.filter((p) => {
@@ -116,32 +106,36 @@ export default {
       });
     },
     hasRejectedProperties() {
-      return this.properties.some(p => p.approvalStatus === "REJECTED");
-    }
+      return this.properties.some((p) => p.approvalStatus === "REJECTED");
+    },
   },
   methods: {
+    // 🔥 IMPORTANT: images must keep the correct port (:8090) => use origin
+    photoUrl(photoId) {
+      return `${window.location.origin}/api/properties/photos/${photoId}`;
+    },
+
     async fetchProperties() {
       this.loading = true;
       this.error = false;
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-            `http://localhost:8080/api/properties/all`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        this.properties = response.data;
+        // this.$api has baseURL="/api" + token interceptor
+        const response = await this.$api.get("/properties/all");
+        this.properties = response.data || [];
 
-        // fetch photos for each property
         await Promise.all(
             this.properties.map(async (property) => {
               try {
-                const photosRes = await axios.get(
-                    `http://localhost:8080/api/properties/${property.id}/photos`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (photosRes.data && photosRes.data.length > 0) {
-                  property.imageUrl = photosRes.data[0].url;
-                  property.photos = photosRes.data;
+                const photosRes = await this.$api.get(`/properties/${property.id}/photos`);
+                const photos = photosRes.data || [];
+
+                if (photos.length > 0) {
+                  // ignore backend-provided url; build our own stable url
+                  property.imageUrl = this.photoUrl(photos[0].id);
+                  property.photos = photos.map((p) => ({
+                    ...p,
+                    url: this.photoUrl(p.id),
+                  }));
                 } else {
                   property.imageUrl = "/default-property.jpg";
                   property.photos = [];
@@ -175,14 +169,9 @@ export default {
     },
 
     async approveProperty(propertyId) {
-      const token = localStorage.getItem("token");
       if (!confirm("Are you sure you want to approve this property?")) return;
       try {
-        await axios.post(
-            `http://localhost:8080/api/properties/${propertyId}/approve`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await this.$api.post(`/properties/${propertyId}/approve`, {});
         await this.fetchProperties();
         alert(`Property ${propertyId} approved ✅`);
       } catch (err) {
@@ -192,14 +181,9 @@ export default {
     },
 
     async rejectProperty(propertyId) {
-      const token = localStorage.getItem("token");
       if (!confirm("Are you sure you want to reject this property?")) return;
       try {
-        await axios.post(
-            `http://localhost:8080/api/properties/${propertyId}/reject`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await this.$api.post(`/properties/${propertyId}/reject`, {});
         await this.fetchProperties();
         alert(`Property ${propertyId} rejected ❌`);
       } catch (err) {
@@ -207,24 +191,20 @@ export default {
         alert(`Failed to reject property ${propertyId}`);
       }
     },
+
     async deleteAllRejected() {
-      if (!confirm("Are you sure you want to delete ALL rejected properties?")) {
-        return;
-      }
-      const token = localStorage.getItem("token");
+      if (!confirm("Are you sure you want to delete ALL rejected properties?")) return;
       try {
-        await axios.delete(
-            `http://localhost:8080/api/properties/status/rejected`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        await this.fetchProperties(); // refresh the list
+        await this.$api.delete(`/properties/status/rejected`);
+        await this.fetchProperties();
         alert("All rejected properties deleted 🗑️");
       } catch (err) {
         console.error("Error deleting rejected properties:", err);
         alert("Failed to delete rejected properties ❌");
       }
     },
-    canModerate(property) {
+
+    canModerate() {
       return this.userRole === "ADMIN";
     },
   },
@@ -307,7 +287,6 @@ export default {
   font-size: 16px;
 }
 
-/* ✅ Status styles */
 .status-badge {
   font-weight: bold;
   padding: 3px 8px;
@@ -341,5 +320,4 @@ export default {
   cursor: not-allowed;
   opacity: 0.7;
 }
-
 </style>

@@ -1,12 +1,17 @@
 <template>
   <div class="profile-page text-center mt-5">
     <div class="avatar-container mb-3">
-      <img :src="user.avatar || defaultAvatar" alt="Avatar" class="avatar clickable" @click="triggerFileInput" />
+      <img
+          :src="user.avatar || defaultAvatar"
+          alt="Avatar"
+          class="avatar clickable"
+          @click="triggerFileInput"
+      />
       <input type="file" ref="fileInput" @change="onAvatarChange" hidden />
     </div>
 
     <h3 @click.stop="toggleDropdown" class="profile-name clickable">
-      {{ user.name || 'Unknown User' }}
+      {{ user.name || "Unknown User" }}
       <i class="ni ni-bold-down ml-2"></i>
     </h3>
 
@@ -14,22 +19,36 @@
       <!-- Properties Section -->
       <div class="mt-4 text-left">
         <h5>My Profile</h5>
-        <div v-if="userProperties.length === 0" class="text-muted"></div>
+
+        <div v-if="userProperties.length === 0" class="text-muted">
+          <!-- empty -->
+        </div>
+
         <div v-else>
           <div v-for="p in userProperties" :key="p.id" class="property-item p-3 border rounded mb-3">
             <div v-if="editingProperty === p.id">
               <input v-model="propertyForm.name" class="form-control mb-2" placeholder="Όνομα" />
-              <textarea v-model="propertyForm.description" class="form-control mb-2" placeholder="Περιγραφή"></textarea>
+              <textarea
+                  v-model="propertyForm.description"
+                  class="form-control mb-2"
+                  placeholder="Περιγραφή"
+              ></textarea>
               <input v-model="propertyForm.city" class="form-control mb-2" placeholder="Πόλη" />
               <input v-model="propertyForm.country" class="form-control mb-2" placeholder="Χώρα" />
-              <button @click="savePropertyEdit" class="btn btn-sm btn-success mr-2">Αποθήκευση</button>
+
+              <button @click="savePropertyEdit" class="btn btn-sm btn-success mr-2">
+                Αποθήκευση
+              </button>
               <button @click="cancelEdit" class="btn btn-sm btn-secondary">Άκυρο</button>
             </div>
+
             <div v-else>
               <h6>{{ p.name }}</h6>
               <p class="mb-1"><strong>Περιγραφή:</strong> {{ p.description }}</p>
               <p class="mb-1"><strong>Τοποθεσία:</strong> {{ p.city }}, {{ p.country }}</p>
-              <button @click="startEdit(p)" class="btn btn-sm btn-outline-primary">✏️ Επεξεργασία</button>
+              <button @click="startEdit(p)" class="btn btn-sm btn-outline-primary">
+                ✏️ Επεξεργασία
+              </button>
             </div>
           </div>
         </div>
@@ -80,6 +99,7 @@
         </button>
 
         <hr />
+
         <button @click.prevent="logout" class="btn btn-link btn-block text-danger">
           Log Out
         </button>
@@ -95,17 +115,10 @@
         </div>
       </form>
     </div>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
-
   </div>
-
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "ProfilePage",
   data() {
@@ -129,67 +142,95 @@ export default {
       defaultAvatar: "https://cdn-icons-png.flaticon.com/512/147/147144.png",
       userProperties: [],
       editingProperty: null,
-      propertyForm: {}
+      propertyForm: {},
     };
   },
   methods: {
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;
     },
+
+    closeOnOutsideClick(e) {
+      const dropdown = this.$el.querySelector(".custom-dropdown");
+      const name = this.$el.querySelector(".profile-name");
+      if (!dropdown || !name) return;
+
+      // αν κλικάρει έξω από dropdown + name, κλείσε
+      if (!dropdown.contains(e.target) && !name.contains(e.target)) {
+        this.showDropdown = false;
+      }
+    },
+
     logout() {
       localStorage.clear();
       this.$router.push("/login");
     },
-    fetchUser() {
+
+    async fetchUser() {
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
 
-      axios.get("http://localhost:8080/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(res => {
+      try {
+        const res = await this.$api.get("/auth/me");
         const d = res.data;
+
         this.user = {
           id: d.id,
           username: d.username,
           email: d.email,
-          name: d.firstName || '',
-          surname: d.lastName || '',
-          role: d.role || '',
-          idNumber: d.passportNumber || '',
-          taxNumber: d.afm || '',
-          avatar: '' // don’t rely on backend string, we’ll fetch blob
+          name: d.firstName || "",
+          surname: d.lastName || "",
+          role: d.role || "",
+          idNumber: d.passportNumber || "",
+          taxNumber: d.afm || "",
+          avatar: "", // blob will be loaded
         };
+
         this.originalUser = { ...this.user };
 
-        // 👇 Load avatar blob from backend
         if (this.user.id) {
-          this.loadAvatar();
+          await this.loadAvatar();
         }
-      }).catch(() => this.$router.push("/login"));
+      } catch (e) {
+        this.$router.push("/login");
+      }
     },
+
+    // ✅ Robust: try /properties/my, fallback to /users/{id}/properties
     async fetchUserProperties() {
       const token = localStorage.getItem("token");
       if (!token) return;
+
       try {
-        const res = await axios.get("http://localhost:8080/api/properties/my", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        this.userProperties = res.data;
-      } catch (err) {
-        console.error("❌ Error fetching properties:", err);
+        const res = await this.$api.get("/properties/my");
+        this.userProperties = res.data || [];
+        return;
+      } catch (err1) {
+        // fallback
+      }
+
+      try {
+        if (!this.user.id) return;
+        const res2 = await this.$api.get(`/users/${this.user.id}/properties`);
+        this.userProperties = res2.data || [];
+      } catch (err2) {
+        console.error("❌ Error fetching properties:", err2);
+        this.userProperties = [];
       }
     },
+
     startEdit(property) {
       this.editingProperty = property.id;
       this.propertyForm = { ...property };
     },
+
     async savePropertyEdit() {
       const token = localStorage.getItem("token");
       if (!token) return;
+
       try {
-        await axios.put(`http://localhost:8080/api/properties/${this.propertyForm.id}`, this.propertyForm, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // backend expects PATCH usually; keeping PUT if your API expects it.
+        await this.$api.put(`/properties/${this.propertyForm.id}`, this.propertyForm);
         this.editingProperty = null;
         await this.fetchUserProperties();
         alert("Το ακίνητο ενημερώθηκε!");
@@ -198,15 +239,18 @@ export default {
         alert("Σφάλμα κατά την αποθήκευση.");
       }
     },
+
     cancelEdit() {
       this.editingProperty = null;
       this.propertyForm = {};
     },
-    saveProfile() {
+
+    async saveProfile() {
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
 
       this.saving = true;
+
       const updates = {
         firstName: this.user.name,
         lastName: this.user.surname,
@@ -216,121 +260,60 @@ export default {
         afm: this.user.taxNumber,
       };
 
-      axios.patch("http://localhost:8080/api/users/me", updates, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(() => {
+      try {
+        await this.$api.patch("/users/me", updates);
+
         this.saveSuccess = true;
-        return this.fetchUser();
-      }).then(() => {
+        await this.fetchUser();
+
         setTimeout(() => (this.saveSuccess = false), 3000);
         this.showDropdown = false;
-      }).catch(err => {
+      } catch (err) {
         console.error("Error updating profile:", err);
         alert("Σφάλμα κατά την ενημέρωση.");
-      }).finally(() => {
+      } finally {
         this.saving = false;
-      });
+      }
     },
+
     resetProfile() {
       this.user = { ...this.originalUser };
     },
+
     triggerFileInput() {
       this.$refs.fileInput.click();
     },
 
-    // onAvatarChange(event) {
-    //   const file = event.target.files[0];
-    //   if (!file) return;
-    //
-    //   const reader = new FileReader();
-    //   reader.onload = e => {
-    //     this.user.avatar = e.target.result;
-    //   };
-    //   reader.readAsDataURL(file);
-    //
-    //   const token = localStorage.getItem("token");
-    //   if (!token) return;
-    //
-    //   const formData = new FormData();
-    //   formData.append('avatar', file);
-    //
-    //   axios.post('http://localhost:8080/api/users/#/upload-photo', formData, {
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //       'Content-Type': 'multipart/form-data'
-    //     }
-    //   }).then(() => {
-    //     alert('Avatar ενημερώθηκε!');
-    //   }).catch(() => {
-    //     alert('Σφάλμα κατά την ενημέρωση του avatar.');
-    //   });
-    // },
-
-    // onAvatarChange(event) {
-    //   const file = event.target.files[0];
-    //   if (!file) return;
-    //
-    //   // Preview immediately (local)
-    //   const reader = new FileReader();
-    //   reader.onload = e => {
-    //     this.user.avatar = e.target.result;
-    //   };
-    //   reader.readAsDataURL(file);
-    //
-    //   // Upload to backend
-    //   const token = localStorage.getItem("token");
-    //   if (!token) return this.$router.push("/login");
-    //
-    //   const formData = new FormData();
-    //   formData.append("file", file); // backend expects "file"
-    //
-    //
-    //   axios.post(`http://localhost:8080/api/users/${this.user.id}/upload-photo`, formData, {
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //       "Content-Type": "multipart/form-data"
-    //     }
-    //   }).then(() => {
-    //     alert("✅ Avatar ενημερώθηκε!");
-    //     // replace preview with backend-served photo (fresh)
-    //     this.user.avatar = `http://localhost:8080/api/users/${this.user.id}/photo?ts=${Date.now()}`;
-    //   }).catch(err => {
-    //     console.error("❌ Error uploading avatar:", err);
-    //     alert("Σφάλμα κατά την ενημέρωση του avatar.");
-    //   });
-    // },
-
-    onAvatarChange(event) {
-      const file = event.target.files[0];
+    async onAvatarChange(event) {
+      const file = event.target.files && event.target.files[0];
       if (!file) return;
 
       // Preview immediately (local)
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = (e) => {
         this.user.avatar = e.target.result;
       };
       reader.readAsDataURL(file);
 
-      // Upload to backend
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
 
-      const formData = new FormData();
-      formData.append("file", file);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      axios.post(`http://localhost:8080/api/users/${this.user.id}/upload-photo`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data"
-        }
-      }).then(() => {
+        await this.$api.post(`/users/${this.user.id}/upload-photo`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
         alert("✅ Avatar ενημερώθηκε!");
-        // Now reload from backend with Authorization
-        this.loadAvatar();
-      }).catch(err => {
+        await this.loadAvatar();
+      } catch (err) {
         console.error("❌ Error uploading avatar:", err);
         alert("Σφάλμα κατά την ενημέρωση του avatar.");
-      });
+      } finally {
+        event.target.value = "";
+      }
     },
 
     async loadAvatar() {
@@ -338,38 +321,34 @@ export default {
       if (!token) return this.$router.push("/login");
 
       try {
-        const response = await axios.get(
-            `http://localhost:8080/api/users/${this.user.id}/photo`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              responseType: "blob",
-            }
-        );
+        const response = await this.$api.get(`/users/${this.user.id}/photo`, {
+          responseType: "blob",
+        });
         this.user.avatar = URL.createObjectURL(response.data);
       } catch (err) {
         console.error("❌ Error loading avatar:", err);
         this.user.avatar = this.defaultAvatar;
       }
     },
+
     async requestOwnerRole() {
       const token = localStorage.getItem("token");
       if (!token) return this.$router.push("/login");
 
       try {
-        await axios.post("http://localhost:8080/api/role-requests", {
+        await this.$api.post("/role-requests", {
           userId: this.user.id,
-          requestedRole: "owner"
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
+          requestedRole: "owner",
         });
         this.requestSent = true;
       } catch (error) {
         console.error("❌ Error requesting role change:", error);
         alert("Σφάλμα κατά την αποστολή αιτήματος.");
       }
-    }
+    },
   },
-  mounted() {
+
+  async mounted() {
     const token = localStorage.getItem("token");
     const expiry = localStorage.getItem("token_expiry");
     if (!token || !expiry || new Date().getTime() > Number(expiry)) {
@@ -377,13 +356,16 @@ export default {
       this.$router.push("/login");
       return;
     }
-    this.fetchUser();
-    this.fetchUserProperties();
+
+    await this.fetchUser();
+    await this.fetchUserProperties();
+
     document.addEventListener("mousedown", this.closeOnOutsideClick);
   },
+
   beforeUnmount() {
     document.removeEventListener("mousedown", this.closeOnOutsideClick);
-  }
+  },
 };
 </script>
 
