@@ -75,7 +75,7 @@
                 />
                 <div class="property-info p-3 flex-grow-1">
                   <h3>{{ property.name }}</h3>
-                  <p><strong>Owner:</strong> 👤 {{property.ownerFirstName}} {{property.ownerLastName}}</p>
+                  <p><strong>Owner:</strong> 👤 {{ property.ownerFirstName }} {{ property.ownerLastName }}</p>
                   <p>{{ property.description }}</p>
                   <p><strong>Location:</strong> {{ property.city }}, {{ property.country }}</p>
                   <p><strong>Address:</strong> {{ property.street }}, {{ property.postalCode }}</p>
@@ -92,8 +92,6 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "AllProperties",
   data() {
@@ -118,26 +116,26 @@ export default {
     filteredProperties() {
       return this.properties.filter((p) => {
         const matchesSearch =
-            p.name &&
-            p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+            p.name && p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+
         const matchesCountry = this.filters.country
-            ? p.country &&
-            p.country.toLowerCase().includes(this.filters.country.toLowerCase())
+            ? p.country && p.country.toLowerCase().includes(this.filters.country.toLowerCase())
             : true;
+
         const matchesCity = this.filters.city
-            ? p.city &&
-            p.city.toLowerCase().includes(this.filters.city.toLowerCase())
+            ? p.city && p.city.toLowerCase().includes(this.filters.city.toLowerCase())
             : true;
+
         const matchesSquare = this.filters.squareMeters
             ? p.squareMeters >= this.filters.squareMeters
             : true;
+
         const matchesPostal = this.filters.postalCode
-            ? p.postalCode &&
-            p.postalCode.toString().includes(this.filters.postalCode)
+            ? p.postalCode && p.postalCode.toString().includes(this.filters.postalCode)
             : true;
-        const matchesPrice = this.filters.price
-            ? p.price <= this.filters.price
-            : true;
+
+        const matchesPrice = this.filters.price ? p.price <= this.filters.price : true;
+
         const matchesDates =
             this.checkinDate && this.checkoutDate
                 ? this.isAvailable(p.id, this.checkinDate, this.checkoutDate)
@@ -159,53 +157,81 @@ export default {
     async fetchProperties() {
       this.loading = true;
       this.error = false;
+
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-            `http://localhost:8080/api/properties/all`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-        );
+        // IMPORTANT:
+        // this.$api already has baseURL="/api" and token interceptor.
+        // So here we call endpoints WITHOUT the /api prefix.
+        const response = await this.$api.get("/properties/all");
 
         // Only approved properties
-        this.properties = response.data.filter(
-            (p) => p.approvalStatus == "APPROVED"
-        );
+        this.properties = (response.data || []).filter((p) => p.approvalStatus === "APPROVED");
 
         // Fetch photos for each property
         await Promise.all(
             this.properties.map(async (property) => {
               try {
-                const photosRes = await axios.get(
-                    `http://localhost:8080/api/properties/${property.id}/photos`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                const photosRes = await this.$api.get(`/properties/${property.id}/photos`);
 
                 if (photosRes.data && photosRes.data.length > 0) {
-                  property.imageUrl = photosRes.data[0].url; // first photo
-                  property.photos = photosRes.data; // all photos stored if needed
+                  // Ensure image URL is ALWAYS relative through nginx (/api/...)
+                  // If backend returns absolute url, normalize it.
+                  const first = photosRes.data[0];
+                  const url = first.url || first.baseUrl || "";
+                  property.imageUrl = this.normalizePhotoUrl(url, first.id);
+                  property.photos = photosRes.data.map((ph) => ({
+                    ...ph,
+                    url: this.normalizePhotoUrl(ph.url || ph.baseUrl || "", ph.id),
+                  }));
                 } else {
                   property.imageUrl = "/default-property.jpg";
                   property.photos = [];
                 }
               } catch (err) {
-                console.error(
-                    `Error fetching photos for property ${property.id}:`,
-                    err
-                );
+                console.error(`Error fetching photos for property ${property.id}:`, err);
                 property.imageUrl = "/default-property.jpg";
                 property.photos = [];
               }
             })
         );
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching properties:", err);
         this.error = true;
       } finally {
         this.loading = false;
       }
     },
+
+    // If backend returns absolute URLs, force them to go through our nginx /api proxy.
+    normalizePhotoUrl(url, photoId) {
+      // If backend already gives "/api/..." or "/properties/photos/..", normalize.
+      if (typeof url !== "string") return "/default-property.jpg";
+
+      // If it's already relative and points to api photos, keep it (but avoid /api/api).
+      if (url.startsWith("/api/")) return url.replace("/api/api/", "/api/");
+
+      // Some backends return "/properties/photos/{id}" or "/api/properties/photos/{id}"
+      if (url.startsWith("/properties/photos/")) return `/api${url}`;
+      if (url.startsWith("/api/properties/photos/")) return url.replace("/api/api/", "/api/");
+
+      // If it's absolute (http://localhost:8080/...), strip host and route via /api
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        try {
+          const u = new URL(url);
+          // u.pathname could be "/api/properties/photos/1" or "/properties/photos/1"
+          if (u.pathname.startsWith("/api/")) return u.pathname.replace("/api/api/", "/api/");
+          return `/api${u.pathname}`;
+        } catch {
+          // ignore
+        }
+      }
+
+      // If backend returned empty but we have photoId, build it.
+      if (photoId != null) return `/api/properties/photos/${photoId}`;
+
+      return "/default-property.jpg";
+    },
+
     clearFilters() {
       this.searchQuery = "";
       this.checkinDate = "";
@@ -218,32 +244,25 @@ export default {
         price: null,
       };
     },
+
     async fetchOccupiedDates(propertyId) {
-      if (this.occupiedDatesCache[propertyId])
-        return this.occupiedDatesCache[propertyId];
+      if (this.occupiedDatesCache[propertyId]) return this.occupiedDatesCache[propertyId];
+
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-            `http://localhost:8080/api/properties/${propertyId}/closed-dates`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-        );
-        this.occupiedDatesCache[propertyId] = response.data.map((d) => ({
+        const response = await this.$api.get(`/properties/${propertyId}/closed-dates`);
+
+        this.occupiedDatesCache[propertyId] = (response.data || []).map((d) => ({
           startDate: new Date(d.startDate),
           endDate: new Date(d.endDate),
         }));
+
         return this.occupiedDatesCache[propertyId];
       } catch (err) {
-        console.error(
-            `Failed to fetch occupied dates for property ${propertyId}`,
-            err
-        );
+        console.error(`Failed to fetch occupied dates for property ${propertyId}`, err);
         return [];
       }
     },
+
     isAvailable(propertyId, checkin, checkout) {
       const checkinDate = new Date(checkin);
       const checkoutDate = new Date(checkout);
@@ -251,11 +270,10 @@ export default {
       if (!occupied) return true; // not yet fetched, assume available
 
       // Check if any occupied period overlaps
-      return !occupied.some((period) => {
-        return checkinDate <= period.endDate && checkoutDate >= period.startDate;
-      });
+      return !occupied.some((period) => checkinDate <= period.endDate && checkoutDate >= period.startDate);
     },
   },
+
   async created() {
     await this.fetchProperties();
 
