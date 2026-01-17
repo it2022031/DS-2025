@@ -89,9 +89,9 @@
             </div>
 
             <div v-if="checkinDate && checkoutDate" class="mt-2">
-      <span v-if="isAvailable(property.id, checkinDate, checkoutDate)" class="text-success">
-        ✅ Available for your dates
-      </span>
+              <span v-if="isAvailable(property.id, checkinDate, checkoutDate)" class="text-success">
+                ✅ Available for your dates
+              </span>
               <span v-else class="text-danger">❌ Not available for your dates</span>
             </div>
 
@@ -118,21 +118,20 @@
               <div v-for="review in reviews" :key="review.id" class="review-card">
                 <p class="mb-1">{{ review.content }}</p>
                 <small class="text-muted">⭐ {{ review.rating }}/5</small><br />
-                <small class="text-muted">By renter #{{ review.renterId }} on {{ formatDate(review.createdAt) }}</small>
+                <small class="text-muted">
+                  By renter #{{ review.renterId }} on {{ formatDate(review.createdAt) }}
+                </small>
               </div>
             </div>
           </div>
         </div>
-
-
       </div>
-      </div>
+
     </div>
   </section>
 </template>
 
 <script>
-import axios from "axios";
 import FlatPickr from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 
@@ -152,7 +151,6 @@ export default {
       // ui
       mainPhotoUrl: "/default-property.jpg",
       reviews: [],
-      baseURL: "http://localhost:8080",
       flatpickrConfig: {
         mode: "range",
         dateFormat: "Y-m-d",
@@ -169,8 +167,8 @@ export default {
             this.checkinDate = "";
             this.checkoutDate = "";
           }
-        }
-      }
+        },
+      },
     };
   },
   computed: {
@@ -193,11 +191,8 @@ export default {
     },
     mapsUrl() {
       if (!this.fullAddress) return "";
-      // Google Maps - Search
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.fullAddress)}`;
-      // 👉 Αν προτιμάς κατευθείαν οδηγίες (Directions), χρησιμοποίησε αυτό:
-      // return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(this.fullAddress)}`;
-    }
+    },
   },
   methods: {
     // ---------- helpers ----------
@@ -215,7 +210,7 @@ export default {
       return `${y}-${m}-${d}`;
     },
     toStartUTC(ymd) {
-      const [y, m, d] = ymd.split("-").map(n => parseInt(n, 10));
+      const [y, m, d] = ymd.split("-").map((n) => parseInt(n, 10));
       return new Date(Date.UTC(y, m - 1, d));
     },
     addDaysUTC(date, days) {
@@ -229,61 +224,54 @@ export default {
       this.loading = true;
       this.error = false;
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-            `${this.baseURL}/api/properties/${this.$route.params.id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const id = this.$route.params.id;
+
+        // Property
+        const response = await this.$api.get(`/properties/${id}`);
         this.property = response.data;
 
-        // Occupied (strings)
-        const datesRes = await axios.get(
-            `${this.baseURL}/api/properties/${this.property.id}/closed-dates`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        this.occupiedRanges = datesRes.data.map(d => ({
+        // Occupied dates
+        const datesRes = await this.$api.get(`/properties/${this.property.id}/closed-dates`);
+        this.occupiedRanges = (datesRes.data || []).map((d) => ({
           startYMD: d.startDate,
-          endYMD: d.endDate
+          endYMD: d.endDate,
         }));
 
         // Flatpickr disable ranges
         this.flatpickrConfig = {
           ...this.flatpickrConfig,
-          disable: this.occupiedRanges.map(p => ({ from: p.startYMD, to: p.endYMD }))
+          disable: this.occupiedRanges.map((p) => ({ from: p.startYMD, to: p.endYMD })),
         };
 
-        // Photos
+        // Photos list (metadata)
         try {
-          const photosRes = await axios.get(
-              `${this.baseURL}/api/properties/${this.property.id}/photos`,
-              { headers: { Authorization: `Bearer ${token}` } }
-          );
-          this.property.photos = photosRes.data.map(photo => ({
+          const photosRes = await this.$api.get(`/properties/${this.property.id}/photos`);
+          this.property.photos = (photosRes.data || []).map((photo) => ({
             ...photo,
-            url: `${this.baseURL}/api/properties/photos/${photo.id}`
+            // ALWAYS through nginx proxy:
+            url: `/api/properties/photos/${photo.id}`,
           }));
-          if (this.property.photos && this.property.photos.length > 0) {
+          if (this.property.photos.length > 0) {
             this.mainPhotoUrl = this.property.photos[0].url;
+          } else {
+            this.mainPhotoUrl = "/default-property.jpg";
           }
         } catch (err) {
           console.error("Error fetching property photos:", err);
           this.property.photos = [];
+          this.mainPhotoUrl = "/default-property.jpg";
         }
 
         // Reviews
         try {
-          const reviewsRes = await axios.get(
-              `${this.baseURL}/api/properties/${this.property.id}/reviews`,
-              { headers: { Authorization: `Bearer ${token}` } }
-          );
-          this.reviews = reviewsRes.data;
+          const reviewsRes = await this.$api.get(`/properties/${this.property.id}/reviews`);
+          this.reviews = reviewsRes.data || [];
         } catch (err) {
           console.error("Error fetching reviews:", err);
           this.reviews = [];
         }
-
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching property:", err);
         this.error = true;
       } finally {
         this.loading = false;
@@ -299,8 +287,7 @@ export default {
       const outDate = this.toStartUTC(checkout);
       if (inDate < today || outDate <= inDate) return false;
 
-      // [in, out) overlaps [start, end+1)
-      return !this.occupiedRanges.some(r => {
+      return !this.occupiedRanges.some((r) => {
         const start = this.toStartUTC(r.startYMD);
         const endExclusive = this.addDaysUTC(this.toStartUTC(r.endYMD), 1);
         return inDate < endExclusive && outDate > start;
@@ -320,20 +307,15 @@ export default {
       }
 
       try {
-        const token = localStorage.getItem("token");
         const rentalData = {
           propertyId: this.property.id,
           startDate: this.checkinDate,
-          endDate: this.checkoutDate
+          endDate: this.checkoutDate,
         };
-        const response = await axios.post(
-            `${this.baseURL}/api/rentals/add`,
-            rentalData,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+
+        await this.$api.post("/rentals/add", rentalData);
 
         alert("✅ Rental created successfully!");
-        console.log("Rental created:", response.data);
         await this.fetchProperty();
       } catch (err) {
         console.error("Failed to create rental:", err);
@@ -352,11 +334,11 @@ export default {
 
     openMaps() {
       if (this.mapsUrl) window.open(this.mapsUrl, "_blank", "noopener");
-    }
+    },
   },
   created() {
     this.fetchProperty();
-  }
+  },
 };
 </script>
 
@@ -381,7 +363,6 @@ img { max-height: 350px; object-fit: cover; }
 .address-link { text-decoration: underline; }
 .address-link:hover { text-decoration: underline; opacity: 0.9; }
 
-/* Generic card style (matches homepage rounded look) */
 .property-card {
   background: #fff;
   border-radius: 1rem;
@@ -389,7 +370,6 @@ img { max-height: 350px; object-fit: cover; }
   padding: 1.5rem;
 }
 
-/* Review item style */
 .review-card {
   background: #f8f9fa;
   border-radius: 0.5rem;
@@ -398,7 +378,6 @@ img { max-height: 350px; object-fit: cover; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* Total price box stays distinct but softer */
 .total-box {
   background: #f5f6fa;
   border: 1px solid #e9ecef;
@@ -406,7 +385,6 @@ img { max-height: 350px; object-fit: cover; }
   padding: 0.8rem 1rem;
 }
 
-/* Thumbnail hover */
 .thumbnail {
   width: 70px; height: 70px;
   object-fit: cover;
@@ -418,5 +396,4 @@ img { max-height: 350px; object-fit: cover; }
   transform: scale(1.05);
   box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
-
 </style>
